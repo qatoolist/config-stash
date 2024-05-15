@@ -5,11 +5,11 @@ build-backend = "hatchling.build"
 [project]
 name = "config-stash"
 dynamic = ["version"]
-description = ''
+description = 'A lightweight configuration manager'
 readme = "README.md"
 requires-python = ">=3.8"
-license = "MIT"
-keywords = []
+license = { file = "LICENSE.txt" }
+keywords = ["configuration", "management", "python"]
 authors = [
   { name = "U.N. Owen", email = "void@some.where" },
 ]
@@ -24,19 +24,31 @@ classifiers = [
   "Programming Language :: Python :: Implementation :: CPython",
   "Programming Language :: Python :: Implementation :: PyPy",
 ]
-dependencies = []
+dependencies = [
+  "pyyaml",
+  "toml",
+  "watchdog",
+]
 
 [project.urls]
 Documentation = "https://github.com/U.N. Owen/config-stash#readme"
 Issues = "https://github.com/U.N. Owen/config-stash/issues"
 Source = "https://github.com/U.N. Owen/config-stash"
 
+[project.scripts]
+config-stash = "config_stash.cli:cli"
+
 [tool.hatch.version]
 path = "src/config_stash/__about__.py"
 
 [tool.hatch.envs.types]
 extra-dependencies = [
+  "pre-commit",
+  "pre-commit-hooks",
   "mypy>=1.0.0",
+  "pytest",
+  "ruff",
+  "black",
 ]
 [tool.hatch.envs.types.scripts]
 check = "mypy --install-types --non-interactive {args:src/config_stash tests}"
@@ -59,3 +71,24 @@ exclude_lines = [
   "if __name__ == .__main__.:",
   "if TYPE_CHECKING:",
 ]
+
+[tool.black]
+line-length = 88
+target-version = ['py38']
+
+[tool.ruff]
+line-length = 88
+select = ["E", "F", "W", "C", "N", "Q"]
+ignore = ["E501"]
+
+[tool.config_stash]
+default_environment = "development"
+default_files = ["config.yaml", "config.json", "config.toml"]
+default_prefix = "PREFIX"
+dynamic_reloading = false
+
+[tool.config_stash.loaders]
+yaml = "config_stash.loaders.yaml_loader:YamlLoader"
+json = "config_stash.loaders.json_loader:JsonLoader"
+toml = "config_stash.loaders.toml_loader:TomlLoader"
+env = "config_stash.loaders.environment_loader:EnvironmentLoader"
