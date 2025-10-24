@@ -1,55 +1,85 @@
 # Development dependencies for Config-Stash
 # Install with: pip install -r requirements-dev.txt
 
+# Core dependencies (for development)
+pyyaml>=6.0
+toml>=0.10.2
+watchdog>=2.0.0
+click>=8.0.0
+
 # Testing
 pytest>=7.0.0
 pytest-cov>=4.0.0
 pytest-mock>=3.10.0
 pytest-xdist>=3.0.0  # For parallel test execution
-pytest-watch>=4.2.0  # For test watching
-pytest-benchmark>=4.0.0  # For performance benchmarks
+pytest-asyncio>=0.21.0  # For async test support
+pytest-timeout>=2.1.0  # For test timeouts
+pytest-watch>=4.2.0  # For test watching (optional)
+pytest-benchmark>=4.0.0  # For performance benchmarks (optional)
 
-# Code Quality
+# Code Quality & Formatting
 black>=23.0.0
 isort>=5.12.0
 ruff>=0.1.0
 mypy>=1.0.0
-radon>=6.0.0  # For code complexity metrics
+pre-commit>=3.0.0
+pre-commit-hooks>=4.4.0
+
+# Security & Code Analysis
 bandit>=1.7.0  # Security linting
 safety>=2.3.0  # Dependency vulnerability scanning
+radon>=6.0.0  # Code complexity metrics
 
 # Type stubs
 types-toml>=0.10.0
 types-PyYAML>=6.0.0
-types-click>=8.0.0
+types-click>=7.1.0,<8.0.0  # Version 8.x doesn't exist yet
+types-requests>=2.28.0
 
 # Documentation
 sphinx>=6.0.0
 sphinx-rtd-theme>=1.2.0
 sphinx-autodoc-typehints>=1.22.0
+myst-parser>=1.0.0  # For Markdown support in Sphinx
+
+# Validation libraries (for testing)
+pydantic>=2.0.0
+jsonschema>=4.17.0
+
+# Cloud SDKs (for testing cloud loaders)
+boto3>=1.26.0  # AWS S3
+azure-storage-blob>=12.14.0  # Azure Blob Storage
+azure-identity>=1.12.0  # Azure authentication
+google-cloud-storage>=2.7.0  # Google Cloud Storage
+ibm-cos-sdk>=2.13.0  # IBM Cloud Object Storage
+requests>=2.28.0  # HTTP remote loading
 
 # Development tools
-pre-commit>=3.0.0
 ipython>=8.0.0
-ipdb>=0.13.0
-bump2version>=1.0.0  # For version management
-pip-tools>=6.12.0  # For requirements management
+ipdb>=0.13.0  # Python debugger
+rich>=13.0.0  # Better terminal output
+bump2version>=1.0.0  # Version management
+pip-tools>=6.12.0  # Requirements management
 
 # Build and release
 build>=0.10.0
 twine>=4.0.0
 wheel>=0.40.0
+setuptools>=65.0.0
 
-# Testing utilities
+# Testing utilities (optional but useful)
 faker>=18.0.0  # For generating test data
 factory-boy>=3.2.0  # For test fixtures
 hypothesis>=6.70.0  # Property-based testing
+responses>=0.22.0  # For mocking HTTP requests
+freezegun>=1.2.0  # For mocking time/dates
 
-# Benchmarking and profiling
+# Benchmarking and profiling (optional)
 memory-profiler>=0.60.0
 line-profiler>=4.0.0
+py-spy>=0.3.0  # Sampling profiler
 
-# Additional development utilities
-python-dotenv>=1.0.0  # For .env file support
-rich>=13.0.0  # For better terminal output
-click>=8.1.0  # Already a dependency, but ensure latest for CLI testing
+# Additional utilities
+python-dotenv>=1.0.0  # For .env file support in development
+tox>=4.0.0  # For testing across Python versions
+coverage[toml]>=7.0.0  # Coverage with TOML config support

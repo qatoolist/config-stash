@@ -29,8 +29,13 @@ install: ## Install the package in production mode
 	$(PIP) install .
 
 install-dev: ## Install the package in development mode with all dependencies
-	$(PIP) install -e ".[dev]"
+	$(PIP) install -e ".[dev,test,docs,cloud,validation]"
+	$(PIP) install -r requirements-dev.txt
 	pre-commit install
+
+install-test: ## Install only test dependencies
+	$(PIP) install -e .
+	$(PIP) install -r requirements-test.txt
 
 dev-setup: clean install-dev ## Complete development environment setup
 	@echo "$(GREEN)✓ Development environment ready!$(NC)"

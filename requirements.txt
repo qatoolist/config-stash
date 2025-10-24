@@ -1,0 +1,7 @@
+# Core dependencies for Config-Stash
+# Install with: pip install -r requirements.txt
+
+pyyaml>=6.0
+toml>=0.10.2
+watchdog>=2.0.0
+click>=8.0.0
