@@ -2,7 +2,7 @@
 
 import logging
 from abc import ABC
-from typing import Any, Dict, Optional, Type, TypeVar
+from typing import Any, Dict, Generic, Optional, Type, TypeVar
 
 logger = logging.getLogger(__name__)
 
@@ -11,18 +11,18 @@ try:
     from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
     HAS_PYDANTIC = True
+    T = TypeVar("T", bound=BaseModel)
 except ImportError:
     HAS_PYDANTIC = False
-    BaseModel = ABC  # Fallback for type hints
+    BaseModel = type
+    T = TypeVar("T")  # type: ignore[misc]
     logger.warning("pydantic not installed. Pydantic validation disabled.")
 
-T = TypeVar("T", bound=BaseModel)
 
-
-class PydanticValidator:
+class PydanticValidator(Generic[T]):
     """Validates configuration using Pydantic models."""
 
-    def __init__(self, model_class: Type[T]):
+    def __init__(self, model_class: Type[T]) -> None:
         """Initialize with a Pydantic model class.
 
         Args:
@@ -35,7 +35,7 @@ class PydanticValidator:
             raise ImportError(
                 "pydantic is required for model validation. " "Install with: pip install pydantic"
             )
-        self.model_class = model_class
+        self.model_class: Type[T] = model_class
 
     def validate(self, config: Dict[str, Any]) -> T:
         """Validate configuration against Pydantic model.
@@ -69,7 +69,7 @@ class PydanticValidator:
         Returns:
             Validated configuration as dictionary
         """
-        model = self.validate(config)
+        model: Any = self.validate(config)
         return model.model_dump()
 
 

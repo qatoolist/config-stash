@@ -24,6 +24,7 @@ def setup_logging(level: Optional[str] = None) -> None:
               variable or defaults to WARNING.
     """
     log_level = level or os.environ.get("CONFIG_STASH_LOG_LEVEL", "WARNING")
+    assert log_level is not None  # Always true due to default value
 
     # Configure the logger for this package
     logger = logging.getLogger("config_stash")

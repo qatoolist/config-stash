@@ -33,7 +33,7 @@ class RemoteLoader:
         self.timeout = timeout
         self.headers = headers or {}
         self.source = url
-        self.config = {}
+        self.config: Dict[str, Any] = {}
 
     def load(self) -> Dict[str, Any]:
         """Load configuration from remote source."""

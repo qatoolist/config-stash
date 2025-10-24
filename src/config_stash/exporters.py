@@ -3,7 +3,7 @@
 import json
 import logging
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import toml
 import yaml
@@ -82,7 +82,7 @@ class ConfigExporter:
         """
 
         def flatten_dict(d: Dict, parent_key: str = "") -> Dict[str, str]:
-            items = []
+            items: List[Tuple[str, str]] = []
             for k, v in d.items():
                 new_key = f"{parent_key}{separator}{k}".upper() if parent_key else k.upper()
                 if isinstance(v, dict):
@@ -103,7 +103,7 @@ class ConfigExporter:
         return "\n".join(f"{k}={v}" for k, v in sorted(flat_dict.items()))
 
     @staticmethod
-    def dump(config, file_path: str, format: Optional[str] = None) -> None:
+    def dump(config, file_path: Union[str, Path], format: Optional[str] = None) -> None:
         """Dump configuration to file.
 
         Args:
@@ -136,7 +136,7 @@ class ConfigExporter:
         file_path.parent.mkdir(parents=True, exist_ok=True)
 
         # Export based on format
-        exporters = {
+        exporters: Dict[str, Any] = {
             "json": ConfigExporter.to_json,
             "yaml": ConfigExporter.to_yaml,
             "toml": ConfigExporter.to_toml,
