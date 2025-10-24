@@ -26,9 +26,13 @@ class ConfigFileWatcher:
         self.observer = Observer()
 
     def start(self):
+        watched_dirs = set()
         for file_path in self.config.get_watched_files():
-            directory = os.path.dirname(file_path)
-            self.observer.schedule(self.event_handler, path=directory, recursive=False)
+            directory = os.path.dirname(file_path) or '.'
+            # Avoid watching the same directory multiple times
+            if directory not in watched_dirs:
+                self.observer.schedule(self.event_handler, path=directory, recursive=False)
+                watched_dirs.add(directory)
         self.observer.start()
 
     def stop(self):

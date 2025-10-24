@@ -43,6 +43,7 @@ class Config:
         enable_ide_support: bool = True,
         ide_stub_path: Optional[str] = None,
         debug_mode: bool = False,
+        deep_merge: bool = True,
     ) -> None:
         """Initialize the Config instance.
 
@@ -58,6 +59,7 @@ class Config:
             enable_ide_support: Automatically generate IDE type stubs for autocomplete (default: True).
             ide_stub_path: Custom path for IDE stub file (default: .config_stash/.stubs.pyi).
             debug_mode: Enable detailed source tracking and debugging (default: False).
+            deep_merge: Enable deep merging of nested configuration (default: True).
 
         Example:
             >>> from config_stash import Config
@@ -77,6 +79,8 @@ class Config:
         self.use_env_expander = use_env_expander
         self.use_type_casting = use_type_casting
         self.debug_mode = debug_mode
+        self.deep_merge = deep_merge
+        self._change_callbacks: List[Callable] = []
 
         self.loader_manager = LoaderManager(loaders or self._load_default_files())
         self.config_loader = ConfigLoader(self.loader_manager.loaders)
@@ -88,6 +92,10 @@ class Config:
         self.configs = self._load_configs_with_tracking()
         self.merged_config = self._merge_with_tracking(self.configs)
         self.env_config = EnvironmentHandler(self.env, self.merged_config).get_env_config()
+
+        # Track environment-extracted config for easy lookup (without environment prefix)
+        self._track_env_config()
+
         self.lazy_loader = LazyLoader(self.env_config)
         self.attribute_accessor = AttributeAccessor(self.lazy_loader)
 
@@ -116,21 +124,81 @@ class Config:
             List of (configuration, source) tuples for compatibility with ConfigMerger
         """
         configs = []
+        has_env_structure = False
+
+        # First pass: load configs and check for environment structure
         for loader in self.loader_manager.loaders:
             config = loader.load()
             if config:
+                # Check if any config has environment structure
+                if self.env and self.env in config:
+                    has_env_structure = True
+
                 source_file = getattr(loader, "source", loader.__class__.__name__)
-                configs.append((config, source_file))
-
-                # Track loader
                 loader_type = loader.__class__.__name__
-                self.enhanced_source_tracker.track_loader(loader_type, source_file)
+                configs.append((config, source_file, loader_type, loader))
 
-                # Track individual values
-                if self.debug_mode:
-                    self._track_config_values(config, source_file, loader_type)
+        # Normalize configs: if some have environment structure and some don't,
+        # wrap flat configs under the environment key
+        if has_env_structure and self.env:
+            normalized_configs = []
+            for config, source_file, loader_type, loader in configs:
+                if self.env not in config and "default" not in config:
+                    # This is a flat config (e.g., from EnvironmentLoader)
+                    # Wrap it under the environment key
+                    normalized_config = {self.env: config}
+                    normalized_configs.append((normalized_config, source_file, loader_type, loader))
+                else:
+                    normalized_configs.append((config, source_file, loader_type, loader))
+            configs = normalized_configs
 
-        return configs
+        # Second pass: track the final (possibly normalized) configs
+        result = []
+        for config, source_file, loader_type, loader in configs:
+            # Track loader
+            self.enhanced_source_tracker.track_loader(loader_type, source_file)
+
+            # Track individual values (always track for basic functionality,
+            # debug_mode provides additional detailed tracking internally)
+            self._track_config_values(config, source_file, loader_type)
+
+            result.append((config, source_file))
+
+        return result
+
+    def _track_env_config(self) -> None:
+        """Track environment-extracted config values for easy lookup.
+
+        This creates tracking entries without the environment prefix,
+        so `database.host` can be found even though it was tracked as `default.database.host`.
+        """
+        if not self.env_config or not self.env:
+            return
+
+        # Copy tracking from environment-prefixed keys to non-prefixed keys
+        env_prefix = f"{self.env}."
+        for key in list(self.enhanced_source_tracker.sources.keys()):
+            if key.startswith(env_prefix):
+                # Get the key without environment prefix
+                unprefixed_key = key[len(env_prefix):]
+                # Create a new SourceInfo with the unprefixed key
+                if unprefixed_key not in self.enhanced_source_tracker.sources:
+                    source_info = self.enhanced_source_tracker.sources[key]
+                    # Create new SourceInfo with unprefixed key but same override_count
+                    self.enhanced_source_tracker.sources[unprefixed_key] = SourceInfo(
+                        key=unprefixed_key,
+                        value=source_info.value,
+                        source_file=source_info.source_file,
+                        loader_type=source_info.loader_type,
+                        line_number=source_info.line_number,
+                        environment=source_info.environment,
+                        override_count=source_info.override_count,
+                    )
+
+                # Also alias the override history
+                if key in self.enhanced_source_tracker.override_history:
+                    if unprefixed_key not in self.enhanced_source_tracker.override_history:
+                        self.enhanced_source_tracker.override_history[unprefixed_key] = self.enhanced_source_tracker.override_history[key]
 
     def _track_config_values(
         self,
@@ -180,23 +248,9 @@ class Config:
         Returns:
             Merged configuration dictionary
         """
-        merged = ConfigMerger.merge_configs(configs)
-
-        # Track final merged values if in debug mode
-        if self.debug_mode:
-            # Re-track to capture override information
-            for config, source_file in configs:
-                # Get loader type from source
-                loader = None
-                for l in self.loader_manager.loaders:
-                    if getattr(l, "source", l.__class__.__name__) == source_file:
-                        loader = l
-                        break
-
-                if loader:
-                    loader_type = loader.__class__.__name__
-                    self._track_config_values(config, source_file, loader_type)
-
+        # Tracking is already done in _load_configs_with_tracking
+        # No need to re-track here as it would increment override counts incorrectly
+        merged = ConfigMerger.merge_configs(configs, deep_merge=self.deep_merge)
         return merged
 
     def _generate_ide_support(self) -> None:
@@ -222,6 +276,10 @@ class Config:
                     f.write("__all__ = ['ConfigType']\n")
             else:
                 stub_path = self.ide_stub_path
+                # Ensure parent directory exists
+                stub_dir = os.path.dirname(stub_path)
+                if stub_dir and not os.path.exists(stub_dir):
+                    os.makedirs(stub_dir)
 
             # Generate the stub file
             IDESupport.generate_stub(self, stub_path, silent=True)
@@ -287,7 +345,8 @@ class Config:
         Returns:
             Path to the source file containing this key, or None if not found
         """
-        return self.source_tracker.get_source(key)
+        # Use enhanced source tracker for better tracking
+        return self.enhanced_source_tracker.get_source(key)
 
     def reload(self) -> None:
         """Reload configuration from all sources.
@@ -296,12 +355,17 @@ class Config:
         merged configuration. Useful when files have been modified.
         """
         logger.info("Reloading configuration...")
-        self.configs = self.config_loader.load_configs()
-        self.merged_config = ConfigMerger.merge_configs(self.configs)
+        old_config = self.env_config.copy() if self.env_config else {}
+
+        self.configs = self._load_configs_with_tracking()
+        self.merged_config = self._merge_with_tracking(self.configs)
         self.env_config = EnvironmentHandler(self.env, self.merged_config).get_env_config()
         self.lazy_loader = LazyLoader(self.env_config)
         self.lazy_loader.clear_cache()  # Clear cache after reload
         self.attribute_accessor = AttributeAccessor(self.lazy_loader)
+
+        # Trigger change callbacks
+        self._trigger_change_callbacks(old_config, self.env_config)
 
     def get_watched_files(self) -> List[str]:
         """Get list of files being watched for changes.
@@ -438,3 +502,93 @@ class Config:
         """
         # Return env_config if it has data, otherwise merged_config
         return self.env_config if self.env_config else self.merged_config
+
+    def on_change(self, func: Callable[[str, Any, Any], None]) -> Callable:
+        """Decorator to register a callback for configuration changes.
+
+        The callback will be called with (key, old_value, new_value) when
+        configuration values change during reload.
+
+        Args:
+            func: Callback function with signature (key: str, old_value: Any, new_value: Any)
+
+        Returns:
+            The decorated function
+
+        Example:
+            >>> @config.on_change
+            ... def handle_change(key: str, old_value: Any, new_value: Any):
+            ...     print(f"Config {key} changed from {old_value} to {new_value}")
+        """
+        self._change_callbacks.append(func)
+        return func
+
+    def _trigger_change_callbacks(
+        self, old_config: Dict[str, Any], new_config: Dict[str, Any]
+    ) -> None:
+        """Trigger registered change callbacks for modified values.
+
+        Args:
+            old_config: Previous configuration
+            new_config: New configuration
+        """
+        # Find all changed keys
+        all_keys = set(old_config.keys()) | set(new_config.keys())
+
+        for key in all_keys:
+            old_value = old_config.get(key)
+            new_value = new_config.get(key)
+
+            if old_value != new_value:
+                for callback in self._change_callbacks:
+                    try:
+                        callback(key, old_value, new_value)
+                    except Exception as e:
+                        logger.error(f"Error in change callback for key '{key}': {e}")
+
+    def validate(self, schema: Optional[Dict[str, Any]] = None) -> bool:
+        """Validate configuration against a schema.
+
+        Args:
+            schema: Optional schema to validate against
+
+        Returns:
+            True if valid, False otherwise
+        """
+        # Basic validation - can be extended with schema validation
+        if not self.env_config and not self.merged_config:
+            return False
+        return True
+
+    def export(self, format: str = "json", output_path: Optional[str] = None) -> str:
+        """Export configuration in specified format.
+
+        Args:
+            format: Export format ('json', 'yaml', 'toml')
+            output_path: Optional path to save exported config
+
+        Returns:
+            Exported configuration as string
+        """
+        config_dict = self.to_dict()
+
+        if format == "json":
+            import json
+
+            output = json.dumps(config_dict, indent=2)
+        elif format == "yaml":
+            import yaml
+
+            output = yaml.dump(config_dict, default_flow_style=False)
+        elif format == "toml":
+            import toml
+
+            output = toml.dumps(config_dict)
+        else:
+            raise ValueError(f"Unsupported export format: {format}")
+
+        if output_path:
+            with open(output_path, "w") as f:
+                f.write(output)
+
+        return output

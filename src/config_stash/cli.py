@@ -123,10 +123,14 @@ def cli():
     help="Enable dynamic reloading of configurations",
 )
 @click.option(
-    "--use-env-expander", is_flag=True, default=True, help="Enable environment variable expansion"
+    "--use-env-expander/--no-use-env-expander",
+    default=True,
+    help="Enable/disable environment variable expansion"
 )
 @click.option(
-    "--use-type-casting", is_flag=True, default=True, help="Enable automatic type casting"
+    "--use-type-casting/--no-use-type-casting",
+    default=True,
+    help="Enable/disable automatic type casting"
 )
 def load(env, loader_specs, dynamic_reloading, use_env_expander, use_type_casting):
     """Load and display the merged configuration"""
@@ -151,10 +155,14 @@ def load(env, loader_specs, dynamic_reloading, use_env_expander, use_type_castin
     help="Enable dynamic reloading of configurations",
 )
 @click.option(
-    "--use-env-expander", is_flag=True, default=True, help="Enable environment variable expansion"
+    "--use-env-expander/--no-use-env-expander",
+    default=True,
+    help="Enable/disable environment variable expansion"
 )
 @click.option(
-    "--use-type-casting", is_flag=True, default=True, help="Enable automatic type casting"
+    "--use-type-casting/--no-use-type-casting",
+    default=True,
+    help="Enable/disable automatic type casting"
 )
 def get(env, key, loader_specs, dynamic_reloading, use_env_expander, use_type_casting):
     """Get the value of a configuration key"""
@@ -163,12 +171,118 @@ def get(env, key, loader_specs, dynamic_reloading, use_env_expander, use_type_ca
             env, loader_specs, dynamic_reloading, use_env_expander, use_type_casting
         )
         value = getattr(config, key)
-        click.echo(value)
+
+        # Convert AttributeAccessor or dict to dict for proper display
+        if hasattr(value, 'lazy_loader') and hasattr(value.lazy_loader, 'config'):
+            # It's an AttributeAccessor, get the underlying dict
+            import json
+            click.echo(json.dumps(value.lazy_loader.config, indent=2))
+        elif isinstance(value, dict):
+            import json
+            click.echo(json.dumps(value, indent=2))
+        else:
+            click.echo(value)
     except click.BadParameter as e:
         click.echo(f"Error: {e}", err=True)
         raise SystemExit(1)
     except AttributeError:
         click.echo(f"Error: Configuration key '{key}' not found", err=True)
+        raise SystemExit(1)
+
+
+@cli.command()
+@click.argument("env")
+@click.option("--loader", "loader_specs", multiple=True, help='Loader spec in format "type:source"')
+@click.option("--schema", help="Path to schema file for validation")
+def validate(env, loader_specs, schema):
+    """Validate configuration against a schema"""
+    try:
+        config = create_config(env, loader_specs, False, True, True)
+
+        # Check if configuration is empty (all loaders failed)
+        if not config.merged_config or config.merged_config == {}:
+            click.echo("Error: No configuration could be loaded. Check that your config files exist.", err=True)
+            raise SystemExit(1)
+
+        # Load schema if provided
+        schema_dict = None
+        if schema:
+            import json
+
+            with open(schema, "r") as f:
+                schema_dict = json.load(f)
+
+        is_valid = config.validate(schema_dict)
+
+        if is_valid:
+            click.echo(click.style("✓ Configuration is valid", fg="green"))
+        else:
+            click.echo(click.style("✗ Configuration is invalid", fg="red"), err=True)
+            raise SystemExit(1)
+
+    except Exception as e:
+        click.echo(f"Error: {e}", err=True)
+        raise SystemExit(1)
+
+
+@cli.command()
+@click.argument("env")
+@click.option("--loader", "loader_specs", multiple=True, help='Loader spec in format "type:source"')
+@click.option(
+    "--format", type=click.Choice(["json", "yaml", "toml"]), default="json", help="Export format"
+)
+@click.option("--output", "-o", help="Output file path")
+def export(env, loader_specs, format, output):
+    """Export configuration in different formats"""
+    try:
+        config = create_config(env, loader_specs, False, True, True)
+        exported = config.export(format=format, output_path=output)
+
+        if not output:
+            click.echo(exported)
+        else:
+            click.echo(f"✓ Configuration exported to {output}")
+
+    except Exception as e:
+        click.echo(f"Error: {e}", err=True)
+        raise SystemExit(1)
+
+
+@cli.command()
+@click.argument("env")
+@click.option("--loader", "loader_specs", multiple=True, help='Loader spec in format "type:source"')
+@click.option("--key", help="Debug specific configuration key")
+@click.option("--export-report", help="Export debug report to file")
+def debug(env, loader_specs, key, export_report):
+    """Debug configuration sources and overrides"""
+    try:
+        # Create config with debug mode enabled
+        loaders = parse_loader_specs(loader_specs) if loader_specs else None
+        config = Config(env=env, loaders=loaders, debug_mode=True, enable_ide_support=False)
+
+        if export_report:
+            config.export_debug_report(export_report)
+            click.echo(f"✓ Debug report exported to {export_report}")
+        elif key:
+            # Debug specific key
+            info = config.get_source_info(key)
+            if info:
+                click.echo(f"\n{info}")
+
+                # Show override history
+                history = config.get_override_history(key)
+                if history:
+                    click.echo("\nOverride History:")
+                    for i, h in enumerate(history, 1):
+                        click.echo(f"  {i}. {h.source_file}: {h.value}")
+            else:
+                click.echo(f"No source information found for key: {key}")
+        else:
+            # Show general debug info
+            config.print_debug_info()
+
+    except Exception as e:
+        click.echo(f"Error: {e}", err=True)
         raise SystemExit(1)
 
 

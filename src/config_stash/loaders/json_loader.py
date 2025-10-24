@@ -8,6 +8,9 @@ class JsonLoader(Loader):
         try:
             content = self._read_file(self.source)
             self.config = json.loads(content)
+        except FileNotFoundError:
+            # Gracefully handle missing files - return None
+            return None
         except json.JSONDecodeError as error:
             self._handle_error(error)
         return self.config

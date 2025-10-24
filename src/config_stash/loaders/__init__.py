@@ -1,6 +1,8 @@
 """Configuration loaders for Config-Stash."""
 
+from config_stash.loaders.env_file_loader import EnvFileLoader
 from config_stash.loaders.environment_loader import EnvironmentLoader
+from config_stash.loaders.ini_loader import IniLoader
 from config_stash.loaders.json_loader import JsonLoader
 from config_stash.loaders.loader import Loader
 from config_stash.loaders.remote_loader import (
@@ -21,6 +23,8 @@ __all__ = [
     "YamlLoader",
     "TomlLoader",
     "EnvironmentLoader",
+    "EnvFileLoader",
+    "IniLoader",
     "RemoteLoader",
     "HTTPLoader",
     "S3Loader",

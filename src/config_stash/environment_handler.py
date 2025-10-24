@@ -23,6 +23,12 @@ class EnvironmentHandler:
         Returns:
             Merged configuration dictionary for the environment
         """
+        # If no environment structure exists (e.g., flat config from EnvironmentLoader),
+        # return the entire config
+        if "default" not in self.config and (not self.env or self.env not in self.config):
+            # Flat configuration without environment sections
+            return self.config.copy()
+
         # Check if environment exists and warn if not
         if self.env and self.env != "default" and self.env not in self.config:
             available_envs = [k for k in self.config.keys() if k != "default"]

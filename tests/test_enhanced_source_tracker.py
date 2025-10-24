@@ -299,7 +299,7 @@ default:
             loaders=[
                 YamlLoader("base.yaml"),
                 JsonLoader("override.json"),
-                EnvironmentLoader("APP"),
+                EnvironmentLoader("APP", separator="_"),  # Use single underscore
             ],
             env="default",
             debug_mode=True,

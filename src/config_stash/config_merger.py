@@ -9,8 +9,10 @@ class ConfigMerger:
     @staticmethod
     def _merge_dicts(base, new, deep_merge):
         for key, value in new.items():
-            if deep_merge and isinstance(value, dict) and key in base:
+            # Only do deep merge if both values are dicts
+            if deep_merge and isinstance(value, dict) and key in base and isinstance(base[key], dict):
                 base[key] = ConfigMerger._merge_dicts(base[key], value, deep_merge)
             else:
+                # Replace value (including type mismatches like list->dict or dict->string)
                 base[key] = value
         return base
