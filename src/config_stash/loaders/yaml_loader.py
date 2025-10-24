@@ -1,5 +1,7 @@
 import yaml
+
 from config_stash.loaders.loader import Loader
+
 
 class YamlLoader(Loader):
     def load(self):

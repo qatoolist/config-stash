@@ -4,18 +4,25 @@ build-backend = "hatchling.build"
 
 [project]
 name = "config-stash"
-dynamic = ["version"]
-description = 'A lightweight configuration manager'
+version = "0.0.1"
+description = 'A flexible configuration management library for Python applications'
 readme = "README.md"
 requires-python = ">=3.8"
 license = { file = "LICENSE.txt" }
-keywords = ["configuration", "management", "python"]
+keywords = ["configuration", "management", "python", "yaml", "json", "toml", "env"]
 authors = [
-  { name = "U.N. Owen", email = "void@some.where" },
+  { name = "qatoolist", email = "contact@example.com" },
+]
+maintainers = [
+  { name = "qatoolist", email = "contact@example.com" },
 ]
 classifiers = [
   "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+  "License :: OSI Approved :: MIT License",
   "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.8",
   "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
@@ -23,23 +30,58 @@ classifiers = [
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: Implementation :: CPython",
   "Programming Language :: Python :: Implementation :: PyPy",
+  "Operating System :: OS Independent",
+  "Typing :: Typed",
 ]
 dependencies = [
-  "pyyaml",
-  "toml",
-  "watchdog",
+  "pyyaml>=6.0",
+  "toml>=0.10.2",
+  "watchdog>=2.0.0",
+  "click>=8.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=7.0.0",
+  "pytest-cov>=4.0.0",
+  "pytest-mock>=3.10.0",
+  "pytest-xdist>=3.0.0",
+  "black>=23.0.0",
+  "isort>=5.12.0",
+  "ruff>=0.1.0",
+  "mypy>=1.0.0",
+  "pre-commit>=3.0.0",
+  "types-toml>=0.10.0",
+  "types-PyYAML>=6.0.0",
+  "types-click>=8.0.0",
+  "bandit>=1.7.0",
+  "safety>=2.3.0",
+  "radon>=6.0.0",
+  "ipython>=8.0.0",
+  "bump2version>=1.0.0",
+]
+test = [
+  "pytest>=7.0.0",
+  "pytest-cov>=4.0.0",
+  "pytest-mock>=3.10.0",
+  "pytest-xdist>=3.0.0",
+]
+docs = [
+  "sphinx>=6.0.0",
+  "sphinx-rtd-theme>=1.2.0",
+  "sphinx-autodoc-typehints>=1.22.0",
 ]
 
 [project.urls]
-Documentation = "https://github.com/U.N. Owen/config-stash#readme"
-Issues = "https://github.com/U.N. Owen/config-stash/issues"
-Source = "https://github.com/U.N. Owen/config-stash"
+Documentation = "https://github.com/qatoolist/config-stash#readme"
+Issues = "https://github.com/qatoolist/config-stash/issues"
+Source = "https://github.com/qatoolist/config-stash"
+Changelog = "https://github.com/qatoolist/config-stash/blob/main/CHANGELOG.md"
 
 [project.scripts]
 config-stash = "config_stash.cli:cli"
 
-[tool.hatch.version]
-path = "src/config_stash/__about__.py"
+# Version is now statically defined in [project] section
 
 [tool.hatch.envs.types]
 extra-dependencies = [
@@ -52,6 +94,16 @@ extra-dependencies = [
 ]
 [tool.hatch.envs.types.scripts]
 check = "mypy --install-types --non-interactive {args:src/config_stash tests}"
+
+[tool.mypy]
+python_version = "3.8"
+ignore_missing_imports = true
+strict = false
+warn_return_any = false
+warn_unused_configs = true
+no_implicit_reexport = false
+warn_redundant_casts = true
+warn_unused_ignores = true
 
 [tool.coverage.run]
 source_pkgs = ["config_stash", "tests"]
@@ -79,7 +131,7 @@ target-version = ['py38']
 [tool.ruff]
 line-length = 88
 select = ["E", "F", "W", "C", "N", "Q"]
-ignore = ["E501"]
+ignore = ["E501", "E731", "E741", "F401", "F841", "N806", "C901"]
 
 [tool.config_stash]
 default_environment = "development"

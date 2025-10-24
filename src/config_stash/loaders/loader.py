@@ -7,7 +7,7 @@ class Loader:
         raise NotImplementedError("Load method must be implemented by subclasses")
 
     def _read_file(self, source):
-        with open(source, 'r') as file:
+        with open(source, "r") as file:
             return file.read()
 
     def _handle_error(self, error):

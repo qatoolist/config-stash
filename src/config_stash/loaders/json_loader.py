@@ -1,5 +1,7 @@
 import json
+
 from config_stash.loaders.loader import Loader
+
 
 class JsonLoader(Loader):
     def load(self):

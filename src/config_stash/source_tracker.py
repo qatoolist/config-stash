@@ -3,7 +3,7 @@ class SourceTracker:
         self.loaders = loaders
 
     def get_source(self, key):
-        keys = key.split('.')
+        keys = key.split(".")
         for loader in reversed(self.loaders):
             source_config = loader.config
             try:

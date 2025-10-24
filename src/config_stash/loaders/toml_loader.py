@@ -1,5 +1,7 @@
 import toml
+
 from config_stash.loaders.loader import Loader
+
 
 class TomlLoader(Loader):
     def load(self):

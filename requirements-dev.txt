@@ -1,0 +1,55 @@
+# Development dependencies for Config-Stash
+# Install with: pip install -r requirements-dev.txt
+
+# Testing
+pytest>=7.0.0
+pytest-cov>=4.0.0
+pytest-mock>=3.10.0
+pytest-xdist>=3.0.0  # For parallel test execution
+pytest-watch>=4.2.0  # For test watching
+pytest-benchmark>=4.0.0  # For performance benchmarks
+
+# Code Quality
+black>=23.0.0
+isort>=5.12.0
+ruff>=0.1.0
+mypy>=1.0.0
+radon>=6.0.0  # For code complexity metrics
+bandit>=1.7.0  # Security linting
+safety>=2.3.0  # Dependency vulnerability scanning
+
+# Type stubs
+types-toml>=0.10.0
+types-PyYAML>=6.0.0
+types-click>=8.0.0
+
+# Documentation
+sphinx>=6.0.0
+sphinx-rtd-theme>=1.2.0
+sphinx-autodoc-typehints>=1.22.0
+
+# Development tools
+pre-commit>=3.0.0
+ipython>=8.0.0
+ipdb>=0.13.0
+bump2version>=1.0.0  # For version management
+pip-tools>=6.12.0  # For requirements management
+
+# Build and release
+build>=0.10.0
+twine>=4.0.0
+wheel>=0.40.0
+
+# Testing utilities
+faker>=18.0.0  # For generating test data
+factory-boy>=3.2.0  # For test fixtures
+hypothesis>=6.70.0  # Property-based testing
+
+# Benchmarking and profiling
+memory-profiler>=0.60.0
+line-profiler>=4.0.0
+
+# Additional development utilities
+python-dotenv>=1.0.0  # For .env file support
+rich>=13.0.0  # For better terminal output
+click>=8.1.0  # Already a dependency, but ensure latest for CLI testing

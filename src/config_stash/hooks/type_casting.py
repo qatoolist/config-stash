@@ -16,8 +16,8 @@ class TypeCasting:
 
             # Try to cast to boolean
             lower_value = value.lower()
-            if lower_value in ['true', 'false']:
-                return lower_value == 'true'
+            if lower_value in ["true", "false"]:
+                return lower_value == "true"
 
         return value
 
