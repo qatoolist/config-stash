@@ -222,3 +222,260 @@ class GitLoader(RemoteLoader):
         http_loader = HTTPLoader(raw_url, headers=headers)
         self.config = http_loader.load()
         return self.config
+
+
+class AzureBlobLoader(RemoteLoader):
+    """Load configuration from Azure Blob Storage."""
+
+    def __init__(
+        self,
+        container_url: str,
+        blob_name: str,
+        account_name: Optional[str] = None,
+        account_key: Optional[str] = None,
+        sas_token: Optional[str] = None,
+        connection_string: Optional[str] = None,
+    ):
+        """Initialize Azure Blob loader.
+
+        Args:
+            container_url: Azure container URL or container name
+            blob_name: Name of the blob (file) to load
+            account_name: Azure storage account name
+            account_key: Azure storage account key
+            sas_token: Shared Access Signature token for authentication
+            connection_string: Full connection string (alternative to account credentials)
+        """
+        super().__init__(f"azure://{container_url}/{blob_name}")
+        self.container_url = container_url
+        self.blob_name = blob_name
+        self.account_name = account_name or os.environ.get("AZURE_STORAGE_ACCOUNT")
+        self.account_key = account_key or os.environ.get("AZURE_STORAGE_KEY")
+        self.sas_token = sas_token or os.environ.get("AZURE_SAS_TOKEN")
+        self.connection_string = connection_string or os.environ.get("AZURE_STORAGE_CONNECTION_STRING")
+
+    def load(self) -> Dict[str, Any]:
+        """Load configuration from Azure Blob Storage."""
+        try:
+            from azure.storage.blob import BlobServiceClient
+        except ImportError:
+            raise ImportError(
+                "azure-storage-blob is required for Azure loading. "
+                "Install with: pip install azure-storage-blob"
+            )
+
+        try:
+            logger.info(f"Loading configuration from Azure: {self.url}")
+
+            # Create blob client based on available credentials
+            if self.connection_string:
+                blob_service = BlobServiceClient.from_connection_string(self.connection_string)
+            elif self.account_name and self.account_key:
+                blob_service = BlobServiceClient(
+                    account_url=f"https://{self.account_name}.blob.core.windows.net",
+                    credential=self.account_key,
+                )
+            elif self.account_name and self.sas_token:
+                blob_service = BlobServiceClient(
+                    account_url=f"https://{self.account_name}.blob.core.windows.net",
+                    credential=self.sas_token,
+                )
+            else:
+                # Try DefaultAzureCredential for managed identity
+                from azure.identity import DefaultAzureCredential
+
+                blob_service = BlobServiceClient(
+                    account_url=f"https://{self.account_name}.blob.core.windows.net",
+                    credential=DefaultAzureCredential(),
+                )
+
+            # Extract container name if full URL provided
+            container_name = self.container_url.split("/")[-1] if "/" in self.container_url else self.container_url
+
+            # Get blob client and download content
+            blob_client = blob_service.get_blob_client(
+                container=container_name, blob=self.blob_name
+            )
+            content = blob_client.download_blob().readall().decode("utf-8")
+
+            # Parse based on file extension
+            if self.blob_name.endswith(".json"):
+                self.config = json.loads(content)
+            elif self.blob_name.endswith((".yaml", ".yml")):
+                import yaml
+
+                self.config = yaml.safe_load(content)
+            elif self.blob_name.endswith(".toml"):
+                import toml
+
+                self.config = toml.loads(content)
+            else:
+                # Try JSON as default
+                self.config = json.loads(content)
+
+            logger.info(f"Successfully loaded configuration from Azure: {self.url}")
+            return self.config
+
+        except Exception as e:
+            logger.error(f"Failed to load configuration from Azure: {e}")
+            raise RuntimeError(f"Failed to load Azure configuration: {e}")
+
+
+class GCPStorageLoader(RemoteLoader):
+    """Load configuration from Google Cloud Storage."""
+
+    def __init__(
+        self,
+        bucket_name: str,
+        blob_name: str,
+        project_id: Optional[str] = None,
+        credentials_path: Optional[str] = None,
+    ):
+        """Initialize GCP Storage loader.
+
+        Args:
+            bucket_name: GCS bucket name
+            blob_name: Name of the blob (file) to load
+            project_id: GCP project ID
+            credentials_path: Path to service account JSON file
+        """
+        super().__init__(f"gs://{bucket_name}/{blob_name}")
+        self.bucket_name = bucket_name
+        self.blob_name = blob_name
+        self.project_id = project_id or os.environ.get("GCP_PROJECT_ID")
+        self.credentials_path = credentials_path or os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
+
+    def load(self) -> Dict[str, Any]:
+        """Load configuration from Google Cloud Storage."""
+        try:
+            from google.cloud import storage
+        except ImportError:
+            raise ImportError(
+                "google-cloud-storage is required for GCS loading. "
+                "Install with: pip install google-cloud-storage"
+            )
+
+        try:
+            logger.info(f"Loading configuration from GCS: {self.url}")
+
+            # Create storage client
+            if self.credentials_path:
+                # Use service account credentials
+                from google.oauth2 import service_account
+
+                credentials = service_account.Credentials.from_service_account_file(
+                    self.credentials_path
+                )
+                client = storage.Client(project=self.project_id, credentials=credentials)
+            else:
+                # Use default credentials (ADC)
+                client = storage.Client(project=self.project_id)
+
+            # Get bucket and blob
+            bucket = client.bucket(self.bucket_name)
+            blob = bucket.blob(self.blob_name)
+
+            # Download content
+            content = blob.download_as_text()
+
+            # Parse based on file extension
+            if self.blob_name.endswith(".json"):
+                self.config = json.loads(content)
+            elif self.blob_name.endswith((".yaml", ".yml")):
+                import yaml
+
+                self.config = yaml.safe_load(content)
+            elif self.blob_name.endswith(".toml"):
+                import toml
+
+                self.config = toml.loads(content)
+            else:
+                # Try JSON as default
+                self.config = json.loads(content)
+
+            logger.info(f"Successfully loaded configuration from GCS: {self.url}")
+            return self.config
+
+        except Exception as e:
+            logger.error(f"Failed to load configuration from GCS: {e}")
+            raise RuntimeError(f"Failed to load GCS configuration: {e}")
+
+
+class IBMCloudObjectStorageLoader(RemoteLoader):
+    """Load configuration from IBM Cloud Object Storage."""
+
+    def __init__(
+        self,
+        bucket_name: str,
+        object_key: str,
+        api_key: Optional[str] = None,
+        service_instance_id: Optional[str] = None,
+        endpoint_url: Optional[str] = None,
+        region: str = "us-south",
+    ):
+        """Initialize IBM Cloud Object Storage loader.
+
+        Args:
+            bucket_name: IBM COS bucket name
+            object_key: Key (path) of the object to load
+            api_key: IBM Cloud API key
+            service_instance_id: IBM COS service instance ID
+            endpoint_url: Custom endpoint URL (defaults to public endpoint)
+            region: IBM Cloud region (default: us-south)
+        """
+        super().__init__(f"ibmcos://{bucket_name}/{object_key}")
+        self.bucket_name = bucket_name
+        self.object_key = object_key
+        self.api_key = api_key or os.environ.get("IBM_API_KEY")
+        self.service_instance_id = service_instance_id or os.environ.get("IBM_SERVICE_INSTANCE_ID")
+        self.region = region
+        self.endpoint_url = endpoint_url or f"https://s3.{region}.cloud-object-storage.appdomain.cloud"
+
+    def load(self) -> Dict[str, Any]:
+        """Load configuration from IBM Cloud Object Storage."""
+        try:
+            import ibm_boto3
+            from ibm_botocore.client import Config
+        except ImportError:
+            raise ImportError(
+                "ibm-cos-sdk is required for IBM COS loading. "
+                "Install with: pip install ibm-cos-sdk"
+            )
+
+        try:
+            logger.info(f"Loading configuration from IBM COS: {self.url}")
+
+            # Create COS client
+            cos_client = ibm_boto3.client(
+                "s3",
+                ibm_api_key_id=self.api_key,
+                ibm_service_instance_id=self.service_instance_id,
+                config=Config(signature_version="oauth"),
+                endpoint_url=self.endpoint_url,
+            )
+
+            # Get object from IBM COS
+            response = cos_client.get_object(Bucket=self.bucket_name, Key=self.object_key)
+            content = response["Body"].read().decode("utf-8")
+
+            # Parse based on file extension
+            if self.object_key.endswith(".json"):
+                self.config = json.loads(content)
+            elif self.object_key.endswith((".yaml", ".yml")):
+                import yaml
+
+                self.config = yaml.safe_load(content)
+            elif self.object_key.endswith(".toml"):
+                import toml
+
+                self.config = toml.loads(content)
+            else:
+                # Try JSON as default
+                self.config = json.loads(content)
+
+            logger.info(f"Successfully loaded configuration from IBM COS: {self.url}")
+            return self.config
+
+        except Exception as e:
+            logger.error(f"Failed to load configuration from IBM COS: {e}")
+            raise RuntimeError(f"Failed to load IBM COS configuration: {e}")
