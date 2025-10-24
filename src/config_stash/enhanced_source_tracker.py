@@ -122,8 +122,12 @@ class EnhancedSourceTracker:
                 line_number=line_number,
                 environment=environment,
                 override_count=old_info.override_count + 1,
-                overridden_by=[source_file] if source_file not in old_info.overridden_by else old_info.overridden_by,
-                original_sources=old_info.original_sources + [old_info.source_file] if old_info.source_file not in old_info.original_sources else old_info.original_sources,
+                overridden_by=[source_file]
+                if source_file not in old_info.overridden_by
+                else old_info.overridden_by,
+                original_sources=old_info.original_sources + [old_info.source_file]
+                if old_info.source_file not in old_info.original_sources
+                else old_info.original_sources,
             )
 
             self.sources[key] = new_info
@@ -215,11 +219,7 @@ class EnhancedSourceTracker:
         Returns:
             Dictionary mapping keys to their override history
         """
-        return {
-            key: history
-            for key, history in self.override_history.items()
-            if history
-        }
+        return {key: history for key, history in self.override_history.items() if history}
 
     def print_debug_info(self, key: Optional[str] = None) -> None:
         """Print debug information for a key or all keys.
@@ -228,7 +228,9 @@ class EnhancedSourceTracker:
             key: Specific key to debug, or None for all keys
         """
         if not self.debug_mode:
-            print("Debug mode is not enabled. Set debug_mode=True to track detailed source information.")
+            print(
+                "Debug mode is not enabled. Set debug_mode=True to track detailed source information."
+            )
             return
 
         print("=" * 80)
@@ -255,20 +257,20 @@ class EnhancedSourceTracker:
                 # Suggest similar keys
                 similar = [k for k in self.sources.keys() if key in k or k in key]
                 if similar:
-                    print(f"\nSimilar keys found:")
+                    print("\nSimilar keys found:")
                     for k in similar:
                         print(f"  - {k}")
         else:
             # Show all sources
             print(f"\nTotal tracked keys: {len(self.sources)}")
             print(f"Keys with overrides: {len(self.override_history)}")
-            print(f"\nLoader Order:")
+            print("\nLoader Order:")
             print("-" * 40)
             for i, (loader_type, source) in enumerate(self.loader_order, 1):
                 print(f"  {i}. {loader_type}: {source}")
 
             if self.override_history:
-                print(f"\nConflicting Keys (overridden values):")
+                print("\nConflicting Keys (overridden values):")
                 print("-" * 40)
                 for key, history in self.override_history.items():
                     current = self.sources[key]
@@ -293,10 +295,7 @@ class EnhancedSourceTracker:
             "loader_order": self.loader_order,
             "total_keys": len(self.sources),
             "overridden_keys": len(self.override_history),
-            "sources": {
-                key: info.to_dict()
-                for key, info in self.sources.items()
-            },
+            "sources": {key: info.to_dict() for key, info in self.sources.items()},
             "override_history": {
                 key: [info.to_dict() for info in history]
                 for key, history in self.override_history.items()
@@ -329,22 +328,29 @@ class EnhancedSourceTracker:
         Returns:
             Dictionary with source statistics
         """
-        stats = {
+        sources_by_loader: Dict[str, int] = {}
+        keys_by_source: Dict[str, int] = {}
+
+        stats: Dict[str, Any] = {
             "total_keys": len(self.sources),
             "total_overrides": sum(info.override_count for info in self.sources.values()),
-            "unique_sources": len(set(info.source_file for info in self.sources.values())),
+            "unique_sources": len({info.source_file for info in self.sources.values()}),
             "keys_with_overrides": len(self.override_history),
-            "sources_by_loader": {},
-            "keys_by_source": {},
+            "sources_by_loader": sources_by_loader,
+            "keys_by_source": keys_by_source,
         }
 
         # Count by loader type
         for info in self.sources.values():
             loader = info.loader_type
-            stats["sources_by_loader"][loader] = stats["sources_by_loader"].get(loader, 0) + 1
+            if loader not in sources_by_loader:
+                sources_by_loader[loader] = 0
+            sources_by_loader[loader] += 1
 
             # Count by source file
             source = info.source_file
-            stats["keys_by_source"][source] = stats["keys_by_source"].get(source, 0) + 1
+            if source not in keys_by_source:
+                keys_by_source[source] = 0
+            keys_by_source[source] += 1
 
         return stats

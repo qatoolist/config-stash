@@ -199,6 +199,7 @@ default:
         """Clean up test environment."""
         os.chdir(self.original_dir)
         import shutil
+
         shutil.rmtree(self.temp_dir)
 
     def test_config_without_debug_mode(self):
@@ -265,7 +266,9 @@ default:
         )
 
         stats = config.get_source_statistics()
-        assert stats["total_keys"] >= 4  # At minimum: database.host, database.port, database.name, api.endpoint
+        assert (
+            stats["total_keys"] >= 4
+        )  # At minimum: database.host, database.port, database.name, api.endpoint
         assert stats["unique_sources"] >= 2  # base.yaml and override.json
 
     def test_config_find_keys_from_source(self):
@@ -358,7 +361,11 @@ default:
         config.print_debug_info("database.port")
         captured = capsys.readouterr()
         # Output should mention the key or indicate it's being debugged
-        assert "database" in captured.out.lower() or "port" in captured.out.lower() or "not found" in captured.out
+        assert (
+            "database" in captured.out.lower()
+            or "port" in captured.out.lower()
+            or "not found" in captured.out
+        )
 
     def test_config_get_conflicts(self):
         """Test getting configuration conflicts."""

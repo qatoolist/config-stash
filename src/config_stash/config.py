@@ -202,8 +202,9 @@ class Config:
     def _generate_ide_support(self) -> None:
         """Automatically generate IDE type stubs for autocomplete."""
         try:
-            from config_stash.ide_support import IDESupport
             import os
+
+            from config_stash.ide_support import IDESupport
 
             # Determine stub file path
             if self.ide_stub_path is None:
@@ -227,6 +228,7 @@ class Config:
 
             # If dynamic reloading is enabled, auto-update stubs
             if self.dynamic_reloading:
+
                 @self.on_change
                 def _update_ide_stubs(key: str, old_value, new_value):
                     if isinstance(new_value, dict) or old_value is None:

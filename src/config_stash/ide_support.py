@@ -2,7 +2,7 @@
 
 import os
 from pathlib import Path
-from typing import Any, Dict, Optional, Set
+from typing import Any, Dict, List, Optional, Set
 
 
 class IDESupport:
@@ -13,7 +13,7 @@ class IDESupport:
         config,  # Config instance
         output_path: str = ".config_stubs.pyi",
         module_name: str = "config_stash_types",
-        silent: bool = False
+        silent: bool = False,
     ) -> None:
         """Generate type stub file for IDE autocomplete.
 
@@ -32,11 +32,11 @@ class IDESupport:
             # typed_config: ConfigType = config  # type: ignore
         """
         # Get the actual configuration data
-        if hasattr(config, 'to_dict'):
+        if hasattr(config, "to_dict"):
             config_dict = config.to_dict()
-        elif hasattr(config, 'merged_config'):
+        elif hasattr(config, "merged_config"):
             config_dict = config.merged_config
-        elif hasattr(config, 'env_config'):
+        elif hasattr(config, "env_config"):
             config_dict = config.env_config
         else:
             raise ValueError("Cannot extract configuration from config object")
@@ -45,7 +45,7 @@ class IDESupport:
         stub_content = IDESupport._generate_stub_content(config_dict, module_name)
 
         # Write to file
-        with open(output_path, 'w') as f:
+        with open(output_path, "w") as f:
             f.write(stub_content)
 
         if not silent:
@@ -56,7 +56,7 @@ class IDESupport:
     def _generate_stub_content(config_dict: Dict[str, Any], module_name: str) -> str:
         """Generate the content of the stub file."""
         imports = ["from typing import Any, Optional, Dict, List"]
-        classes = []
+        classes: List[str] = []
 
         # Track all class names to avoid duplicates
         generated_classes: Set[str] = set()
@@ -64,7 +64,7 @@ class IDESupport:
         def sanitize_key(key: str) -> str:
             """Convert config key to valid Python identifier."""
             # Replace invalid characters
-            key = key.replace('-', '_').replace('.', '_').replace(' ', '_')
+            key = key.replace("-", "_").replace(".", "_").replace(" ", "_")
             # Ensure it doesn't start with a number
             if key and key[0].isdigit():
                 key = f"_{key}"
@@ -180,11 +180,11 @@ class IDESupport:
             A class with proper type annotations
         """
         # Get the actual configuration data
-        if hasattr(config, 'to_dict'):
+        if hasattr(config, "to_dict"):
             config_dict = config.to_dict()
-        elif hasattr(config, 'merged_config'):
+        elif hasattr(config, "merged_config"):
             config_dict = config.merged_config
-        elif hasattr(config, 'env_config'):
+        elif hasattr(config, "env_config"):
             config_dict = config.env_config
         else:
             raise ValueError("Cannot extract configuration from config object")
@@ -225,22 +225,20 @@ class VSCodeSupport:
             "python.analysis.autoImportCompletions": True,
             "python.analysis.typeCheckingMode": "basic",
             "python.linting.mypyEnabled": True,
-            "python.linting.mypyArgs": [
-                "--ignore-missing-imports",
-                "--follow-imports=silent"
-            ]
+            "python.linting.mypyArgs": ["--ignore-missing-imports", "--follow-imports=silent"],
         }
 
         import json
+
         settings_path = vscode_dir / "settings.json"
 
         # Merge with existing settings if file exists
         if settings_path.exists():
-            with open(settings_path, 'r') as f:
+            with open(settings_path, "r") as f:
                 existing = json.load(f)
                 settings.update(existing)
 
-        with open(settings_path, 'w') as f:
+        with open(settings_path, "w") as f:
             json.dump(settings, f, indent=2)
 
         print(f"✅ VSCode settings generated: {settings_path}")

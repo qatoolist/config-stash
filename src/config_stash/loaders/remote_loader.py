@@ -252,7 +252,9 @@ class AzureBlobLoader(RemoteLoader):
         self.account_name = account_name or os.environ.get("AZURE_STORAGE_ACCOUNT")
         self.account_key = account_key or os.environ.get("AZURE_STORAGE_KEY")
         self.sas_token = sas_token or os.environ.get("AZURE_SAS_TOKEN")
-        self.connection_string = connection_string or os.environ.get("AZURE_STORAGE_CONNECTION_STRING")
+        self.connection_string = connection_string or os.environ.get(
+            "AZURE_STORAGE_CONNECTION_STRING"
+        )
 
     def load(self) -> Dict[str, Any]:
         """Load configuration from Azure Blob Storage."""
@@ -290,7 +292,11 @@ class AzureBlobLoader(RemoteLoader):
                 )
 
             # Extract container name if full URL provided
-            container_name = self.container_url.split("/")[-1] if "/" in self.container_url else self.container_url
+            container_name = (
+                self.container_url.split("/")[-1]
+                if "/" in self.container_url
+                else self.container_url
+            )
 
             # Get blob client and download content
             blob_client = blob_service.get_blob_client(
@@ -429,7 +435,9 @@ class IBMCloudObjectStorageLoader(RemoteLoader):
         self.api_key = api_key or os.environ.get("IBM_API_KEY")
         self.service_instance_id = service_instance_id or os.environ.get("IBM_SERVICE_INSTANCE_ID")
         self.region = region
-        self.endpoint_url = endpoint_url or f"https://s3.{region}.cloud-object-storage.appdomain.cloud"
+        self.endpoint_url = (
+            endpoint_url or f"https://s3.{region}.cloud-object-storage.appdomain.cloud"
+        )
 
     def load(self) -> Dict[str, Any]:
         """Load configuration from IBM Cloud Object Storage."""

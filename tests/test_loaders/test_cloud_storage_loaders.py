@@ -37,7 +37,9 @@ class TestAzureBlobLoader:
             blob_name="config.json",
             connection_string="DefaultEndpointsProtocol=https;AccountName=myaccount;...",
         )
-        assert loader.connection_string == "DefaultEndpointsProtocol=https;AccountName=myaccount;..."
+        assert (
+            loader.connection_string == "DefaultEndpointsProtocol=https;AccountName=myaccount;..."
+        )
 
     def test_init_with_sas_token(self):
         """Test initialization with SAS token."""

@@ -77,10 +77,7 @@ default:
     def test_disable_ide_support(self):
         """Test that IDE support can be disabled."""
         # Create config with IDE support disabled
-        config = Config(
-            loaders=[YamlLoader(self.config_file)],
-            enable_ide_support=False
-        )
+        config = Config(loaders=[YamlLoader(self.config_file)], enable_ide_support=False)
 
         # Check that IDE support files were NOT created
         ide_dir = Path(".config_stash")
@@ -90,10 +87,7 @@ default:
         """Test custom path for IDE stub files."""
         custom_path = "my_custom_stubs.pyi"
 
-        config = Config(
-            loaders=[YamlLoader(self.config_file)],
-            ide_stub_path=custom_path
-        )
+        config = Config(loaders=[YamlLoader(self.config_file)], ide_stub_path=custom_path)
 
         # Check that custom stub file was created
         assert Path(custom_path).exists()
@@ -107,7 +101,7 @@ default:
         """Test the generate_stub static method."""
         config = Config(
             loaders=[YamlLoader(self.config_file)],
-            enable_ide_support=False  # Disable automatic generation
+            enable_ide_support=False,  # Disable automatic generation
         )
 
         # Manually generate stub
@@ -174,10 +168,7 @@ default:
 
     def test_enable_auto_generation(self):
         """Test auto-generation with dynamic reloading."""
-        config = Config(
-            loaders=[YamlLoader(self.config_file)],
-            dynamic_reloading=True
-        )
+        config = Config(loaders=[YamlLoader(self.config_file)], dynamic_reloading=True)
 
         # Check initial stub exists
         stub_file = Path(".config_stash/stubs.pyi")
@@ -191,10 +182,7 @@ default:
 
     def test_create_typed_wrapper(self):
         """Test creating a typed wrapper for runtime checking."""
-        config = Config(
-            loaders=[YamlLoader(self.config_file)],
-            enable_ide_support=False
-        )
+        config = Config(loaders=[YamlLoader(self.config_file)], enable_ide_support=False)
 
         # Create typed wrapper
         typed_config = IDESupport.create_typed_wrapper(config)
@@ -216,6 +204,7 @@ default:
         assert settings_file.exists()
 
         import json
+
         with open(settings_file) as f:
             settings = json.load(f)
 
@@ -272,10 +261,7 @@ default:
     def test_ide_support_error_handling(self):
         """Test IDE support handles errors gracefully."""
         # Create config with IDE support
-        config = Config(
-            loaders=[YamlLoader(self.config_file)],
-            enable_ide_support=True
-        )
+        config = Config(loaders=[YamlLoader(self.config_file)], enable_ide_support=True)
 
         # Even if there's an error in IDE support generation,
         # Config should still work normally
