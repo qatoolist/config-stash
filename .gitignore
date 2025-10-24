@@ -157,3 +157,8 @@ $RECYCLE.BIN/
 
 # Hatch
 .hatch/
+
+# Config-Stash IDE Support Files
+.config_stash/
+*.config_stubs.pyi
+.config_stubs.pyi

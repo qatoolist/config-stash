@@ -34,7 +34,7 @@ from config_stash import Config
 
 # That's it! Load from anywhere - local files, cloud, or environment
 config = Config(env="production")
-database_url = config.database.url  # With full IDE autocomplete!
+database_url = config.database.url  # Clean dot notation access!
 ```
 
 ## 🎯 Feature Comparison - See the Difference
@@ -49,8 +49,8 @@ database_url = config.database.url  # With full IDE autocomplete!
 | **Hot Reload** | ✅ | ❌ | ✅ | ❌ | ❌ |
 | **Export Capabilities (All formats)** | ✅ | ❌ | ❌ | ✅ Limited | ❌ |
 | **Thread Safe** | ✅ | ✅ | ✅ | ✅ | ✅ |
-| **Attribute Access** | ✅ | ❌ | ✅ | ❌ | ✅ |
-| **IDE Autocomplete** | ✅ | ❌ | ⚠️ | ❌ | ✅ |
+| **Dot Notation Access** | ✅ | ❌ | ✅ | ❌ | ✅ |
+| **Automatic IDE Autocomplete** | ✅ | ❌ | ❌ | ❌ | ❌ |
 | **Config Diff/Comparison** | ✅ | ❌ | ❌ | ❌ | ❌ |
 | **Zero Dependencies Core** | ✅ | ✅ | ❌ | ✅ | ❌ |
 
@@ -162,7 +162,7 @@ schema = {
 validator = SchemaValidator(schema)
 validated = validator.validate_with_defaults(config.to_dict())
 
-# Pydantic Validation (with IDE autocomplete!)
+# Pydantic Validation (the validated model has autocomplete!)
 from pydantic import BaseModel, Field
 
 class Config(BaseModel):
@@ -170,6 +170,52 @@ class Config(BaseModel):
     debug: bool = False
 
 validated = PydanticValidator(Config).validate(config.to_dict())
+```
+
+</details>
+
+### 💻 Automatic IDE Autocomplete
+<details>
+<summary><b>Real IDE support that works out of the box!</b></summary>
+
+**Zero Configuration Required!** Config-Stash automatically generates type stubs for your IDE when you instantiate a Config object.
+
+```python
+from config_stash import Config
+
+# Just create your config - IDE support is automatic!
+config = Config()
+
+# Your IDE now knows about all your config properties!
+config.database.  # <- IDE shows: host, port, username, password, etc.
+config.api.       # <- IDE shows: endpoint, timeout, headers, etc.
+```
+
+**How it works:**
+- On initialization, Config-Stash automatically generates `.pyi` stub files
+- These files provide complete type information to your IDE
+- Works with VSCode, PyCharm, and any IDE that supports Python type stubs
+- Updates automatically when using dynamic reloading
+
+**Using the generated types in your code:**
+```python
+# The stub files are generated in .config_stash/stubs.pyi
+from .config_stash.stubs import ConfigType
+
+# Type hint your config for even better IDE support
+config: ConfigType = Config()  # type: ignore
+
+# Now you have full autocomplete AND type checking!
+db_host = config.database.host  # IDE knows this is a string!
+```
+
+**Disable if not needed:**
+```python
+# You can disable IDE support generation if you prefer
+config = Config(enable_ide_support=False)
+
+# Or use a custom path for the stub files
+config = Config(ide_stub_path="my_types/config.pyi")
 ```
 
 </details>
@@ -239,7 +285,7 @@ database_url = os.getenv('DATABASE_URL')
 # After (Config-Stash)
 from config_stash import Config
 config = Config(loaders=[EnvironmentLoader("")])
-database_url = config.DATABASE_URL  # With autocomplete!
+database_url = config.DATABASE_URL  # Clean dot notation
 ```
 
 </details>
@@ -301,6 +347,8 @@ Config(
     dynamic_reloading: bool = False,    # Auto-reload on changes
     use_env_expander: bool = True,      # Expand ${VAR} in values
     use_type_casting: bool = True,      # Smart type conversion
+    enable_ide_support: bool = True,    # Generate IDE type stubs automatically
+    ide_stub_path: str = None,          # Custom path for IDE stub files
 )
 
 # Key Methods
