@@ -1,0 +1,9 @@
+
+default:
+  database:
+    host: localhost
+    port: 5432
+    name: myapp
+  api:
+    endpoint: http://api.example.com
+    timeout: 30

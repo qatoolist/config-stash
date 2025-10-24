@@ -1,0 +1,12 @@
+
+{
+  "default": {
+    "database": {
+      "port": 3306,
+      "name": "production_db"
+    },
+    "api": {
+      "endpoint": "https://prod-api.example.com"
+    }
+  }
+}

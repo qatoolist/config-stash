@@ -1,0 +1,16 @@
+
+database:
+  host: localhost
+  port: 5432
+  name: myapp_dev
+  pool_size: 10
+
+api:
+  endpoint: http://dev.api.local
+  timeout: 30
+  retries: 3
+
+features:
+  cache_enabled: false
+  debug_mode: true
+  max_users: 100

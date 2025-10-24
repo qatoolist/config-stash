@@ -1,0 +1,15 @@
+
+database:
+  host: prod.database.example.com
+  port: 5432
+  name: myapp_prod
+  pool_size: 50
+
+api:
+  endpoint: https://api.example.com
+  timeout: 10
+
+features:
+  cache_enabled: true
+  debug_mode: false
+  max_users: 10000

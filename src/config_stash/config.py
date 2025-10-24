@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from config_stash.attribute_accessor import AttributeAccessor
 from config_stash.config_extender import ConfigExtender
@@ -7,6 +7,7 @@ from config_stash.config_loader import ConfigLoader
 from config_stash.config_merger import ConfigMerger
 from config_stash.config_reader import get_default_loaders, get_default_settings
 from config_stash.config_watcher import ConfigFileWatcher
+from config_stash.enhanced_source_tracker import EnhancedSourceTracker, SourceInfo
 from config_stash.environment_handler import EnvironmentHandler
 from config_stash.hook_processor import HookProcessor
 from config_stash.hooks.env_var_expander import EnvVarExpander
@@ -41,6 +42,7 @@ class Config:
         use_type_casting: bool = True,
         enable_ide_support: bool = True,
         ide_stub_path: Optional[str] = None,
+        debug_mode: bool = False,
     ) -> None:
         """Initialize the Config instance.
 
@@ -55,6 +57,7 @@ class Config:
             use_type_casting: Enable automatic type casting of config values.
             enable_ide_support: Automatically generate IDE type stubs for autocomplete (default: True).
             ide_stub_path: Custom path for IDE stub file (default: .config_stash/.stubs.pyi).
+            debug_mode: Enable detailed source tracking and debugging (default: False).
 
         Example:
             >>> from config_stash import Config
@@ -73,14 +76,22 @@ class Config:
         )
         self.use_env_expander = use_env_expander
         self.use_type_casting = use_type_casting
+        self.debug_mode = debug_mode
 
         self.loader_manager = LoaderManager(loaders or self._load_default_files())
         self.config_loader = ConfigLoader(self.loader_manager.loaders)
-        self.configs = self.config_loader.load_configs()
-        self.merged_config = ConfigMerger.merge_configs(self.configs)
+
+        # Initialize enhanced source tracker
+        self.enhanced_source_tracker = EnhancedSourceTracker(debug_mode=self.debug_mode)
+
+        # Load configs and track sources
+        self.configs = self._load_configs_with_tracking()
+        self.merged_config = self._merge_with_tracking(self.configs)
         self.env_config = EnvironmentHandler(self.env, self.merged_config).get_env_config()
         self.lazy_loader = LazyLoader(self.env_config)
         self.attribute_accessor = AttributeAccessor(self.lazy_loader)
+
+        # Keep legacy source tracker for backward compatibility
         self.source_tracker = SourceTracker(self.loader_manager.loaders)
         self.hook_processor = HookProcessor()
 
@@ -97,6 +108,96 @@ class Config:
         self.ide_stub_path = ide_stub_path
         if self.enable_ide_support:
             self._generate_ide_support()
+
+    def _load_configs_with_tracking(self) -> List[Tuple[Dict[str, Any], str]]:
+        """Load configurations with source tracking.
+
+        Returns:
+            List of (configuration, source) tuples for compatibility with ConfigMerger
+        """
+        configs = []
+        for loader in self.loader_manager.loaders:
+            config = loader.load()
+            if config:
+                source_file = getattr(loader, "source", loader.__class__.__name__)
+                configs.append((config, source_file))
+
+                # Track loader
+                loader_type = loader.__class__.__name__
+                self.enhanced_source_tracker.track_loader(loader_type, source_file)
+
+                # Track individual values
+                if self.debug_mode:
+                    self._track_config_values(config, source_file, loader_type)
+
+        return configs
+
+    def _track_config_values(
+        self,
+        config: Dict[str, Any],
+        source_file: str,
+        loader_type: str,
+        prefix: str = "",
+    ) -> None:
+        """Recursively track configuration values.
+
+        Args:
+            config: Configuration dictionary
+            source_file: Source file name
+            loader_type: Type of loader
+            prefix: Key prefix for nested values
+        """
+        for key, value in config.items():
+            full_key = f"{prefix}.{key}" if prefix else key
+
+            if isinstance(value, dict):
+                # Track the dict itself
+                self.enhanced_source_tracker.track_value(
+                    full_key,
+                    value,
+                    source_file,
+                    loader_type,
+                    environment=self.env if key == self.env else None,
+                )
+                # Recursively track nested values
+                self._track_config_values(value, source_file, loader_type, full_key)
+            else:
+                # Track leaf value
+                self.enhanced_source_tracker.track_value(
+                    full_key,
+                    value,
+                    source_file,
+                    loader_type,
+                    environment=self.env if prefix.startswith(self.env) else None,
+                )
+
+    def _merge_with_tracking(self, configs: List[Tuple[Dict[str, Any], str]]) -> Dict[str, Any]:
+        """Merge configurations while tracking overrides.
+
+        Args:
+            configs: List of (configuration, source) tuples
+
+        Returns:
+            Merged configuration dictionary
+        """
+        merged = ConfigMerger.merge_configs(configs)
+
+        # Track final merged values if in debug mode
+        if self.debug_mode:
+            # Re-track to capture override information
+            for config, source_file in configs:
+                # Get loader type from source
+                loader = None
+                for l in self.loader_manager.loaders:
+                    if getattr(l, "source", l.__class__.__name__) == source_file:
+                        loader = l
+                        break
+
+                if loader:
+                    loader_type = loader.__class__.__name__
+                    self._track_config_values(config, source_file, loader_type)
+
+        return merged
 
     def _generate_ide_support(self) -> None:
         """Automatically generate IDE type stubs for autocomplete."""
@@ -261,6 +362,71 @@ class Config:
             hook: Callable that transforms the configuration value
         """
         self.hook_processor.register_global_hook(hook)
+
+    def get_source_info(self, key: str) -> Optional[SourceInfo]:
+        """Get detailed source information for a configuration key.
+
+        Args:
+            key: Configuration key (dot notation)
+
+        Returns:
+            SourceInfo object with detailed tracking information, or None if not found
+        """
+        return self.enhanced_source_tracker.get_source_info(key)
+
+    def get_override_history(self, key: str) -> List[SourceInfo]:
+        """Get the history of overrides for a configuration key.
+
+        Args:
+            key: Configuration key (dot notation)
+
+        Returns:
+            List of SourceInfo objects showing all values that were overridden
+        """
+        return self.enhanced_source_tracker.get_override_history(key)
+
+    def print_debug_info(self, key: Optional[str] = None) -> None:
+        """Print debug information about configuration sources.
+
+        Args:
+            key: Optional specific key to debug, or None for all keys
+        """
+        self.enhanced_source_tracker.print_debug_info(key)
+
+    def export_debug_report(self, output_path: str = "config_debug_report.json") -> None:
+        """Export a detailed debug report to a JSON file.
+
+        Args:
+            output_path: Path to output JSON file
+        """
+        self.enhanced_source_tracker.export_debug_report(output_path)
+
+    def find_keys_from_source(self, source_pattern: str) -> List[str]:
+        """Find all configuration keys that came from a specific source.
+
+        Args:
+            source_pattern: Source file pattern to search for
+
+        Returns:
+            List of configuration keys from matching sources
+        """
+        return self.enhanced_source_tracker.find_keys_from_source(source_pattern)
+
+    def get_source_statistics(self) -> Dict[str, Any]:
+        """Get statistics about configuration sources.
+
+        Returns:
+            Dictionary with detailed source statistics
+        """
+        return self.enhanced_source_tracker.get_source_statistics()
+
+    def get_conflicts(self) -> Dict[str, List[SourceInfo]]:
+        """Get all configuration keys that have been overridden.
+
+        Returns:
+            Dictionary mapping keys to their override history
+        """
+        return self.enhanced_source_tracker.get_conflicts()
 
     def to_dict(self) -> Dict[str, Any]:
         """Export configuration as dictionary.
