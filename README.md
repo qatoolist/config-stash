@@ -25,11 +25,16 @@ Config-Stash is a flexible configuration management library that simplifies load
 pip install config-stash
 
 # Optional dependencies
-pip install config-stash[yaml]          # YAML support
-pip install config-stash[toml]          # TOML support
 pip install config-stash[validation]    # Schema validation
 pip install config-stash[cloud]         # Cloud storage support
+pip install config-stash[secrets]       # Secret store support (AWS, Azure, GCP, Vault)
 pip install config-stash[all]           # All features
+
+# Individual secret store dependencies
+pip install boto3                        # AWS Secrets Manager
+pip install hvac                         # HashiCorp Vault
+pip install azure-keyvault-secrets azure-identity  # Azure Key Vault
+pip install google-cloud-secret-manager  # GCP Secret Manager
 ```
 
 ## Quick Start
@@ -54,6 +59,17 @@ config = Config(
     ]
 )
 
+# With secret store integration (NEW!)
+from config_stash.secret_stores import AWSSecretsManager, SecretResolver
+
+secret_store = AWSSecretsManager(region_name='us-east-1')
+config = Config(
+    env="production",
+    loaders=[YamlLoader("config.yaml")],
+    secret_resolver=SecretResolver(secret_store)
+)
+# Secrets in config.yaml like "${secret:db/password}" are automatically resolved
+
 # Enable debug mode to track configuration sources
 config = Config(debug_mode=True)
 print(config.get_source("database.host"))  # Shows: 'config/base.yaml'
@@ -67,7 +83,110 @@ print(config.get_source("database.host"))  # Shows: 'config/base.yaml'
 - **Cloud Storage**: AWS S3, Azure Blob Storage, Google Cloud Storage, IBM Cloud Object Storage
 - **Remote**: HTTP/HTTPS endpoints, Git repositories
 - **Environment Variables**: System environment with prefix support
+- **Secret Stores**: AWS Secrets Manager, HashiCorp Vault, Azure Key Vault, GCP Secret Manager
 - **Custom Loaders**: Extensible loader interface
+
+### Secret Store Integration 🔐
+
+**NEW!** Config-Stash now includes comprehensive secret store integration for secure credential management:
+
+```python
+from config_stash import Config
+from config_stash.secret_stores import AWSSecretsManager, SecretResolver
+from config_stash.loaders import YamlLoader
+
+# Initialize secret store
+secret_store = AWSSecretsManager(region_name='us-east-1')
+
+# Use with Config
+config = Config(
+    env='production',
+    loaders=[YamlLoader('config.yaml')],
+    secret_resolver=SecretResolver(secret_store)
+)
+
+# Secrets automatically resolved from ${secret:key} placeholders
+print(config.database.password)  # Resolved from AWS Secrets Manager
+```
+
+**Supported Secret Stores:**
+- **AWS Secrets Manager** - AWS native secret management
+- **HashiCorp Vault** - Enterprise secret management with 10+ auth methods:
+  - ✅ **OIDC with Kerberos** (SSO, no browser if `kinit` done)
+  - ✅ **LDAP with PIN+Token** (complex password policies)
+  - ✅ JWT, Kubernetes, AWS, Azure, GCP, AppRole, Token
+- **Azure Key Vault** - Azure native secret management
+- **GCP Secret Manager** - Google Cloud secret management
+- **Environment Variables** - Simple env-based secrets
+- **DictSecretStore** - In-memory secrets for development/testing
+- **MultiSecretStore** - Combine multiple stores with fallback hierarchy
+- **Custom Stores** - Extensible secret store interface
+
+**Configuration File with Secret Placeholders:**
+```yaml
+production:
+  database:
+    host: prod-db.example.com
+    password: "${secret:prod/database/password}"
+  api:
+    key: "${secret:prod/api/key}"
+    endpoint: "https://api.example.com"
+```
+
+**Advanced HashiCorp Vault Authentication:**
+```python
+from config_stash.secret_stores import HashiCorpVault
+from config_stash.secret_stores.vault_auth import OIDCAuth, LDAPAuth
+import getpass
+import os
+
+# OIDC with Kerberos (automatic if kinit done)
+auth = OIDCAuth(role='myapp-role', use_kerberos=True)
+
+# Or LDAP with PIN+Token for complex password policies
+def get_pin_token():
+    pin = getpass.getpass("PIN: ")
+    token = getpass.getpass("Token: ")
+    return pin + token
+
+auth = LDAPAuth(
+    username=os.getenv('USER'),  # Kerberos ID
+    password_provider=get_pin_token
+)
+
+vault = HashiCorpVault(
+    url='https://vault.example.com',
+    auth_method=auth
+)
+
+config = Config(secret_resolver=SecretResolver(vault))
+```
+
+**Multi-Store Fallback:**
+```python
+from config_stash.secret_stores import MultiSecretStore, DictSecretStore, EnvSecretStore
+
+# Create fallback hierarchy
+multi_store = MultiSecretStore([
+    DictSecretStore({"override/key": "local-value"}),  # Highest priority
+    AWSSecretsManager(region_name='us-east-1'),        # Production secrets
+    EnvSecretStore(transform_key=True),                 # Environment fallback
+])
+
+config = Config(secret_resolver=SecretResolver(multi_store))
+```
+
+**Features:**
+- 🔐 Secure credential management
+- 🔄 Automatic secret resolution with `${secret:key}` syntax
+- 🎯 JSON path extraction for nested secrets: `${secret:key:path.to.value}`
+- 💾 Optional caching for performance
+- 🔁 Version support for secret rotation
+- 🌐 Multi-cloud support (AWS, Azure, GCP)
+- 🏢 Enterprise authentication (Kerberos, LDAP, OIDC)
+- 🔌 Extensible plugin architecture
+
+📖 **See [Secret Store Documentation](docs/SECRET_STORES.md) and [Vault Authentication Guide](docs/VAULT_AUTHENTICATION.md)** for complete details.
 
 ### Source Tracking & Debugging
 
@@ -163,6 +282,7 @@ Config(
     use_type_casting: bool = True,      # Automatic type conversion
     enable_ide_support: bool = True,    # Generate IDE type stubs
     debug_mode: bool = False,           # Enable source tracking
+    secret_resolver: SecretResolver = None,  # Secret store integration (NEW!)
 )
 ```
 
@@ -196,6 +316,51 @@ validator = SchemaValidator(schema_dict)
 # Pydantic validation
 from config_stash.validators import PydanticValidator
 validator = PydanticValidator(ModelClass)
+```
+
+### Secret Stores
+
+```python
+# AWS Secrets Manager
+from config_stash.secret_stores import AWSSecretsManager, SecretResolver
+store = AWSSecretsManager(region_name='us-east-1')
+config = Config(secret_resolver=SecretResolver(store))
+
+# HashiCorp Vault with token auth
+from config_stash.secret_stores import HashiCorpVault
+store = HashiCorpVault(url='https://vault.example.com', token='s.xxxxx')
+
+# HashiCorp Vault with OIDC + Kerberos
+from config_stash.secret_stores.vault_auth import OIDCAuth
+auth = OIDCAuth(role='myapp-role', use_kerberos=True)
+store = HashiCorpVault(url='https://vault.example.com', auth_method=auth)
+
+# HashiCorp Vault with LDAP + PIN+Token
+from config_stash.secret_stores.vault_auth import LDAPAuth
+def get_pin_token():
+    pin = getpass.getpass("PIN: ")
+    token = getpass.getpass("Token: ")
+    return pin + token
+auth = LDAPAuth(username=os.getenv('USER'), password_provider=get_pin_token)
+store = HashiCorpVault(url='https://vault.example.com', auth_method=auth)
+
+# Azure Key Vault
+from config_stash.secret_stores import AzureKeyVault
+store = AzureKeyVault(vault_url='https://myvault.vault.azure.net')
+
+# GCP Secret Manager
+from config_stash.secret_stores import GCPSecretManager
+store = GCPSecretManager(project_id='my-project')
+
+# Multi-store with fallback
+from config_stash.secret_stores import MultiSecretStore, DictSecretStore
+store = MultiSecretStore([
+    DictSecretStore({"local/key": "override"}),  # Highest priority
+    AWSSecretsManager(region_name='us-east-1'),  # Production
+    EnvSecretStore(),                             # Environment fallback
+])
+
+# See docs/SECRET_STORES.md for complete documentation
 ```
 
 ## Advanced Usage
@@ -283,6 +448,7 @@ config-stash debug production --key=database.host
 | Multiple file formats | ✅ | ❌ | ✅ | ❌ | Limited |
 | Source tracking | ✅ | ❌ | ❌ | ❌ | ❌ |
 | Cloud storage | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Secret stores | ✅ | ❌ | ❌ | ❌ | ❌ |
 | Validation | ✅ | ❌ | ✅ | ❌ | ✅ |
 | IDE autocomplete | ✅ | ❌ | ❌ | ❌ | ❌ |
 | Hot reload | ✅ | ❌ | ✅ | ❌ | ❌ |

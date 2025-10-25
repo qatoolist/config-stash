@@ -44,6 +44,7 @@ class Config:
         ide_stub_path: Optional[str] = None,
         debug_mode: bool = False,
         deep_merge: bool = True,
+        secret_resolver: Optional[Any] = None,
     ) -> None:
         """Initialize the Config instance.
 
@@ -60,6 +61,12 @@ class Config:
             ide_stub_path: Custom path for IDE stub file (default: .config_stash/.stubs.pyi).
             debug_mode: Enable detailed source tracking and debugging (default: False).
             deep_merge: Enable deep merging of nested configuration (default: True).
+            secret_resolver: Optional SecretResolver instance for resolving secrets from
+                external secret stores (AWS Secrets Manager, HashiCorp Vault, etc.).
+                Example:
+                    from config_stash.secret_stores import AWSSecretsManager, SecretResolver
+                    store = AWSSecretsManager(region_name='us-east-1')
+                    config = Config(secret_resolver=SecretResolver(store))
 
         Example:
             >>> from config_stash import Config
@@ -68,6 +75,15 @@ class Config:
             ...     env='production',
             ...     loaders=[YAMLLoader('config.yaml')],
             ...     dynamic_reloading=True
+            ... )
+            >>>
+            >>> # With secret store integration:
+            >>> from config_stash.secret_stores import AWSSecretsManager, SecretResolver
+            >>> secret_store = AWSSecretsManager(region_name='us-east-1')
+            >>> config = Config(
+            ...     env='production',
+            ...     loaders=[YAMLLoader('config.yaml')],
+            ...     secret_resolver=SecretResolver(secret_store)
             ... )
         """
         defaults = get_default_settings()
@@ -80,6 +96,7 @@ class Config:
         self.use_type_casting = use_type_casting
         self.debug_mode = debug_mode
         self.deep_merge = deep_merge
+        self.secret_resolver = secret_resolver
         self._change_callbacks: List[Callable] = []
 
         self.loader_manager = LoaderManager(loaders or self._load_default_files())
@@ -97,13 +114,15 @@ class Config:
         self._track_env_config()
 
         self.lazy_loader = LazyLoader(self.env_config)
-        self.attribute_accessor = AttributeAccessor(self.lazy_loader)
 
         # Keep legacy source tracker for backward compatibility
         self.source_tracker = SourceTracker(self.loader_manager.loaders)
         self.hook_processor = HookProcessor()
 
         self._register_default_hooks()
+
+        # Create attribute accessor with hook processor (after hooks are registered)
+        self.attribute_accessor = AttributeAccessor(self.lazy_loader, self.hook_processor)
 
         if self.dynamic_reloading:
             self.file_watcher = ConfigFileWatcher(self)
@@ -315,9 +334,20 @@ class Config:
         return loaders
 
     def _register_default_hooks(self) -> None:
-        """Register default hooks based on configuration settings."""
+        """Register default hooks based on configuration settings.
+
+        Hook execution order:
+        1. Secret resolver (if configured) - resolves ${secret:key} placeholders
+        2. Environment variable expander - resolves ${VAR_NAME} placeholders
+        3. Type casting - converts string values to appropriate types
+        """
+        # Register secret resolver first so secrets are resolved before env vars
+        if self.secret_resolver:
+            self.hook_processor.register_global_hook(self.secret_resolver.hook)
+
         if self.use_env_expander:
             self.hook_processor.register_global_hook(EnvVarExpander.hook)
+
         if self.use_type_casting:
             self.hook_processor.register_global_hook(TypeCasting.hook)
 
