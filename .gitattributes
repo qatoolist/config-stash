@@ -1,2 +1,97 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# Python files
+*.py text eol=lf diff=python
+*.pyx text eol=lf diff=python
+*.pyi text eol=lf diff=python
+*.pyw text eol=lf diff=python
+
+# Python build/distribution files
+*.pyc binary
+*.pyo binary
+*.pyd binary
+*.so binary
+*.dll binary
+*.egg binary
+*.whl binary
+
+# Documentation
+*.md text eol=lf diff=markdown
+*.rst text eol=lf
+*.txt text eol=lf
+LICENSE* text eol=lf
+README* text eol=lf
+CHANGELOG* text eol=lf
+CONTRIBUTING* text eol=lf
+
+# Configuration files
+*.yaml text eol=lf
+*.yml text eol=lf
+*.json text eol=lf
+*.toml text eol=lf
+*.ini text eol=lf
+*.cfg text eol=lf
+*.conf text eol=lf
+.editorconfig text eol=lf
+.gitignore text eol=lf
+.gitattributes text eol=lf
+
+# Shell scripts
+*.sh text eol=lf
+*.bash text eol=lf
+*.zsh text eol=lf
+*.fish text eol=lf
+
+# CI/CD
+.github/** text eol=lf
+.gitlab-ci.yml text eol=lf
+*.yml text eol=lf
+
+# Web files
+*.html text eol=lf diff=html
+*.css text eol=lf
+*.js text eol=lf
+*.jsx text eol=lf
+*.ts text eol=lf
+*.tsx text eol=lf
+
+# Images
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.svg text eol=lf
+
+# Archives
+*.zip binary
+*.tar binary
+*.gz binary
+*.bz2 binary
+*.7z binary
+*.rar binary
+
+# Fonts
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.otf binary
+*.eot binary
+
+# Exclude files from export
+.gitattributes export-ignore
+.gitignore export-ignore
+.github export-ignore
+.pytest_cache export-ignore
+.mypy_cache export-ignore
+.ruff_cache export-ignore
+__pycache__ export-ignore
+*.pyc export-ignore
+tests export-ignore
+docs export-ignore
+examples export-ignore
+.editorconfig export-ignore
+.pre-commit-config.yaml export-ignore
+tox.ini export-ignore
+Makefile export-ignore

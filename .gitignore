@@ -162,3 +162,124 @@ $RECYCLE.BIN/
 .config_stash/
 *.config_stubs.pyi
 .config_stubs.pyi
+
+# Security & Secrets - Never commit these!
+# Credential files
+credentials.json
+*.credentials
+*.key
+*.pem
+*.p12
+*.pfx
+*.cer
+*.crt
+service-account*.json
+gcp-credentials*.json
+aws-credentials*.json
+azure-credentials*.json
+
+# Secret/Token files
+secrets.yaml
+secrets.yml
+secrets.json
+secrets.toml
+*.secrets
+.secrets/
+vault-token
+vault-token.*
+.vault-token
+*.vault-token
+
+# Environment files with secrets
+.env.local
+.env.*.local
+.env.production
+.env.prod
+.env.staging
+.env.development
+.env.dev
+.env.test
+*.env
+
+# Cloud provider config
+.aws/
+.azure/
+.gcloud/
+.kube/config
+kubeconfig
+kubeconfig.yaml
+
+# HashiCorp Vault
+.vault/
+vault.json
+vault-config.hcl
+*.hcl
+
+# SSH keys
+id_rsa
+id_rsa.pub
+id_ed25519
+id_ed25519.pub
+*.ppk
+known_hosts
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+*.sql
+
+# Backup files
+*.bak
+*.backup
+*.old
+*.orig
+*~
+
+# Temporary test files
+test_secrets.yaml
+test_credentials.json
+tmp/
+temp/
+.tmp/
+.temp/
+
+# Debug and profiling
+*.prof
+*.lprof
+.profiling/
+debug.log
+debug-*.log
+
+# Benchmarking results
+.benchmarks/
+benchmark-results/
+*.benchmark
+
+# Local config overrides
+config.local.*
+local.config.*
+override.config.*
+*-local.yaml
+*-local.yml
+*-local.json
+*-local.toml
+
+# CI/CD local files
+.gitlab-ci-local.yml
+.github-local/
+
+# Ruff cache
+.ruff_cache/
+
+# Pyright
+.pyright/
+pyrightconfig.json
+
+# uv
+.uv/
+
+# PDM
+.pdm.toml
+.pdm-python
+__pypackages__/
