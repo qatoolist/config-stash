@@ -60,8 +60,8 @@ pip install config-stash[all]           # All features
 ### Basic Usage
 
 ```python
-from config_stash import Config
-from config_stash.loaders import YamlLoader
+from cs import Config
+from cs.loaders import YamlLoader
 
 # Load from a single file
 config = Config(loaders=[YamlLoader("config.yaml")])
@@ -70,6 +70,12 @@ config = Config(loaders=[YamlLoader("config.yaml")])
 print(config.database.host)
 print(config.database.port)
 ```
+
+> **Tip:** `cs` is a short alias for `config_stash`. Both work identically — use whichever you prefer:
+> ```python
+> from cs import Config           # Short form
+> from config_stash import Config  # Full form
+> ```
 
 ### Multiple Sources
 
