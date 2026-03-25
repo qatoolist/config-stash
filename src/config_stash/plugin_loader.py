@@ -1,7 +1,9 @@
+from typing import Any
+
 from config_stash.loader_manager import LoaderManager
 
 
-def get_loader(name):
+def get_loader(name: str) -> Any:
     """Get a loader class by name, trying plugins first, then built-in loaders.
 
     Use this function when you need to resolve a loader at runtime by its

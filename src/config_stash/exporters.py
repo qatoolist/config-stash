@@ -35,7 +35,7 @@ class ConfigExporter:
     """
 
     @staticmethod
-    def to_dict(config) -> Dict[str, Any]:
+    def to_dict(config: Any) -> Dict[str, Any]:
         """Export configuration as a plain dictionary.
 
         Args:
@@ -53,7 +53,7 @@ class ConfigExporter:
         return config.env_config if hasattr(config, "env_config") else {}
 
     @staticmethod
-    def to_json(config, indent: int = 2) -> str:
+    def to_json(config: Any, indent: int = 2) -> str:
         """Export configuration as a JSON string.
 
         Args:
@@ -75,7 +75,7 @@ class ConfigExporter:
         return json.dumps(ConfigExporter.to_dict(config), indent=indent)
 
     @staticmethod
-    def to_yaml(config, default_flow_style: bool = False) -> str:
+    def to_yaml(config: Any, default_flow_style: bool = False) -> str:
         """Export configuration as a YAML string.
 
         Args:
@@ -100,7 +100,7 @@ class ConfigExporter:
         )
 
     @staticmethod
-    def to_toml(config) -> str:
+    def to_toml(config: Any) -> str:
         """Export configuration as a TOML string.
 
         Args:
@@ -123,7 +123,7 @@ class ConfigExporter:
         return toml_dumps(ConfigExporter.to_dict(config))
 
     @staticmethod
-    def to_env(config, prefix: str = "", separator: str = "_") -> str:
+    def to_env(config: Any, prefix: str = "", separator: str = "_") -> str:
         """Export configuration as a .env-formatted string.
 
         Flattens nested dictionaries into ``KEY=value`` lines suitable for
@@ -171,7 +171,7 @@ class ConfigExporter:
         return "\n".join(f"{k}={v}" for k, v in sorted(flat_dict.items()))
 
     @staticmethod
-    def dump(config, file_path: Union[str, Path], format: Optional[str] = None) -> None:
+    def dump(config: Any, file_path: Union[str, Path], format: Optional[str] = None) -> None:
         """Write configuration to a file in the specified format.
 
         The output format is auto-detected from the file extension when
@@ -232,7 +232,7 @@ class ConfigExporter:
         logger.info(f"Configuration exported to {file_path} (format: {format})")
 
     @staticmethod
-    def diff(config1, config2, format: str = "json") -> str:
+    def diff(config1: Any, config2: Any, format: str = "json") -> str:
         """Generate a diff between two configurations.
 
         Compares two Config instances and returns a structured diff
@@ -296,7 +296,7 @@ class ConfigExporter:
 
 
 # Add export methods to Config class
-def add_export_methods(config_class):
+def add_export_methods(config_class: type) -> None:
     """Add export methods to Config class.
 
     This function monkey-patches the Config class to add export methods.

@@ -31,7 +31,7 @@ class IDESupport:
 
     @staticmethod
     def generate_stub(
-        config,  # Config instance
+        config: Any,
         output_path: str = ".config_stubs.pyi",
         module_name: str = "config_stash_types",
         silent: bool = False,
@@ -167,7 +167,7 @@ class IDESupport:
         return "\n".join(stub_lines)
 
     @staticmethod
-    def enable_auto_generation(config, output_path: str = ".config_stubs.pyi") -> None:
+    def enable_auto_generation(config: Any, output_path: str = ".config_stubs.pyi") -> None:
         """Automatically regenerate stubs when configuration changes.
 
         Registers an ``on_change`` callback on the provided ``Config``
@@ -193,7 +193,7 @@ class IDESupport:
 
         # Set up auto-regeneration
         @config.on_change
-        def regenerate_stub(key: str, old_value: Any, new_value: Any):
+        def regenerate_stub(key: str, old_value: Any, new_value: Any) -> None:
             """Regenerate stub when config structure changes."""
             # Only regenerate if structure changed (new keys added/removed)
             if isinstance(new_value, dict) or old_value is None or new_value is None:
@@ -202,7 +202,7 @@ class IDESupport:
         logger.info(f"Auto-generation enabled for {output_path}")
 
     @staticmethod
-    def create_typed_wrapper(config) -> Any:
+    def create_typed_wrapper(config: Any) -> Any:
         """Create a typed wrapper object for runtime attribute access.
 
         Converts the configuration dictionary into a nested object graph

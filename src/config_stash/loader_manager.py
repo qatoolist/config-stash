@@ -18,6 +18,7 @@ Example:
 """
 
 import importlib.metadata
+from typing import Any, Dict, List, Tuple
 
 
 class LoaderManager:
@@ -45,7 +46,7 @@ class LoaderManager:
         [({'db_host': 'localhost'}, 'base.yaml')]
     """
 
-    def __init__(self, loaders):
+    def __init__(self, loaders: List[Any]) -> None:
         """Initialise the loader manager with an ordered list of loaders.
 
         Args:
@@ -59,9 +60,9 @@ class LoaderManager:
             >>> manager = LoaderManager([JsonLoader("settings.json")])
         """
         self.loaders = loaders
-        self.configs = []
+        self.configs: List[Tuple[Dict[str, Any], str]] = []
 
-    def _load_configs(self):
+    def _load_configs(self) -> None:
         """Execute every registered loader and collect successful results.
 
         Iterates over ``self.loaders`` in order, calling ``loader.load()`` on
@@ -97,7 +98,7 @@ class LoaderManager:
                 logger.warning(f"Failed to load configuration from {loader.source}: {e}")
                 continue
 
-    def get_configs(self):
+    def get_configs(self) -> List[Tuple[Dict[str, Any], str]]:
         """Return the list of loaded configuration tuples.
 
         Returns:
@@ -114,7 +115,7 @@ class LoaderManager:
         return self.configs
 
     @staticmethod
-    def load_plugins():
+    def load_plugins() -> Dict[str, Any]:
         """Discover and load configuration-loader plugins via entry points.
 
         Scans the ``config_stash.loaders`` entry-point group for installed

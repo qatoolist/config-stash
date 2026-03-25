@@ -64,7 +64,7 @@ def read_pyproject_config() -> Dict[str, Any]:
     return {}
 
 
-def get_default_loaders():
+def get_default_loaders() -> Dict[str, Any]:
     """Load custom loader class mappings from pyproject.toml.
 
     Reads the ``[tool.config_stash.loaders]`` table and dynamically imports
@@ -103,7 +103,7 @@ def get_default_loaders():
     return loaders
 
 
-def get_default_settings():
+def get_default_settings() -> Dict[str, Any]:
     """Retrieve default application settings from pyproject.toml.
 
     Reads the ``[tool.config_stash]`` section and extracts commonly used

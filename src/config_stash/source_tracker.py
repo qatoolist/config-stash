@@ -13,6 +13,8 @@ Example:
     'production.yaml'
 """
 
+from typing import Any, List, Optional
+
 
 class SourceTracker:
     """Tracks which loader supplied the winning value for each configuration key.
@@ -33,7 +35,7 @@ class SourceTracker:
         'overrides.yaml'
     """
 
-    def __init__(self, loaders):
+    def __init__(self, loaders: List[Any]) -> None:
         """Initialise the tracker with an ordered list of loaders.
 
         Args:
@@ -46,7 +48,7 @@ class SourceTracker:
         """
         self.loaders = loaders
 
-    def get_source(self, key):
+    def get_source(self, key: str) -> Optional[str]:
         """Identify which loader source provides the value for a given key.
 
         The method supports dot-separated nested keys (e.g.

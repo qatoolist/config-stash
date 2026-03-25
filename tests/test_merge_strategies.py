@@ -1,6 +1,7 @@
 """Tests for advanced merging strategies."""
 
 import unittest
+from typing import Any, Dict
 
 from config_stash.merge_strategies import (
     AdvancedConfigMerger,
@@ -46,8 +47,8 @@ class TestAdvancedConfigMerger(unittest.TestCase):
     def test_merger_merge_strategy(self):
         """Test MERGE merge strategy."""
         merger = AdvancedConfigMerger(MergeStrategy.MERGE)
-        base = {"database": {"host": "localhost", "port": 5432}}
-        new = {"database": {"port": 3306, "ssl": True}}
+        base: Dict[str, Any] = {"database": {"host": "localhost", "port": 5432}}
+        new: Dict[str, Any] = {"database": {"port": 3306, "ssl": True}}
         result = merger.merge(base, new)
         self.assertEqual(result["database"]["host"], "localhost")
         self.assertEqual(result["database"]["port"], 3306)
@@ -96,11 +97,11 @@ class TestAdvancedConfigMerger(unittest.TestCase):
         merger.set_strategy("database", MergeStrategy.REPLACE)
         merger.set_strategy("app.debug", MergeStrategy.REPLACE)
 
-        base = {
+        base: Dict[str, Any] = {
             "database": {"host": "localhost", "port": 5432},
             "app": {"debug": True, "name": "test"},
         }
-        new = {
+        new: Dict[str, Any] = {
             "database": {"host": "remote"},
             "app": {"debug": False},
         }

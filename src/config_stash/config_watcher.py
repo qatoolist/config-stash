@@ -1,5 +1,11 @@
+from __future__ import annotations
+
 import logging
 import os
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from config_stash.config import Config
 
 try:
     from watchdog.events import FileSystemEventHandler
@@ -35,7 +41,7 @@ class ConfigFileHandler(FileSystemEventHandler):
         >>> observer.schedule(handler, path="/etc/myapp", recursive=False)
     """
 
-    def __init__(self, config):
+    def __init__(self, config: Config) -> None:
         """Initialize the file system event handler.
 
         Args:
@@ -45,7 +51,7 @@ class ConfigFileHandler(FileSystemEventHandler):
         """
         self.config = config
 
-    def on_modified(self, event):
+    def on_modified(self, event: Any) -> None:
         """Handle a file modification event.
 
         Called by the watchdog observer whenever a file in a watched
@@ -94,7 +100,7 @@ class ConfigFileWatcher:
             pip install config-stash[watch]
     """
 
-    def __init__(self, config):
+    def __init__(self, config: Config) -> None:
         """Initialize the configuration file watcher.
 
         Args:
@@ -113,7 +119,7 @@ class ConfigFileWatcher:
         self.event_handler = ConfigFileHandler(config)
         self.observer = Observer()
 
-    def start(self):
+    def start(self) -> None:
         """Start watching configuration files for changes.
 
         Identifies all unique directories containing watched configuration
@@ -137,7 +143,7 @@ class ConfigFileWatcher:
                 watched_dirs.add(directory)
         self.observer.start()
 
-    def stop(self):
+    def stop(self) -> None:
         """Stop watching configuration files.
 
         Gracefully shuts down the watchdog observer thread. If the observer
