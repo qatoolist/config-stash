@@ -3,7 +3,7 @@ import logging
 from pathlib import Path
 from typing import Any, Dict
 
-import toml
+from config_stash.utils.toml_compat import load_file as toml_load_file
 
 logger = logging.getLogger(__name__)
 
@@ -29,8 +29,7 @@ def read_pyproject_config() -> Dict[str, Any]:
     for config_path in search_paths:
         try:
             if config_path.exists():
-                with open(config_path, "r") as f:
-                    pyproject = toml.load(f)
+                pyproject = toml_load_file(str(config_path))
                 config = pyproject.get("tool", {}).get("config_stash", {})
                 logger.debug(f"Loaded config-stash settings from {config_path}")
                 return config

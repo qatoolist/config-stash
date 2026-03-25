@@ -59,11 +59,13 @@ class TestDictSecretStore(unittest.TestCase):
 
     def test_list_secrets(self):
         """Test listing all secrets."""
-        store = DictSecretStore({
-            "api/key": "value1",
-            "db/password": "value2",
-            "redis/url": "value3",
-        })
+        store = DictSecretStore(
+            {
+                "api/key": "value1",
+                "db/password": "value2",
+                "redis/url": "value3",
+            }
+        )
 
         all_secrets = store.list_secrets()
         self.assertEqual(len(all_secrets), 3)
@@ -71,11 +73,13 @@ class TestDictSecretStore(unittest.TestCase):
 
     def test_list_with_prefix(self):
         """Test listing secrets with prefix filter."""
-        store = DictSecretStore({
-            "prod/api/key": "value1",
-            "prod/db/password": "value2",
-            "dev/api/key": "value3",
-        })
+        store = DictSecretStore(
+            {
+                "prod/api/key": "value1",
+                "prod/db/password": "value2",
+                "dev/api/key": "value3",
+            }
+        )
 
         prod_secrets = store.list_secrets(prefix="prod/")
         self.assertEqual(len(prod_secrets), 2)
@@ -292,10 +296,12 @@ class TestSecretResolver(unittest.TestCase):
 
     def test_multiple_placeholders(self):
         """Test multiple placeholders in one string."""
-        store = DictSecretStore({
-            "db/user": "admin",
-            "db/password": "secret123",
-        })
+        store = DictSecretStore(
+            {
+                "db/user": "admin",
+                "db/password": "secret123",
+            }
+        )
         resolver = SecretResolver(store)
 
         result = resolver.resolve("User: ${secret:db/user}, Pass: ${secret:db/password}")
@@ -303,16 +309,15 @@ class TestSecretResolver(unittest.TestCase):
 
     def test_json_path_extraction(self):
         """Test extracting nested value from JSON secret."""
-        store = DictSecretStore({
-            "db/config": {
-                "host": "localhost",
-                "port": 5432,
-                "credentials": {
-                    "user": "admin",
-                    "password": "secret"
+        store = DictSecretStore(
+            {
+                "db/config": {
+                    "host": "localhost",
+                    "port": 5432,
+                    "credentials": {"user": "admin", "password": "secret"},
                 }
             }
-        })
+        )
         resolver = SecretResolver(store)
 
         # Extract nested value
@@ -389,10 +394,12 @@ class TestSecretResolver(unittest.TestCase):
 
     def test_prefetch_secrets(self):
         """Test prefetching secrets into cache."""
-        store = DictSecretStore({
-            "api/key": "abc123",
-            "db/password": "secret",
-        })
+        store = DictSecretStore(
+            {
+                "api/key": "abc123",
+                "db/password": "secret",
+            }
+        )
         resolver = SecretResolver(store, cache_enabled=True)
 
         resolver.prefetch_secrets(["api/key", "db/password"])
@@ -415,6 +422,7 @@ class TestConfigIntegration(unittest.TestCase):
         """Clean up test environment."""
         os.chdir(self.original_dir)
         import shutil
+
         shutil.rmtree(self.temp_dir)
 
     def test_config_with_secret_resolver(self):
@@ -432,10 +440,12 @@ default:
             f.write(config_content)
 
         # Create secret store
-        secrets = DictSecretStore({
-            "db/password": "super-secret-password",
-            "api/key": "abc123xyz789",
-        })
+        secrets = DictSecretStore(
+            {
+                "db/password": "super-secret-password",
+                "api/key": "abc123xyz789",
+            }
+        )
 
         # Create config with secret resolver
         config = Config(

@@ -5,8 +5,9 @@ import logging
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-import toml
 import yaml
+
+from config_stash.utils.toml_compat import dumps as toml_dumps
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +67,7 @@ class ConfigExporter:
         Returns:
             TOML string
         """
-        return toml.dumps(ConfigExporter.to_dict(config))
+        return toml_dumps(ConfigExporter.to_dict(config))
 
     @staticmethod
     def to_env(config, prefix: str = "", separator: str = "_") -> str:

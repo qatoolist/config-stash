@@ -154,10 +154,12 @@ version = "1.0.0"
     @patch("requests.get")
     def test_load_failure(self, mock_get):
         """Test handling of HTTP errors."""
+        from config_stash.exceptions import ConfigLoadError
+
         mock_get.side_effect = requests.RequestException("Connection error")
 
         loader = HTTPLoader("http://example.com/config.json")
-        with self.assertRaises(RuntimeError) as context:
+        with self.assertRaises(ConfigLoadError) as context:
             loader.load()
 
         self.assertIn("Failed to load remote configuration", str(context.exception))
@@ -235,12 +237,14 @@ class TestS3Loader(unittest.TestCase):
     @patch("boto3.client")
     def test_s3_error_handling(self, mock_boto_client):
         """Test S3 error handling."""
+        from config_stash.exceptions import ConfigLoadError
+
         mock_s3 = MagicMock()
         mock_boto_client.return_value = mock_s3
         mock_s3.get_object.side_effect = Exception("Access Denied")
 
         loader = S3Loader("s3://test-bucket/config.json")
-        with self.assertRaises(RuntimeError) as context:
+        with self.assertRaises(ConfigLoadError) as context:
             loader.load()
 
         self.assertIn("Failed to load S3 configuration", str(context.exception))
@@ -250,7 +254,7 @@ class TestS3Loader(unittest.TestCase):
 class TestGitLoader(unittest.TestCase):
     """Test GitLoader class."""
 
-    @patch.object(HTTPLoader, "load")
+    @patch.object(HTTPLoader if HAS_REQUESTS else object, "load")
     def test_github_url_conversion(self, mock_http_load):
         """Test GitHub URL conversion to raw URL."""
         mock_http_load.return_value = {"test": "config"}
@@ -264,7 +268,7 @@ class TestGitLoader(unittest.TestCase):
         # Check that HTTPLoader was initialized with correct raw URL
         # The actual call happens inside GitLoader.load()
 
-    @patch.object(HTTPLoader, "load")
+    @patch.object(HTTPLoader if HAS_REQUESTS else object, "load")
     def test_gitlab_url_conversion(self, mock_http_load):
         """Test GitLab URL conversion to raw URL."""
         mock_http_load.return_value = {"test": "config"}
@@ -276,7 +280,7 @@ class TestGitLoader(unittest.TestCase):
 
         self.assertEqual(config, {"test": "config"})
 
-    @patch.object(HTTPLoader, "load")
+    @patch.object(HTTPLoader if HAS_REQUESTS else object, "load")
     def test_git_with_token(self, mock_http_load):
         """Test Git loading with access token."""
         mock_http_load.return_value = {"test": "config"}

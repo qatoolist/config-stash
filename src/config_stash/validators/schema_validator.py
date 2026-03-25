@@ -60,22 +60,40 @@ class SchemaValidator:
         """Validate and apply default values from schema.
 
         Args:
-            config: Configuration dictionary
+            config: Configuration dictionary (not modified)
 
         Returns:
-            Configuration with defaults applied
+            New configuration dict with defaults applied
         """
+        import copy
+
         # First validate
         self.validate(config)
 
-        # Apply defaults from schema
-        if "properties" in self.schema:
-            for prop, prop_schema in self.schema["properties"].items():
-                if prop not in config and "default" in prop_schema:
-                    config[prop] = prop_schema["default"]
-                    logger.debug(f"Applied default value for '{prop}': {prop_schema['default']}")
+        # Work on a copy to avoid mutating the input
+        result = copy.deepcopy(config)
 
-        return config
+        # Apply defaults from schema recursively
+        self._apply_defaults(result, self.schema)
+
+        return result
+
+    def _apply_defaults(self, config: Dict[str, Any], schema: Dict[str, Any]) -> None:
+        """Recursively apply default values from schema properties.
+
+        Args:
+            config: Configuration dictionary to apply defaults to (mutated in-place)
+            schema: Schema dictionary with properties and defaults
+        """
+        if "properties" not in schema:
+            return
+
+        for prop, prop_schema in schema["properties"].items():
+            if prop not in config and "default" in prop_schema:
+                config[prop] = prop_schema["default"]
+                logger.debug(f"Applied default value for '{prop}': {prop_schema['default']}")
+            elif prop in config and isinstance(config[prop], dict) and prop_schema.get("type") == "object":
+                self._apply_defaults(config[prop], prop_schema)
 
     @classmethod
     def from_file(cls, schema_path: str) -> "SchemaValidator":

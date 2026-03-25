@@ -4,8 +4,10 @@ import configparser
 from pathlib import Path
 from typing import Any, Dict, Optional
 
+from config_stash.loaders.loader import Loader
 
-class IniLoader:
+
+class IniLoader(Loader):
     """Loader for INI configuration files."""
 
     def __init__(self, source: str):
@@ -14,7 +16,7 @@ class IniLoader:
         Args:
             source: Path to the INI file
         """
-        self.source = source
+        super().__init__(source)
 
     def load(self) -> Optional[Dict[str, Any]]:
         """Load configuration from INI file.
@@ -27,24 +29,18 @@ class IniLoader:
 
         # Use RawConfigParser to avoid interpolation of % characters
         parser = configparser.RawConfigParser()
-        parser.read(self.source)
+        read_ok = parser.read(self.source)
+        if not read_ok:
+            # parser.read() silently ignores unreadable files
+            return None
 
         config: Dict[str, Any] = {}
 
         for section in parser.sections():
             config[section] = {}
             for key, value in parser.items(section):
-                # Try to convert values to appropriate types
-                if value.lower() == 'true':
-                    config[section][key] = True
-                elif value.lower() == 'false':
-                    config[section][key] = False
-                elif value.isdigit():
-                    config[section][key] = int(value)
-                else:
-                    try:
-                        config[section][key] = float(value)
-                    except ValueError:
-                        config[section][key] = value
+                from config_stash.utils.type_coercion import parse_scalar_value
+
+                config[section][key] = parse_scalar_value(value)
 
         return config

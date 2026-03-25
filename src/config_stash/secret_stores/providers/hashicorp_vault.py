@@ -124,8 +124,7 @@ class HashiCorpVault(SecretStore):
         """
         if not HVAC_AVAILABLE:
             raise ImportError(
-                "hvac is required for HashiCorpVault. "
-                "Install it with: pip install hvac"
+                "hvac is required for HashiCorpVault. " "Install it with: pip install hvac"
             )
 
         self.url = url
@@ -143,9 +142,7 @@ class HashiCorpVault(SecretStore):
             elif token:
                 self.client.token = token
             elif role_id and secret_id:
-                auth_response = self.client.auth.approle.login(
-                    role_id=role_id, secret_id=secret_id
-                )
+                auth_response = self.client.auth.approle.login(role_id=role_id, secret_id=secret_id)
                 self.client.token = auth_response["auth"]["client_token"]
             else:
                 raise ValueError(
@@ -156,8 +153,10 @@ class HashiCorpVault(SecretStore):
             if not self.client.is_authenticated():
                 raise SecretAccessError("Failed to authenticate with Vault")
 
+        except (SecretAccessError, ValueError):
+            raise
         except Exception as e:
-            raise SecretAccessError(f"Failed to initialize Vault client: {e}")
+            raise SecretAccessError(f"Failed to initialize Vault client: {e}") from e
 
     def get_secret(self, key: str, version: Optional[str] = None, **kwargs) -> Any:
         """Retrieve a secret from Vault.
@@ -281,18 +280,12 @@ class HashiCorpVault(SecretStore):
             if self.kv_version == 2:
                 # KV v2 API
                 self.client.secrets.kv.v2.create_or_update_secret(
-                    path=key,
-                    secret=secret_data,
-                    mount_point=self.mount_point,
-                    **kwargs
+                    path=key, secret=secret_data, mount_point=self.mount_point, **kwargs
                 )
             else:
                 # KV v1 API
                 self.client.secrets.kv.v1.create_or_update_secret(
-                    path=key,
-                    secret=secret_data,
-                    mount_point=self.mount_point,
-                    **kwargs
+                    path=key, secret=secret_data, mount_point=self.mount_point, **kwargs
                 )
 
         except Forbidden as e:
@@ -340,16 +333,11 @@ class HashiCorpVault(SecretStore):
                     versions = [current_version]
 
                 self.client.secrets.kv.v2.delete_secret_versions(
-                    path=key,
-                    versions=versions,
-                    mount_point=self.mount_point
+                    path=key, versions=versions, mount_point=self.mount_point
                 )
             else:
                 # KV v1 delete
-                self.client.secrets.kv.v1.delete_secret(
-                    path=key,
-                    mount_point=self.mount_point
-                )
+                self.client.secrets.kv.v1.delete_secret(path=key, mount_point=self.mount_point)
 
         except InvalidPath:
             raise SecretNotFoundError(f"Secret '{key}' not found")
@@ -386,13 +374,11 @@ class HashiCorpVault(SecretStore):
         try:
             if self.kv_version == 2:
                 response = self.client.secrets.kv.v2.list_secrets(
-                    path=path,
-                    mount_point=self.mount_point
+                    path=path, mount_point=self.mount_point
                 )
             else:
                 response = self.client.secrets.kv.v1.list_secrets(
-                    path=path,
-                    mount_point=self.mount_point
+                    path=path, mount_point=self.mount_point
                 )
 
             keys = response.get("data", {}).get("keys", [])
@@ -429,14 +415,11 @@ class HashiCorpVault(SecretStore):
             >>> print(f"Created: {metadata['created_time']}")
         """
         if self.kv_version != 2:
-            raise NotImplementedError(
-                "Metadata is only available for KV v2 secrets engine"
-            )
+            raise NotImplementedError("Metadata is only available for KV v2 secrets engine")
 
         try:
             response = self.client.secrets.kv.v2.read_secret_metadata(
-                path=key,
-                mount_point=self.mount_point
+                path=key, mount_point=self.mount_point
             )
 
             return response.get("data", {})

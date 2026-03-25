@@ -5,12 +5,20 @@ class LoaderManager:
     def __init__(self, loaders):
         self.loaders = loaders
         self.configs = []
-        self._load_configs()
 
     def _load_configs(self):
+        import logging
+
+        logger = logging.getLogger(__name__)
         for loader in self.loaders:
-            config = loader.load()
-            self.configs.append((config, loader.source))
+            try:
+                config = loader.load()
+                if config is not None:  # Only append if config was loaded successfully
+                    self.configs.append((config, loader.source))
+            except Exception as e:
+                # Log warning but continue with other loaders
+                logger.warning(f"Failed to load configuration from {loader.source}: {e}")
+                continue
 
     def get_configs(self):
         return self.configs

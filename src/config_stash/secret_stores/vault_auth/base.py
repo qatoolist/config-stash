@@ -60,11 +60,10 @@ class VaultAuthMethod(ABC):
         Raises:
             NotImplementedError: If renewal is not supported
         """
-        raise NotImplementedError(
-            f"{self.__class__.__name__} does not support token renewal"
-        )
+        raise NotImplementedError(f"{self.__class__.__name__} does not support token renewal")
 
 
 class VaultAuthenticationError(Exception):
     """Raised when Vault authentication fails."""
+
     pass

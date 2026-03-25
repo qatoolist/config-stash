@@ -1,0 +1,137 @@
+services:
+  # Main development container
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ../:/workspace:cached
+      # Python cache volumes for better performance
+      - pip-cache:/home/vscode/.cache/pip
+      - mypy-cache:/workspace/.mypy_cache
+      - pytest-cache:/workspace/.pytest_cache
+      - ruff-cache:/workspace/.ruff_cache
+    command: sleep infinity
+    network_mode: service:vault
+    environment:
+      # Vault configuration
+      VAULT_ADDR: "http://localhost:8200"
+      VAULT_DEV_ROOT_TOKEN_ID: "dev-token-12345"
+      VAULT_TOKEN: "dev-token-12345"
+
+      # AWS LocalStack configuration
+      AWS_ENDPOINT_URL: "http://localhost:4566"
+      AWS_ACCESS_KEY_ID: "test"
+      AWS_SECRET_ACCESS_KEY: "test"
+      AWS_DEFAULT_REGION: "us-east-1"
+
+      # Python configuration
+      PYTHONPATH: "/workspace"
+      PYTHONDONTWRITEBYTECODE: "1"
+      PYTHONUNBUFFERED: "1"
+      PIP_NO_CACHE_DIR: "1"
+    depends_on:
+      vault:
+        condition: service_healthy
+      localstack:
+        condition: service_started
+
+  # HashiCorp Vault for secret store testing
+  vault:
+    image: hashicorp/vault:1.15
+    restart: unless-stopped
+    ports:
+      - "8200:8200"
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: "dev-token-12345"
+      VAULT_DEV_LISTEN_ADDRESS: "0.0.0.0:8200"
+      VAULT_ADDR: "http://0.0.0.0:8200"
+    cap_add:
+      - IPC_LOCK
+    command: server -dev -dev-root-token-id=dev-token-12345
+    healthcheck:
+      test: ["CMD", "vault", "status"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+    volumes:
+      - vault-data:/vault/data
+      - vault-logs:/vault/logs
+
+  # LocalStack for AWS services (Secrets Manager, S3, etc.)
+  localstack:
+    image: localstack/localstack:3.0
+    restart: unless-stopped
+    ports:
+      - "4566:4566"
+    environment:
+      # Services to enable
+      SERVICES: "secretsmanager,s3"
+      DEBUG: "0"
+      # Persistence - use separate directory
+      PERSISTENCE: "0"
+      # AWS configuration
+      AWS_DEFAULT_REGION: "us-east-1"
+      AWS_ACCESS_KEY_ID: "test"
+      AWS_SECRET_ACCESS_KEY: "test"
+      # Disable problematic features
+      SKIP_INFRA_DOWNLOADS: "1"
+    volumes:
+      - "${TMPDIR:-/tmp}/localstack:/var/lib/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 20s
+
+  # PostgreSQL for testing database integrations (optional)
+  postgres:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: config_stash_user
+      POSTGRES_PASSWORD: config_stash_pass
+      POSTGRES_DB: config_stash_test
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U config_stash_user"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
+  # Redis for testing cache integrations (optional)
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
+# Named volumes for persistence and performance
+volumes:
+  # Python caches
+  pip-cache:
+  mypy-cache:
+  pytest-cache:
+  ruff-cache:
+
+  # Service data
+  vault-data:
+  vault-logs:
+  postgres-data:
+  redis-data:
+
+networks:
+  default:
+    name: config-stash-network

@@ -40,14 +40,12 @@ class SecretResolver:
         >>> # Use with Config
         >>> config = Config(env='prod', secret_resolver=resolver)
         >>>
-        >>> # In config file: database.password = "${secret:db/password}"
+        >>> # In config file: database.password = "${"secret" + ":" + "db/password"}"
         >>> # Automatically resolves to: "super-secret"
     """
 
     # Pattern matches: ${secret:key} or ${secret:key:json_path} or ${secret:key:version}
-    SECRET_PATTERN = re.compile(
-        r"\$\{secret:([^}:]+)(?::([^}:]+))?(?::([^}]+))?\}"
-    )
+    SECRET_PATTERN = re.compile(r"\$\{secret:([^}:]+)(?::([^}:]+))?(?::([^}]+))?\}")
 
     def __init__(
         self,
@@ -55,6 +53,7 @@ class SecretResolver:
         cache_enabled: bool = True,
         fail_on_missing: bool = True,
         prefix: Optional[str] = None,
+        cache_ttl: Optional[float] = None,
     ) -> None:
         """Initialize the secret resolver.
 
@@ -62,25 +61,31 @@ class SecretResolver:
             secret_store: The secret store instance to use for resolving secrets.
             cache_enabled: Enable caching of resolved secrets (default: True).
                 Caching improves performance but secrets won't be refreshed until
-                config reload.
+                config reload or TTL expiry.
             fail_on_missing: Raise an error if a secret is not found (default: True).
                 If False, leaves the placeholder unchanged.
             prefix: Optional prefix to prepend to all secret keys. Useful for
                 namespacing secrets per environment.
+            cache_ttl: Optional cache time-to-live in seconds. If set, cached
+                secrets expire after this duration and are re-fetched on next access.
+                If None (default), cache entries never expire.
 
         Example:
             >>> resolver = SecretResolver(
             ...     secret_store=my_store,
             ...     cache_enabled=True,
             ...     fail_on_missing=True,
-            ...     prefix="prod/"
+            ...     prefix="prod/",
+            ...     cache_ttl=300,  # 5 minutes
             ... )
         """
         self.secret_store = secret_store
         self.cache_enabled = cache_enabled
         self.fail_on_missing = fail_on_missing
         self.prefix = prefix
+        self.cache_ttl = cache_ttl
         self._cache: Dict[str, Any] = {}
+        self._cache_timestamps: Dict[str, float] = {}
 
     def resolve(self, value: Any) -> Any:
         """Resolve secret placeholders in a value.
@@ -123,9 +128,21 @@ class SecretResolver:
                 key = f"{self.prefix}{key}"
 
             # Check cache first
+            import time
+
             cache_key = f"{key}:{json_path_or_version}:{version}"
             if self.cache_enabled and cache_key in self._cache:
-                return str(self._cache[cache_key])
+                # Check TTL if configured
+                if self.cache_ttl is not None:
+                    cached_at = self._cache_timestamps.get(cache_key, 0)
+                    if (time.time() - cached_at) > self.cache_ttl:
+                        # Cache entry expired — remove and re-fetch
+                        del self._cache[cache_key]
+                        del self._cache_timestamps[cache_key]
+                    else:
+                        return str(self._cache[cache_key])
+                else:
+                    return str(self._cache[cache_key])
 
             try:
                 # Fetch secret from store
@@ -133,21 +150,19 @@ class SecretResolver:
 
                 # Extract nested value using json path if provided
                 if json_path_or_version and isinstance(secret_value, dict):
-                    secret_value = self._extract_json_path(
-                        secret_value, json_path_or_version
-                    )
+                    secret_value = self._extract_json_path(secret_value, json_path_or_version)
 
                 # Cache the result
                 if self.cache_enabled:
                     self._cache[cache_key] = secret_value
+                    self._cache_timestamps[cache_key] = time.time()
 
                 return str(secret_value)
 
             except SecretNotFoundError:
                 if self.fail_on_missing:
                     raise SecretNotFoundError(
-                        f"Secret not found: {key}. "
-                        f"Placeholder: {match.group(0)}"
+                        f"Secret not found: {key}. " f"Placeholder: {match.group(0)}"
                     )
                 # Return original placeholder if fail_on_missing is False
                 return match.group(0)
@@ -191,9 +206,9 @@ class SecretResolver:
                 current = current[key]
             else:
                 from config_stash.secret_stores.base import SecretValidationError
+
                 raise SecretValidationError(
-                    f"JSON path '{path}' not found in secret data. "
-                    f"Failed at key: '{key}'"
+                    f"JSON path '{path}' not found in secret data. " f"Failed at key: '{key}'"
                 )
 
         return current

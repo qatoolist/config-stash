@@ -52,14 +52,13 @@ default:
         """Clean up test environment."""
         os.chdir(self.original_dir)
         import shutil
+
         shutil.rmtree(self.temp_dir)
 
     def test_on_change_decorator_registration(self):
         """Test that callbacks can be registered using the decorator."""
         config = Config(
-            loaders=[YamlLoader(self.config_file)],
-            env="default",
-            enable_ide_support=False
+            loaders=[YamlLoader(self.config_file)], env="default", enable_ide_support=False
         )
 
         callback_mock = MagicMock()
@@ -75,9 +74,7 @@ default:
     def test_multiple_callbacks_registration(self):
         """Test that multiple callbacks can be registered."""
         config = Config(
-            loaders=[YamlLoader(self.config_file)],
-            env="default",
-            enable_ide_support=False
+            loaders=[YamlLoader(self.config_file)], env="default", enable_ide_support=False
         )
 
         callback1 = MagicMock()
@@ -101,20 +98,14 @@ default:
     def test_callbacks_triggered_on_reload(self):
         """Test that callbacks are triggered when config is reloaded."""
         config = Config(
-            loaders=[YamlLoader(self.config_file)],
-            env="default",
-            enable_ide_support=False
+            loaders=[YamlLoader(self.config_file)], env="default", enable_ide_support=False
         )
 
         changes_captured = []
 
         @config.on_change
         def capture_changes(key, old_value, new_value):
-            changes_captured.append({
-                'key': key,
-                'old': old_value,
-                'new': new_value
-            })
+            changes_captured.append({"key": key, "old": old_value, "new": new_value})
 
         # Update the config file
         with open(self.config_file, "w") as f:
@@ -127,25 +118,23 @@ default:
         self.assertTrue(len(changes_captured) > 0)
 
         # Check specific changes
-        changes_dict = {c['key']: c for c in changes_captured}
+        changes_dict = {c["key"]: c for c in changes_captured}
 
         # Database host changed
-        if 'database' in changes_dict:
-            db_change = changes_dict['database']
-            self.assertIn('localhost', str(db_change['old']))
-            self.assertIn('production.db.com', str(db_change['new']))
+        if "database" in changes_dict:
+            db_change = changes_dict["database"]
+            self.assertIn("localhost", str(db_change["old"]))
+            self.assertIn("production.db.com", str(db_change["new"]))
 
         # New feature was added
-        self.assertIn('new_feature', changes_dict)
-        self.assertIsNone(changes_dict['new_feature']['old'])
-        self.assertIsNotNone(changes_dict['new_feature']['new'])
+        self.assertIn("new_feature", changes_dict)
+        self.assertIsNone(changes_dict["new_feature"]["old"])
+        self.assertIsNotNone(changes_dict["new_feature"]["new"])
 
     def test_callback_error_handling(self):
         """Test that errors in callbacks don't break the reload process."""
         config = Config(
-            loaders=[YamlLoader(self.config_file)],
-            env="default",
-            enable_ide_support=False
+            loaders=[YamlLoader(self.config_file)], env="default", enable_ide_support=False
         )
 
         good_callback = MagicMock()
@@ -163,13 +152,13 @@ default:
             f.write(self.updated_config)
 
         # Reload should not raise despite callback error
-        with patch('config_stash.config.logger') as mock_logger:
+        with patch("config_stash.config.logger") as mock_logger:
             config.reload()
 
             # Check that error was logged
             mock_logger.error.assert_called()
             error_calls = mock_logger.error.call_args_list
-            self.assertTrue(any('Error in change callback' in str(call) for call in error_calls))
+            self.assertTrue(any("Error in change callback" in str(call) for call in error_calls))
 
         # Good callback should still have been called
         good_callback.assert_called()
@@ -180,18 +169,14 @@ default:
             loaders=[YamlLoader(self.config_file)],
             env="default",
             dynamic_reloading=True,
-            enable_ide_support=False
+            enable_ide_support=False,
         )
 
         changes_captured = []
 
         @config.on_change
         def capture_changes(key, old_value, new_value):
-            changes_captured.append({
-                'key': key,
-                'old': old_value,
-                'new': new_value
-            })
+            changes_captured.append({"key": key, "old": old_value, "new": new_value})
 
         # Update the config file
         with open(self.config_file, "w") as f:
@@ -213,16 +198,14 @@ default:
     def test_callbacks_with_nested_changes(self):
         """Test callbacks properly handle nested configuration changes."""
         config = Config(
-            loaders=[YamlLoader(self.config_file)],
-            env="default",
-            enable_ide_support=False
+            loaders=[YamlLoader(self.config_file)], env="default", enable_ide_support=False
         )
 
         changes = {}
 
         @config.on_change
         def track_changes(key, old_value, new_value):
-            changes[key] = {'old': old_value, 'new': new_value}
+            changes[key] = {"old": old_value, "new": new_value}
 
         # Create config with nested changes
         nested_update = """
@@ -244,14 +227,12 @@ default:
         config.reload()
 
         # Verify nested structure changes are detected
-        self.assertIn('database', changes)
+        self.assertIn("database", changes)
 
     def test_callback_return_value(self):
         """Test that callback decorator returns the original function."""
         config = Config(
-            loaders=[YamlLoader(self.config_file)],
-            env="default",
-            enable_ide_support=False
+            loaders=[YamlLoader(self.config_file)], env="default", enable_ide_support=False
         )
 
         def my_callback(key, old, new):
@@ -266,9 +247,7 @@ default:
     def test_callbacks_with_value_deletion(self):
         """Test callbacks when configuration values are deleted."""
         config = Config(
-            loaders=[YamlLoader(self.config_file)],
-            env="default",
-            enable_ide_support=False
+            loaders=[YamlLoader(self.config_file)], env="default", enable_ide_support=False
         )
 
         deletions = []
@@ -290,14 +269,12 @@ default:
         config.reload()
 
         # API section should be detected as deleted
-        self.assertIn('api', deletions)
+        self.assertIn("api", deletions)
 
     def test_callbacks_with_type_changes(self):
         """Test callbacks when value types change."""
         config = Config(
-            loaders=[YamlLoader(self.config_file)],
-            env="default",
-            enable_ide_support=False
+            loaders=[YamlLoader(self.config_file)], env="default", enable_ide_support=False
         )
 
         type_changes = []
@@ -305,12 +282,14 @@ default:
         @config.on_change
         def track_type_changes(key, old_value, new_value):
             if old_value is not None and new_value is not None:
-                if type(old_value) != type(new_value):
-                    type_changes.append({
-                        'key': key,
-                        'old_type': type(old_value).__name__,
-                        'new_type': type(new_value).__name__
-                    })
+                if type(old_value) is not type(new_value):
+                    type_changes.append(
+                        {
+                            "key": key,
+                            "old_type": type(old_value).__name__,
+                            "new_type": type(new_value).__name__,
+                        }
+                    )
 
         # Change port from int to string
         type_change_config = """
@@ -330,7 +309,7 @@ default:
 
         # Check if type changes were detected
         if type_changes:  # Type preservation depends on YAML parser
-            self.assertTrue(any(tc['key'] == 'database' for tc in type_changes))
+            self.assertTrue(any(tc["key"] == "database" for tc in type_changes))
 
     def test_callback_with_environment_specific_changes(self):
         """Test callbacks with environment-specific configuration changes."""
@@ -356,16 +335,14 @@ development:
 
         # Test with production environment
         config = Config(
-            loaders=[YamlLoader(self.config_file)],
-            env="production",
-            enable_ide_support=False
+            loaders=[YamlLoader(self.config_file)], env="production", enable_ide_support=False
         )
 
         changes = []
 
         @config.on_change
         def track_changes(key, old, new):
-            changes.append({'key': key, 'old': old, 'new': new})
+            changes.append({"key": key, "old": old, "new": new})
 
         # Update production config
         updated_env_config = """
@@ -394,7 +371,7 @@ development:
         self.assertTrue(len(changes) > 0)
 
         # Check for database changes
-        db_changes = [c for c in changes if 'database' in str(c['key'])]
+        db_changes = [c for c in changes if "database" in str(c["key"])]
         self.assertTrue(len(db_changes) > 0)
 
 
@@ -420,6 +397,7 @@ default:
         """Clean up test environment."""
         os.chdir(self.original_dir)
         import shutil
+
         shutil.rmtree(self.temp_dir)
 
     def test_ide_stub_regeneration_on_change(self):
@@ -428,7 +406,7 @@ default:
             loaders=[YamlLoader(self.config_file)],
             env="default",
             enable_ide_support=True,
-            dynamic_reloading=True
+            dynamic_reloading=True,
         )
 
         # Check initial stub exists

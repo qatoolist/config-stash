@@ -5,8 +5,9 @@ from typing import Optional
 
 # Try to import pydantic
 try:
-    from pydantic import BaseModel, Field, ValidationError
+    from pydantic import BaseModel, Field
 
+    from config_stash.exceptions import ConfigValidationError
     from config_stash.validators.pydantic_validator import (
         AppConfig,
         DatabaseConfig,
@@ -57,18 +58,18 @@ class TestPydanticValidator(unittest.TestCase):
         validator = PydanticValidator(self.SimpleConfig)
         config = {"age": 30}  # Missing required 'name'
 
-        with self.assertRaises(ValidationError) as context:
+        with self.assertRaises(ConfigValidationError) as context:
             validator.validate(config)
 
-        errors = context.exception.errors()
-        self.assertTrue(any(e["loc"] == ("name",) for e in errors))
+        errors = context.exception.validation_errors
+        self.assertTrue(any(e.get("loc") == ("name",) or e.get("loc") == ["name"] for e in errors))
 
     def test_type_validation(self):
         """Test that types are validated correctly."""
         validator = PydanticValidator(self.SimpleConfig)
         config = {"name": "John", "age": "thirty"}  # Should be integer
 
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(ConfigValidationError):
             validator.validate(config)
 
     def test_field_constraints(self):
@@ -77,12 +78,12 @@ class TestPydanticValidator(unittest.TestCase):
 
         # Age too high
         config = {"name": "John", "age": 200}
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(ConfigValidationError):
             validator.validate(config)
 
         # Age negative
         config = {"name": "John", "age": -5}
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(ConfigValidationError):
             validator.validate(config)
 
     def test_default_values(self):
@@ -208,10 +209,10 @@ class TestPydanticValidator(unittest.TestCase):
             "extra_field": "not allowed",  # Extra field
         }
 
-        with self.assertRaises(ValidationError) as context:
+        with self.assertRaises(ConfigValidationError) as context:
             validator.validate(config)
 
-        errors = context.exception.errors()
+        errors = context.exception.validation_errors
         self.assertTrue(any("extra" in str(e).lower() for e in errors))
 
     def test_log_level_pattern(self):
@@ -225,7 +226,7 @@ class TestPydanticValidator(unittest.TestCase):
             "database": {"database": "db", "username": "user"},
         }
 
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(ConfigValidationError):
             validator.validate(config)
 
 

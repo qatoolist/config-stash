@@ -10,6 +10,12 @@ class TestConfigExtender(unittest.TestCase):
         self.config = Mock(spec=Config)
         self.config.merged_config = {}
         self.config.env = "default"
+        self.config.deep_merge = False
+        self.config.loader_manager = Mock()
+        self.config.loader_manager.loaders = []
+        self.config.attribute_accessor = Mock()
+        self.config.hook_processor = Mock()
+        self.config.env_config = {}
         self.extender = ConfigExtender(self.config)
 
     def test_extend(self):

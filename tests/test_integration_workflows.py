@@ -32,6 +32,7 @@ class TestRealWorldWorkflows(unittest.TestCase):
         """Clean up test environment."""
         os.chdir(self.original_dir)
         import shutil
+
         shutil.rmtree(self.temp_dir)
 
     def test_complete_application_configuration_workflow(self):
@@ -108,23 +109,23 @@ CACHE_PASSWORD=redis_password
             f.write(env_content)
 
         # Step 4: Set environment-specific overrides
-        os.environ['APP_DATABASE__MAX_CONNECTIONS'] = '100'
-        os.environ['APP_FEATURE__ANALYTICS'] = 'true'
-        os.environ['APP_FEATURE__BETA_UI'] = 'false'
+        os.environ["APP_DATABASE__MAX_CONNECTIONS"] = "100"
+        os.environ["APP_FEATURE__ANALYTICS"] = "true"
+        os.environ["APP_FEATURE__BETA_UI"] = "false"
 
         try:
             # Step 5: Load configuration for production with all sources
             config = Config(
                 loaders=[
-                    YamlLoader("config.yaml"),          # Base config
-                    YamlLoader("production.yaml"),      # Production overrides
-                    EnvFileLoader(".env"),              # Secrets
-                    EnvironmentLoader("APP")            # Runtime overrides
+                    YamlLoader("config.yaml"),  # Base config
+                    YamlLoader("production.yaml"),  # Production overrides
+                    EnvFileLoader(".env"),  # Secrets
+                    EnvironmentLoader("APP"),  # Runtime overrides
                 ],
                 env="production",
                 deep_merge=True,
                 debug_mode=True,
-                enable_ide_support=False
+                enable_ide_support=False,
             )
 
             # Step 6: Verify configuration hierarchy worked correctly
@@ -140,7 +141,9 @@ CACHE_PASSWORD=redis_password
 
             # Deep merge preserved base values
             self.assertEqual(config.database.engine, "postgresql")
-            self.assertTrue(config.cache.enabled)  # Preserved from default (not overridden in production)
+            self.assertTrue(
+                config.cache.enabled
+            )  # Preserved from default (not overridden in production)
 
             # Secrets from .env
             self.assertEqual(config.DATABASE_PASSWORD, "super_secret_password")
@@ -166,9 +169,9 @@ CACHE_PASSWORD=redis_password
 
         finally:
             # Cleanup
-            del os.environ['APP_DATABASE__MAX_CONNECTIONS']
-            del os.environ['APP_FEATURE__ANALYTICS']
-            del os.environ['APP_FEATURE__BETA_UI']
+            del os.environ["APP_DATABASE__MAX_CONNECTIONS"]
+            del os.environ["APP_FEATURE__ANALYTICS"]
+            del os.environ["APP_FEATURE__BETA_UI"]
 
     def test_multi_environment_deployment_workflow(self):
         """Test deploying the same app across multiple environments."""
@@ -195,18 +198,18 @@ default:
             "development": {
                 "database": {"host": "dev-db", "port": 5432},
                 "cache": {"host": "dev-cache"},
-                "app": {"debug": True}
+                "app": {"debug": True},
             },
             "staging": {
                 "database": {"host": "staging-db", "port": 5432},
                 "cache": {"host": "staging-cache"},
-                "app": {"debug": False}
+                "app": {"debug": False},
             },
             "production": {
                 "database": {"host": "prod-db", "port": 5433},
                 "cache": {"host": "prod-cache"},
-                "app": {"debug": False}
-            }
+                "app": {"debug": False},
+            },
         }
 
         for env_name, env_config in environments.items():
@@ -217,13 +220,10 @@ default:
         # Test each environment
         for env_name in ["development", "staging", "production"]:
             config = Config(
-                loaders=[
-                    YamlLoader("base.yaml"),
-                    JsonLoader(f"{env_name}.json")
-                ],
+                loaders=[YamlLoader("base.yaml"), JsonLoader(f"{env_name}.json")],
                 env=env_name,
                 deep_merge=True,
-                enable_ide_support=False
+                enable_ide_support=False,
             )
 
             # Verify environment-specific values
@@ -254,7 +254,7 @@ default:
             loaders=[YamlLoader("config.yaml")],
             env="default",
             dynamic_reloading=True,
-            enable_ide_support=False
+            enable_ide_support=False,
         )
 
         # Track changes
@@ -262,12 +262,7 @@ default:
 
         @config.on_change
         def track_changes(key, old, new):
-            changes.append({
-                'key': key,
-                'old': old,
-                'new': new,
-                'timestamp': time.time()
-            })
+            changes.append({"key": key, "old": old, "new": new, "timestamp": time.time()})
 
         # Verify initial state
         self.assertFalse(config.feature.enabled)
@@ -320,33 +315,20 @@ user = olduser
 
         # Step 1: Load old configuration
         old_config_obj = Config(
-            loaders=[IniLoader("legacy.ini")],
-            env="default",
-            enable_ide_support=False
+            loaders=[IniLoader("legacy.ini")], env="default", enable_ide_support=False
         )
 
         # Step 2: Export to new format (YAML)
-        yaml_export = old_config_obj.export(
-            format="yaml",
-            output_path="migrated.yaml"
-        )
+        yaml_export = old_config_obj.export(format="yaml", output_path="migrated.yaml")
 
         # Step 3: Load from new format
         new_config_obj = Config(
-            loaders=[YamlLoader("migrated.yaml")],
-            env="default",
-            enable_ide_support=False
+            loaders=[YamlLoader("migrated.yaml")], env="default", enable_ide_support=False
         )
 
         # Step 4: Verify data integrity
-        self.assertEqual(
-            old_config_obj.server.host,
-            new_config_obj.server.host
-        )
-        self.assertEqual(
-            old_config_obj.database.port,
-            new_config_obj.database.port
-        )
+        self.assertEqual(old_config_obj.server.host, new_config_obj.server.host)
+        self.assertEqual(old_config_obj.database.port, new_config_obj.database.port)
 
     def test_configuration_debugging_workflow(self):
         """Test debugging configuration conflicts and issues."""
@@ -384,12 +366,12 @@ default:
             loaders=[
                 YamlLoader("base.yaml"),
                 YamlLoader("override1.yaml"),
-                YamlLoader("override2.yaml")
+                YamlLoader("override2.yaml"),
             ],
             env="default",
             debug_mode=True,
             deep_merge=True,
-            enable_ide_support=False
+            enable_ide_support=False,
         )
 
         # Check final value
@@ -452,19 +434,16 @@ production:
             f.write(features)
 
         # Allow runtime feature flag overrides
-        os.environ['APP_FEATURES__BETA_FEATURES'] = 'true'
-        os.environ['APP_FEATURES__AI_SUGGESTIONS'] = 'true'
+        os.environ["APP_FEATURES__BETA_FEATURES"] = "true"
+        os.environ["APP_FEATURES__AI_SUGGESTIONS"] = "true"
 
         try:
             # Load for production with runtime overrides
             config = Config(
-                loaders=[
-                    YamlLoader("features.yaml"),
-                    EnvironmentLoader("APP")
-                ],
+                loaders=[YamlLoader("features.yaml"), EnvironmentLoader("APP")],
                 env="production",
                 deep_merge=True,
-                enable_ide_support=False
+                enable_ide_support=False,
             )
 
             # Verify feature flags
@@ -474,8 +453,8 @@ production:
             self.assertTrue(config.features.ai_suggestions)  # From env var
 
         finally:
-            del os.environ['APP_FEATURES__BETA_FEATURES']
-            del os.environ['APP_FEATURES__AI_SUGGESTIONS']
+            del os.environ["APP_FEATURES__BETA_FEATURES"]
+            del os.environ["APP_FEATURES__AI_SUGGESTIONS"]
 
     def test_secrets_management_workflow(self):
         """Test secure secrets management workflow."""
@@ -507,12 +486,9 @@ API_KEY=external_api_key_abc
 
         # Load configuration
         config = Config(
-            loaders=[
-                YamlLoader("config.yaml"),
-                EnvFileLoader(".env.local")
-            ],
+            loaders=[YamlLoader("config.yaml"), EnvFileLoader(".env.local")],
             env="default",
-            enable_ide_support=False
+            enable_ide_support=False,
         )
 
         # Verify app config loaded
@@ -561,16 +537,16 @@ default:
         services = {
             "auth-service": {
                 "service": {"name": "auth", "port": 8001},
-                "database": {"name": "auth_db"}
+                "database": {"name": "auth_db"},
             },
             "user-service": {
                 "service": {"name": "users", "port": 8002},
-                "database": {"name": "users_db"}
+                "database": {"name": "users_db"},
             },
             "order-service": {
                 "service": {"name": "orders", "port": 8003},
-                "database": {"name": "orders_db"}
-            }
+                "database": {"name": "orders_db"},
+            },
         }
 
         # Test each service gets shared + service-specific config
@@ -580,13 +556,10 @@ default:
                 json.dump(service_data, f)
 
             config = Config(
-                loaders=[
-                    YamlLoader("shared.yaml"),
-                    JsonLoader(f"{service_name}.json")
-                ],
+                loaders=[YamlLoader("shared.yaml"), JsonLoader(f"{service_name}.json")],
                 env="default",
                 deep_merge=True,
-                enable_ide_support=False
+                enable_ide_support=False,
             )
 
             # Verify shared config
@@ -622,28 +595,20 @@ default:
                 "database": {
                     "type": "object",
                     "required": ["host", "port"],
-                    "properties": {
-                        "host": {"type": "string"},
-                        "port": {"type": "integer"}
-                    }
+                    "properties": {"host": {"type": "string"}, "port": {"type": "integer"}},
                 },
                 "api": {
                     "type": "object",
-                    "properties": {
-                        "endpoint": {"type": "string"},
-                        "timeout": {"type": "integer"}
-                    }
-                }
-            }
+                    "properties": {"endpoint": {"type": "string"}, "timeout": {"type": "integer"}},
+                },
+            },
         }
         with open("schema.json", "w") as f:
             json.dump(schema, f)
 
         # Load and validate
         config = Config(
-            loaders=[YamlLoader("config.yaml")],
-            env="default",
-            enable_ide_support=False
+            loaders=[YamlLoader("config.yaml")], env="default", enable_ide_support=False
         )
 
         # Validate
@@ -671,6 +636,7 @@ class TestEdgeCasesAndErrorHandling(unittest.TestCase):
         """Clean up test environment."""
         os.chdir(self.original_dir)
         import shutil
+
         shutil.rmtree(self.temp_dir)
 
     def test_missing_files_graceful_handling(self):
@@ -689,10 +655,10 @@ default:
             loaders=[
                 YamlLoader("exists.yaml"),
                 YamlLoader("missing.yaml"),  # Doesn't exist
-                JsonLoader("also_missing.json")  # Doesn't exist
+                JsonLoader("also_missing.json"),  # Doesn't exist
             ],
             env="default",
-            enable_ide_support=False
+            enable_ide_support=False,
         )
 
         # Should still load from existing file
@@ -704,11 +670,7 @@ default:
         with open("empty.yaml", "w") as f:
             f.write(empty)
 
-        config = Config(
-            loaders=[YamlLoader("empty.yaml")],
-            env="default",
-            enable_ide_support=False
-        )
+        config = Config(loaders=[YamlLoader("empty.yaml")], env="default", enable_ide_support=False)
 
         # Should not crash
         config_dict = config.to_dict()
@@ -723,23 +685,23 @@ default:
         with open("config.yaml", "w") as f:
             f.write(config_content)
 
-        os.environ['SELF_REF'] = '${OTHER_REF}'
-        os.environ['OTHER_REF'] = 'final_value'
+        os.environ["SELF_REF"] = "${OTHER_REF}"
+        os.environ["OTHER_REF"] = "final_value"
 
         try:
             config = Config(
                 loaders=[YamlLoader("config.yaml")],
                 env="default",
                 use_env_expander=True,
-                enable_ide_support=False
+                enable_ide_support=False,
             )
 
             # Should handle the reference chain
             # (behavior depends on implementation)
 
         finally:
-            del os.environ['SELF_REF']
-            del os.environ['OTHER_REF']
+            del os.environ["SELF_REF"]
+            del os.environ["OTHER_REF"]
 
 
 if __name__ == "__main__":

@@ -6,6 +6,8 @@ import os
 from typing import Any, Dict, Optional
 from urllib.parse import urlparse
 
+from config_stash.exceptions import ConfigAccessError, ConfigFormatError, ConfigLoadError
+
 logger = logging.getLogger(__name__)
 
 # requests is optional
@@ -76,28 +78,41 @@ class HTTPLoader(RemoteLoader):
             response.raise_for_status()
 
             # Detect format from content-type or URL
+            from config_stash.utils.format_parser import parse_config_content
+
             content_type = response.headers.get("content-type", "")
 
-            if "json" in content_type or self.url.endswith(".json"):
-                self.config = response.json()
-            elif "yaml" in content_type or self.url.endswith((".yaml", ".yml")):
-                import yaml
-
-                self.config = yaml.safe_load(response.text)
-            elif "toml" in content_type or self.url.endswith(".toml"):
-                import toml
-
-                self.config = toml.loads(response.text)
+            # Map content-type to a pseudo-filename for format detection
+            if "yaml" in content_type:
+                format_hint = "response.yaml"
+            elif "toml" in content_type:
+                format_hint = "response.toml"
+            elif "json" in content_type:
+                format_hint = "response.json"
             else:
-                # Try JSON as default
-                self.config = response.json()
+                format_hint = self.url  # Use URL extension
+
+            self.config = parse_config_content(response.text, format_hint)
 
             logger.info(f"Successfully loaded configuration from {self.url}")
             return self.config
 
         except requests.RequestException as e:
             logger.error(f"Failed to load configuration from {self.url}: {e}")
-            raise RuntimeError(f"Failed to load remote configuration: {e}")
+            raise ConfigLoadError(
+                f"Failed to load remote configuration from {self.url}",
+                source=self.url,
+                loader_type=self.__class__.__name__,
+                original_error=e,
+            ) from e
+        except Exception as e:
+            logger.error(f"Failed to parse configuration from {self.url}: {e}")
+            raise ConfigLoadError(
+                f"Failed to parse remote configuration from {self.url}",
+                source=self.url,
+                loader_type=self.__class__.__name__,
+                original_error=e,
+            ) from e
 
 
 class S3Loader(RemoteLoader):
@@ -157,26 +172,24 @@ class S3Loader(RemoteLoader):
             content = response["Body"].read().decode("utf-8")
 
             # Parse based on file extension
-            if self.key.endswith(".json"):
-                self.config = json.loads(content)
-            elif self.key.endswith((".yaml", ".yml")):
-                import yaml
+            from config_stash.utils.format_parser import parse_config_content
 
-                self.config = yaml.safe_load(content)
-            elif self.key.endswith(".toml"):
-                import toml
-
-                self.config = toml.loads(content)
-            else:
-                # Try JSON as default
-                self.config = json.loads(content)
+            self.config = parse_config_content(content, self.key)
 
             logger.info(f"Successfully loaded configuration from S3: {self.url}")
             return self.config
 
+        except ConfigLoadError:
+            # Re-raise ConfigLoadError as-is
+            raise
         except Exception as e:
             logger.error(f"Failed to load configuration from S3: {e}")
-            raise RuntimeError(f"Failed to load S3 configuration: {e}")
+            raise ConfigLoadError(
+                f"Failed to load S3 configuration from {self.url}",
+                source=self.url,
+                loader_type=self.__class__.__name__,
+                original_error=e,
+            ) from e
 
 
 class GitLoader(RemoteLoader):
@@ -204,12 +217,13 @@ class GitLoader(RemoteLoader):
         if "github.com" in self.url:
             # GitHub raw URL format
             parts = self.url.replace("https://github.com/", "").split("/")
-            raw_url = f"https://raw.githubusercontent.com/{parts[0]}/{parts[1]}/{self.branch}/{self.file_path}"
+            repo = parts[1].removesuffix(".git") if len(parts) > 1 else parts[0]
+            raw_url = f"https://raw.githubusercontent.com/{parts[0]}/{repo}/{self.branch}/{self.file_path}"
         elif "gitlab.com" in self.url:
-            # GitLab raw URL format
-            parts = self.url.replace("https://gitlab.com/", "").split("/")
+            # GitLab raw URL format — handle subgroups by joining all path parts
+            path = self.url.replace("https://gitlab.com/", "").removesuffix(".git")
             raw_url = (
-                f"https://gitlab.com/{parts[0]}/{parts[1]}/-/raw/{self.branch}/{self.file_path}"
+                f"https://gitlab.com/{path}/-/raw/{self.branch}/{self.file_path}"
             )
         else:
             raise ValueError(f"Unsupported Git provider: {self.url}")
@@ -217,7 +231,10 @@ class GitLoader(RemoteLoader):
         # Use HTTP loader to fetch the raw file
         headers = {}
         if self.token:
-            headers["Authorization"] = f"token {self.token}"
+            if "gitlab.com" in self.url:
+                headers["PRIVATE-TOKEN"] = self.token
+            else:
+                headers["Authorization"] = f"token {self.token}"
 
         http_loader = HTTPLoader(raw_url, headers=headers)
         self.config = http_loader.load()
@@ -284,6 +301,11 @@ class AzureBlobLoader(RemoteLoader):
                 )
             else:
                 # Try DefaultAzureCredential for managed identity
+                if not self.account_name:
+                    raise ValueError(
+                        "Azure storage account name is required. Provide 'account_name' "
+                        "or set the AZURE_STORAGE_ACCOUNT environment variable."
+                    )
                 from azure.identity import DefaultAzureCredential
 
                 blob_service = BlobServiceClient(
@@ -305,26 +327,24 @@ class AzureBlobLoader(RemoteLoader):
             content = blob_client.download_blob().readall().decode("utf-8")
 
             # Parse based on file extension
-            if self.blob_name.endswith(".json"):
-                self.config = json.loads(content)
-            elif self.blob_name.endswith((".yaml", ".yml")):
-                import yaml
+            from config_stash.utils.format_parser import parse_config_content
 
-                self.config = yaml.safe_load(content)
-            elif self.blob_name.endswith(".toml"):
-                import toml
-
-                self.config = toml.loads(content)
-            else:
-                # Try JSON as default
-                self.config = json.loads(content)
+            self.config = parse_config_content(content, self.blob_name)
 
             logger.info(f"Successfully loaded configuration from Azure: {self.url}")
             return self.config
 
+        except ConfigLoadError:
+            # Re-raise ConfigLoadError as-is
+            raise
         except Exception as e:
             logger.error(f"Failed to load configuration from Azure: {e}")
-            raise RuntimeError(f"Failed to load Azure configuration: {e}")
+            raise ConfigLoadError(
+                f"Failed to load Azure configuration from {self.url}",
+                source=self.url,
+                loader_type=self.__class__.__name__,
+                original_error=e,
+            ) from e
 
 
 class GCPStorageLoader(RemoteLoader):
@@ -385,26 +405,24 @@ class GCPStorageLoader(RemoteLoader):
             content = blob.download_as_text()
 
             # Parse based on file extension
-            if self.blob_name.endswith(".json"):
-                self.config = json.loads(content)
-            elif self.blob_name.endswith((".yaml", ".yml")):
-                import yaml
+            from config_stash.utils.format_parser import parse_config_content
 
-                self.config = yaml.safe_load(content)
-            elif self.blob_name.endswith(".toml"):
-                import toml
-
-                self.config = toml.loads(content)
-            else:
-                # Try JSON as default
-                self.config = json.loads(content)
+            self.config = parse_config_content(content, self.blob_name)
 
             logger.info(f"Successfully loaded configuration from GCS: {self.url}")
             return self.config
 
+        except ConfigLoadError:
+            # Re-raise ConfigLoadError as-is
+            raise
         except Exception as e:
             logger.error(f"Failed to load configuration from GCS: {e}")
-            raise RuntimeError(f"Failed to load GCS configuration: {e}")
+            raise ConfigLoadError(
+                f"Failed to load GCS configuration from {self.url}",
+                source=self.url,
+                loader_type=self.__class__.__name__,
+                original_error=e,
+            ) from e
 
 
 class IBMCloudObjectStorageLoader(RemoteLoader):
@@ -467,23 +485,21 @@ class IBMCloudObjectStorageLoader(RemoteLoader):
             content = response["Body"].read().decode("utf-8")
 
             # Parse based on file extension
-            if self.object_key.endswith(".json"):
-                self.config = json.loads(content)
-            elif self.object_key.endswith((".yaml", ".yml")):
-                import yaml
+            from config_stash.utils.format_parser import parse_config_content
 
-                self.config = yaml.safe_load(content)
-            elif self.object_key.endswith(".toml"):
-                import toml
-
-                self.config = toml.loads(content)
-            else:
-                # Try JSON as default
-                self.config = json.loads(content)
+            self.config = parse_config_content(content, self.object_key)
 
             logger.info(f"Successfully loaded configuration from IBM COS: {self.url}")
             return self.config
 
+        except ConfigLoadError:
+            # Re-raise ConfigLoadError as-is
+            raise
         except Exception as e:
             logger.error(f"Failed to load configuration from IBM COS: {e}")
-            raise RuntimeError(f"Failed to load IBM COS configuration: {e}")
+            raise ConfigLoadError(
+                f"Failed to load IBM COS configuration from {self.url}",
+                source=self.url,
+                loader_type=self.__class__.__name__,
+                original_error=e,
+            ) from e

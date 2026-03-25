@@ -97,9 +97,7 @@ class MultiSecretStore(SecretStore):
                 continue
             except Exception as e:
                 # For non-NotFound errors, log but continue to next store
-                errors.append(
-                    f"Store {i} ({store.__class__.__name__}) error: {e}"
-                )
+                errors.append(f"Store {i} ({store.__class__.__name__}) error: {e}")
                 continue
 
         # Secret not found in any store
@@ -132,14 +130,10 @@ class MultiSecretStore(SecretStore):
                 try:
                     store.set_secret(key, value, **kwargs)
                 except Exception as e:
-                    errors.append(
-                        f"Store {i} ({store.__class__.__name__}): {e}"
-                    )
+                    errors.append(f"Store {i} ({store.__class__.__name__}): {e}")
 
             if errors:
-                raise SecretStoreError(
-                    f"Failed to set secret in some stores: {'; '.join(errors)}"
-                )
+                raise SecretStoreError(f"Failed to set secret in some stores: {'; '.join(errors)}")
 
     def delete_secret(self, key: str, **kwargs) -> None:
         """Delete a secret from one or all stores.
@@ -163,9 +157,7 @@ class MultiSecretStore(SecretStore):
                     # OK if secret doesn't exist in this store
                     continue
                 except Exception as e:
-                    errors.append(
-                        f"Store {i} ({store.__class__.__name__}): {e}"
-                    )
+                    errors.append(f"Store {i} ({store.__class__.__name__}): {e}")
 
             if errors:
                 raise SecretStoreError(

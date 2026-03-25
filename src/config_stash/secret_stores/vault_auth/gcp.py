@@ -3,8 +3,8 @@
 from typing import Any, Optional
 
 from config_stash.secret_stores.vault_auth.base import (
-    VaultAuthMethod,
     VaultAuthenticationError,
+    VaultAuthMethod,
 )
 
 
@@ -76,9 +76,7 @@ class GCPAuth(VaultAuthMethod):
                 )
             elif self.auth_type == "iam":
                 if not self.jwt:
-                    raise VaultAuthenticationError(
-                        "JWT token required for IAM auth type"
-                    )
+                    raise VaultAuthenticationError("JWT token required for IAM auth type")
 
                 response = client.auth.gcp.login(
                     role=self.role,
@@ -87,16 +85,13 @@ class GCPAuth(VaultAuthMethod):
                 )
             else:
                 raise VaultAuthenticationError(
-                    f"Unknown GCP auth type: {self.auth_type}. "
-                    f"Must be 'gce' or 'iam'"
+                    f"Unknown GCP auth type: {self.auth_type}. " f"Must be 'gce' or 'iam'"
                 )
 
             return response["auth"]["client_token"]
 
         except Exception as e:
-            raise VaultAuthenticationError(
-                f"GCP authentication failed: {e}"
-            )
+            raise VaultAuthenticationError(f"GCP authentication failed: {e}")
 
     def get_mount_point(self) -> str:
         """Get the GCP auth mount point."""

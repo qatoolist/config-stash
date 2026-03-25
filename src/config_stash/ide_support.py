@@ -1,8 +1,11 @@
 """IDE autocomplete support for Config-Stash."""
 
+import logging
 import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set
+
+logger = logging.getLogger(__name__)
 
 
 class IDESupport:
@@ -49,8 +52,8 @@ class IDESupport:
             f.write(stub_content)
 
         if not silent:
-            print(f"✅ IDE support file generated: {output_path}")
-            print(f"   Import with: from .{Path(output_path).stem} import ConfigType")
+            logger.info(f"IDE support file generated: {output_path}")
+            logger.info(f"   Import with: from .{Path(output_path).stem} import ConfigType")
 
     @staticmethod
     def _generate_stub_content(config_dict: Dict[str, Any], module_name: str) -> str:
@@ -154,7 +157,7 @@ class IDESupport:
             output_path: Path to output .pyi file
         """
         if not config.dynamic_reloading:
-            print("⚠️ Warning: Config doesn't have dynamic_reloading enabled")
+            logger.warning("Config doesn't have dynamic_reloading enabled")
 
         # Generate initial stub
         IDESupport.generate_stub(config, output_path)
@@ -167,7 +170,7 @@ class IDESupport:
             if isinstance(new_value, dict) or old_value is None or new_value is None:
                 IDESupport.generate_stub(config, output_path)
 
-        print(f"🔄 Auto-generation enabled for {output_path}")
+        logger.info(f"Auto-generation enabled for {output_path}")
 
     @staticmethod
     def create_typed_wrapper(config) -> Any:
@@ -241,7 +244,7 @@ class VSCodeSupport:
         with open(settings_path, "w") as f:
             json.dump(settings, f, indent=2)
 
-        print(f"✅ VSCode settings generated: {settings_path}")
+        logger.info(f"VSCode settings generated: {settings_path}")
 
 
 # Usage example in docstring

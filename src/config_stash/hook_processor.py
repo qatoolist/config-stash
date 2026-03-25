@@ -72,7 +72,11 @@ class HookProcessor:
         # Create thread-safe copies of hooks to avoid iteration issues
         with self._lock:
             key_hooks = self.hooks["key"].get(key, [])[:]
-            value_hooks = self.hooks["value"].get(value, [])[:]
+            # Only use value as key if it's hashable (avoid dict/list issues)
+            if isinstance(value, (dict, list)):
+                value_hooks = []
+            else:
+                value_hooks = self.hooks["value"].get(value, [])[:]
             condition_hooks = self.hooks["condition"][:]
             global_hooks = self.hooks["global"][:]
 

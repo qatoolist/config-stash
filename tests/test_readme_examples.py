@@ -35,6 +35,7 @@ class TestREADMEExamples(unittest.TestCase):
         """Clean up test environment."""
         os.chdir(self.original_dir)
         import shutil
+
         shutil.rmtree(self.temp_dir)
 
     def create_example_files(self):
@@ -65,14 +66,7 @@ production:
             f.write(yaml_content)
 
         # config.json
-        json_content = {
-            "default": {
-                "features": {
-                    "new_ui": True,
-                    "analytics": False
-                }
-            }
-        }
+        json_content = {"default": {"features": {"new_ui": True, "analytics": False}}}
         with open("config.json", "w") as f:
             json.dump(json_content, f, indent=2)
 
@@ -133,10 +127,10 @@ endpoint = https://api.example.com
             loaders=[
                 YamlLoader("config.yaml"),
                 JsonLoader("config.json"),
-                TomlLoader("config.toml")
+                TomlLoader("config.toml"),
             ],
             env="default",
-            enable_ide_support=False
+            enable_ide_support=False,
         )
 
         # Values from YAML
@@ -150,18 +144,15 @@ endpoint = https://api.example.com
     def test_environment_variables_example(self):
         """Test environment variable loading as shown in README."""
         # Set environment variables as shown in README
-        os.environ['MYAPP_DATABASE__HOST'] = 'env-db.example.com'
-        os.environ['MYAPP_DATABASE__PORT'] = '5432'
-        os.environ['MYAPP_API__KEY'] = 'env-secret-key'
+        os.environ["MYAPP_DATABASE__HOST"] = "env-db.example.com"
+        os.environ["MYAPP_DATABASE__PORT"] = "5432"
+        os.environ["MYAPP_API__KEY"] = "env-secret-key"
 
         try:
             config = Config(
-                loaders=[
-                    YamlLoader("config.yaml"),
-                    EnvironmentLoader("MYAPP")
-                ],
+                loaders=[YamlLoader("config.yaml"), EnvironmentLoader("MYAPP")],
                 env="default",
-                enable_ide_support=False
+                enable_ide_support=False,
             )
 
             # Environment variables should override file values
@@ -171,17 +162,13 @@ endpoint = https://api.example.com
 
         finally:
             # Clean up environment
-            del os.environ['MYAPP_DATABASE__HOST']
-            del os.environ['MYAPP_DATABASE__PORT']
-            del os.environ['MYAPP_API__KEY']
+            del os.environ["MYAPP_DATABASE__HOST"]
+            del os.environ["MYAPP_DATABASE__PORT"]
+            del os.environ["MYAPP_API__KEY"]
 
     def test_env_file_loader_example(self):
         """Test .env file loading as shown in README."""
-        config = Config(
-            loaders=[EnvFileLoader(".env")],
-            env="default",
-            enable_ide_support=False
-        )
+        config = Config(loaders=[EnvFileLoader(".env")], env="default", enable_ide_support=False)
 
         self.assertEqual(config.DATABASE_URL, "postgresql://user:pass@localhost/dbname")
         self.assertEqual(config.SECRET_KEY, "your-secret-key-here")
@@ -189,11 +176,7 @@ endpoint = https://api.example.com
 
     def test_ini_file_loader_example(self):
         """Test INI file loading as shown in README."""
-        config = Config(
-            loaders=[IniLoader("config.ini")],
-            env="default",
-            enable_ide_support=False
-        )
+        config = Config(loaders=[IniLoader("config.ini")], env="default", enable_ide_support=False)
 
         self.assertEqual(config.database.host, "localhost")
         self.assertEqual(config.database.port, 5432)
@@ -206,7 +189,7 @@ endpoint = https://api.example.com
             loaders=[YamlLoader("config.yaml")],
             dynamic_reloading=True,
             env="default",
-            enable_ide_support=False
+            enable_ide_support=False,
         )
 
         initial_host = config.database.host
@@ -236,20 +219,14 @@ default:
     def test_on_change_callback_example(self):
         """Test on_change callback as shown in README."""
         config = Config(
-            loaders=[YamlLoader("config.yaml")],
-            env="default",
-            enable_ide_support=False
+            loaders=[YamlLoader("config.yaml")], env="default", enable_ide_support=False
         )
 
         changes_detected = []
 
         @config.on_change
         def config_changed(key: str, old_value, new_value):
-            changes_detected.append({
-                'key': key,
-                'old': old_value,
-                'new': new_value
-            })
+            changes_detected.append({"key": key, "old": old_value, "new": new_value})
 
         # Trigger reload with changes
         updated_yaml = """
@@ -265,14 +242,12 @@ default:
 
         # Callback should have been triggered
         self.assertTrue(len(changes_detected) > 0)
-        self.assertTrue(any('database' in str(c['key']) for c in changes_detected))
+        self.assertTrue(any("database" in str(c["key"]) for c in changes_detected))
 
     def test_export_functionality(self):
         """Test export functionality as shown in README."""
         config = Config(
-            loaders=[YamlLoader("config.yaml")],
-            env="default",
-            enable_ide_support=False
+            loaders=[YamlLoader("config.yaml")], env="default", enable_ide_support=False
         )
 
         # Export as JSON
@@ -291,33 +266,23 @@ default:
     def test_validation_functionality(self):
         """Test validation functionality as shown in README."""
         config = Config(
-            loaders=[YamlLoader("config.yaml")],
-            env="default",
-            enable_ide_support=False
+            loaders=[YamlLoader("config.yaml")], env="default", enable_ide_support=False
         )
 
         # Basic validation
         self.assertTrue(config.validate())
 
         # With schema (if implemented)
-        schema = {
-            "type": "object",
-            "properties": {
-                "database": {"type": "object"}
-            }
-        }
+        schema = {"type": "object", "properties": {"database": {"type": "object"}}}
         self.assertTrue(config.validate(schema))
 
     def test_source_tracking_debug_mode(self):
         """Test source tracking in debug mode as shown in README."""
         config = Config(
-            loaders=[
-                YamlLoader("config.yaml"),
-                JsonLoader("config.json")
-            ],
+            loaders=[YamlLoader("config.yaml"), JsonLoader("config.json")],
             env="default",
             debug_mode=True,
-            enable_ide_support=False
+            enable_ide_support=False,
         )
 
         # Get source info for a specific key
@@ -366,13 +331,10 @@ default:
 
         # With deep merge (default)
         config = Config(
-            loaders=[
-                YamlLoader("base.yaml"),
-                YamlLoader("override.yaml")
-            ],
+            loaders=[YamlLoader("base.yaml"), YamlLoader("override.yaml")],
             env="default",
             deep_merge=True,
-            enable_ide_support=False
+            enable_ide_support=False,
         )
 
         # Host is overridden
@@ -386,15 +348,15 @@ default:
 
     def test_environment_loader_with_separator(self):
         """Test EnvironmentLoader with custom separator as documented."""
-        os.environ['APP_DATABASE_HOST'] = 'custom-db.com'
-        os.environ['APP_DATABASE_PORT'] = '3306'
-        os.environ['APP_API_VERSION'] = 'v2'
+        os.environ["APP_DATABASE_HOST"] = "custom-db.com"
+        os.environ["APP_DATABASE_PORT"] = "3306"
+        os.environ["APP_API_VERSION"] = "v2"
 
         try:
             config = Config(
                 loaders=[EnvironmentLoader("APP", separator="_")],
                 env="default",
-                enable_ide_support=False
+                enable_ide_support=False,
             )
 
             self.assertEqual(config.database.host, "custom-db.com")
@@ -402,16 +364,14 @@ default:
             self.assertEqual(config.api.version, "v2")
 
         finally:
-            del os.environ['APP_DATABASE_HOST']
-            del os.environ['APP_DATABASE_PORT']
-            del os.environ['APP_API_VERSION']
+            del os.environ["APP_DATABASE_HOST"]
+            del os.environ["APP_DATABASE_PORT"]
+            del os.environ["APP_API_VERSION"]
 
     def test_attribute_access_pattern(self):
         """Test attribute access pattern as shown throughout README."""
         config = Config(
-            loaders=[YamlLoader("config.yaml")],
-            env="default",
-            enable_ide_support=False
+            loaders=[YamlLoader("config.yaml")], env="default", enable_ide_support=False
         )
 
         # Nested attribute access
@@ -426,17 +386,17 @@ default:
     def test_configuration_hierarchy(self):
         """Test configuration hierarchy and override order."""
         # Set environment variable to test override hierarchy
-        os.environ['MYAPP_DATABASE__HOST'] = 'env-override'
+        os.environ["MYAPP_DATABASE__HOST"] = "env-override"
 
         try:
             config = Config(
                 loaders=[
                     YamlLoader("config.yaml"),  # Base configuration
-                    JsonLoader("config.json"),   # Overrides YAML
-                    EnvironmentLoader("MYAPP")   # Overrides everything
+                    JsonLoader("config.json"),  # Overrides YAML
+                    EnvironmentLoader("MYAPP"),  # Overrides everything
                 ],
                 env="default",
-                enable_ide_support=False
+                enable_ide_support=False,
             )
 
             # Environment variable should win
@@ -447,7 +407,7 @@ default:
             self.assertEqual(config.database.port, 5432)
 
         finally:
-            del os.environ['MYAPP_DATABASE__HOST']
+            del os.environ["MYAPP_DATABASE__HOST"]
 
     def test_ide_support_generation(self):
         """Test IDE support generation as mentioned in README."""
@@ -455,7 +415,7 @@ default:
             loaders=[YamlLoader("config.yaml")],
             env="default",
             enable_ide_support=True,
-            ide_stub_path=".config_stash/stubs.pyi"
+            ide_stub_path=".config_stash/stubs.pyi",
         )
 
         # Check that IDE stub files were created
@@ -471,9 +431,7 @@ default:
     def test_to_dict_method(self):
         """Test to_dict method as might be used in README examples."""
         config = Config(
-            loaders=[YamlLoader("config.yaml")],
-            env="default",
-            enable_ide_support=False
+            loaders=[YamlLoader("config.yaml")], env="default", enable_ide_support=False
         )
 
         config_dict = config.to_dict()
@@ -505,33 +463,34 @@ default:
         """Clean up test environment."""
         os.chdir(self.original_dir)
         import shutil
+
         shutil.rmtree(self.temp_dir)
 
     def test_cli_validate_command(self):
         """Test CLI validate command as shown in README."""
         from click.testing import CliRunner
+
         from config_stash.cli import cli
 
         runner = CliRunner()
 
         # config-stash validate <env>
-        result = runner.invoke(cli, ['validate', 'default', '--loader', 'yaml:config.yaml'])
+        result = runner.invoke(cli, ["validate", "default", "--loader", "yaml:config.yaml"])
         self.assertEqual(result.exit_code, 0)
-        self.assertIn('valid', result.output.lower())
+        self.assertIn("valid", result.output.lower())
 
     def test_cli_export_command(self):
         """Test CLI export command as shown in README."""
         from click.testing import CliRunner
+
         from config_stash.cli import cli
 
         runner = CliRunner()
 
         # config-stash export <env> --format json
-        result = runner.invoke(cli, [
-            'export', 'default',
-            '--loader', 'yaml:config.yaml',
-            '--format', 'json'
-        ])
+        result = runner.invoke(
+            cli, ["export", "default", "--loader", "yaml:config.yaml", "--format", "json"]
+        )
         self.assertEqual(result.exit_code, 0)
         # Output should be valid JSON
         json.loads(result.output)
@@ -539,17 +498,15 @@ default:
     def test_cli_debug_command(self):
         """Test CLI debug command as shown in README."""
         from click.testing import CliRunner
+
         from config_stash.cli import cli
 
         runner = CliRunner()
 
         # config-stash debug <env>
-        result = runner.invoke(cli, [
-            'debug', 'default',
-            '--loader', 'yaml:config.yaml'
-        ])
+        result = runner.invoke(cli, ["debug", "default", "--loader", "yaml:config.yaml"])
         self.assertEqual(result.exit_code, 0)
-        self.assertIn('Configuration Source Debug Information', result.output)
+        self.assertIn("Configuration Source Debug Information", result.output)
 
 
 if __name__ == "__main__":

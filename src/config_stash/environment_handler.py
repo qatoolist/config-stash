@@ -48,9 +48,6 @@ class EnvironmentHandler:
         return base_config
 
     def _merge_dicts(self, base, new):
-        for key, value in new.items():
-            if isinstance(value, dict) and key in base:
-                base[key] = self._merge_dicts(base[key], value)
-            else:
-                base[key] = value
-        return base
+        from config_stash.utils.dict_utils import deep_merge_dicts
+
+        return deep_merge_dicts(base, new)

@@ -9,12 +9,12 @@ from config_stash.config_reader import (
 
 
 class TestConfigReader(unittest.TestCase):
-    @patch(
-        "builtins.open",
-        new_callable=unittest.mock.mock_open,
-        read_data='[tool.config_stash]\ndefault_environment = "production"\n',
-    )
-    def test_read_pyproject_config(self, mock_open):
+    @patch("config_stash.config_reader.toml_load_file")
+    @patch("pathlib.Path.exists", return_value=True)
+    def test_read_pyproject_config(self, mock_exists, mock_toml_load):
+        mock_toml_load.return_value = {
+            "tool": {"config_stash": {"default_environment": "production"}}
+        }
         config = read_pyproject_config()
         self.assertEqual(config["default_environment"], "production")
 

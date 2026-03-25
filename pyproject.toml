@@ -7,7 +7,7 @@ name = "config-stash"
 version = "0.0.1"
 description = 'A flexible configuration management library for Python applications'
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 license = { file = "LICENSE.txt" }
 keywords = ["configuration", "management", "python", "yaml", "json", "toml", "env"]
 authors = [
@@ -23,7 +23,6 @@ classifiers = [
   "License :: OSI Approved :: MIT License",
   "Programming Language :: Python",
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.8",
   "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
@@ -35,12 +34,16 @@ classifiers = [
 ]
 dependencies = [
   "pyyaml>=6.0",
-  "toml>=0.10.2",
-  "watchdog>=2.0.0",
-  "click>=8.0.0",
+  "tomli>=2.0.0; python_version < '3.11'",
 ]
 
 [project.optional-dependencies]
+watch = [
+  "watchdog>=2.0.0",
+]
+cli = [
+  "click>=8.0.0",
+]
 dev = [
   "pytest>=7.0.0",
   "pytest-cov>=4.0.0",
@@ -92,7 +95,7 @@ secrets = [
 ]
 all = [
   "pyyaml>=6.0",
-  "toml>=0.10.2",
+  "tomli>=2.0.0; python_version < '3.11'",
   "watchdog>=2.0.0",
   "click>=8.0.0",
   "pydantic>=2.0.0",
@@ -132,7 +135,7 @@ extra-dependencies = [
 check = "mypy --install-types --non-interactive {args:src/config_stash tests}"
 
 [tool.mypy]
-python_version = "3.8"
+python_version = "3.9"
 ignore_missing_imports = true
 strict = false
 warn_return_any = false
@@ -162,7 +165,7 @@ exclude_lines = [
 
 [tool.black]
 line-length = 88
-target-version = ['py38']
+target-version = ['py39']
 
 [tool.ruff]
 line-length = 88

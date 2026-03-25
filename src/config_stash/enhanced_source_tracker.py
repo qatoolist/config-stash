@@ -122,12 +122,16 @@ class EnhancedSourceTracker:
                 line_number=line_number,
                 environment=environment,
                 override_count=old_info.override_count + 1,
-                overridden_by=[source_file]
-                if source_file not in old_info.overridden_by
-                else old_info.overridden_by,
-                original_sources=old_info.original_sources + [old_info.source_file]
-                if old_info.source_file not in old_info.original_sources
-                else old_info.original_sources,
+                overridden_by=(
+                    [source_file]
+                    if source_file not in old_info.overridden_by
+                    else old_info.overridden_by
+                ),
+                original_sources=(
+                    old_info.original_sources + [old_info.source_file]
+                    if old_info.source_file not in old_info.original_sources
+                    else old_info.original_sources
+                ),
             )
 
             self.sources[key] = new_info

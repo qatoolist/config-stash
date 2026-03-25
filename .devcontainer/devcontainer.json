@@ -1,0 +1,219 @@
+{
+  "name": "Config-Stash Development",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspace",
+
+  // Features to install (official Microsoft features)
+  "features": {
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "3.12",
+      "installTools": true
+    },
+    "ghcr.io/devcontainers/features/git:1": {
+      "version": "latest",
+      "ppa": true
+    },
+    "ghcr.io/devcontainers/features/github-cli:1": {
+      "version": "latest"
+    },
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "version": "latest",
+      "moby": false,
+      "dockerDashComposeVersion": "v2"
+    },
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "installZsh": true,
+      "installOhMyZsh": true,
+      "upgradePackages": true,
+      "username": "vscode",
+      "userUid": "1000",
+      "userGid": "1000"
+    }
+  },
+
+  // Configure tool-specific properties
+  "customizations": {
+    "vscode": {
+      "settings": {
+        // Python settings
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "python.linting.enabled": true,
+        "python.linting.pylintEnabled": false,
+        "python.linting.flake8Enabled": false,
+        "python.linting.mypyEnabled": true,
+        "python.linting.mypyArgs": [
+          "--config-file=pyproject.toml"
+        ],
+        "python.formatting.provider": "black",
+        "python.formatting.blackArgs": [
+          "--config",
+          "pyproject.toml"
+        ],
+        "python.testing.pytestEnabled": true,
+        "python.testing.pytestArgs": [
+          "tests"
+        ],
+        "python.testing.unittestEnabled": false,
+        "python.analysis.typeCheckingMode": "basic",
+        "python.analysis.autoImportCompletions": true,
+
+        // Editor settings
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+          "source.organizeImports": "explicit"
+        },
+        "editor.rulers": [88],
+        "editor.tabSize": 4,
+        "editor.insertSpaces": true,
+        "files.trimTrailingWhitespace": true,
+        "files.insertFinalNewline": true,
+        "files.eol": "\n",
+
+        // Ruff settings
+        "[python]": {
+          "editor.defaultFormatter": "charliermarsh.ruff",
+          "editor.formatOnSave": true,
+          "editor.codeActionsOnSave": {
+            "source.organizeImports": "explicit",
+            "source.fixAll": "explicit"
+          }
+        },
+
+        // Git settings
+        "git.enableSmartCommit": true,
+        "git.confirmSync": false,
+        "git.autofetch": true,
+
+        // Terminal settings
+        "terminal.integrated.defaultProfile.linux": "zsh",
+        "terminal.integrated.fontSize": 13,
+
+        // File associations
+        "files.associations": {
+          "*.yaml": "yaml",
+          "*.yml": "yaml",
+          ".gitignore": "ignore",
+          ".gitattributes": "properties",
+          "Dockerfile*": "dockerfile",
+          "*.toml": "toml"
+        },
+
+        // Exclude from file watcher
+        "files.watcherExclude": {
+          "**/.git/objects/**": true,
+          "**/.git/subtree-cache/**": true,
+          "**/node_modules/*/**": true,
+          "**/.hatch/**": true,
+          "**/__pycache__/**": true,
+          "**/.pytest_cache/**": true,
+          "**/.mypy_cache/**": true,
+          "**/.ruff_cache/**": true
+        }
+      },
+
+      "extensions": [
+        // Python essentials
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "charliermarsh.ruff",
+
+        // Testing
+        "littlefoxteam.vscode-python-test-adapter",
+        "hbenl.vscode-test-explorer",
+
+        // Git
+        "eamodio.gitlens",
+        "mhutchie.git-graph",
+
+        // YAML/JSON/TOML
+        "redhat.vscode-yaml",
+        "tamasfe.even-better-toml",
+
+        // Markdown
+        "yzhang.markdown-all-in-one",
+        "davidanson.vscode-markdownlint",
+
+        // Docker
+        "ms-azuretools.vscode-docker",
+
+        // Utilities
+        "editorconfig.editorconfig",
+        "visualstudioexptteam.vscodeintellicode",
+        "gruntfuggly.todo-tree",
+        "streetsidesoftware.code-spell-checker",
+
+        // GitHub
+        "github.vscode-pull-request-github",
+        "github.copilot",
+
+        // Code quality
+        "ryanluker.vscode-coverage-gutters",
+        "christian-kohler.path-intellisense"
+      ]
+    }
+  },
+
+  // Lifecycle scripts
+  "postCreateCommand": "bash .devcontainer/scripts/post-create.sh",
+  "postStartCommand": "bash .devcontainer/scripts/post-start.sh || true",
+
+  // Forward ports for services
+  "forwardPorts": [
+    8200,  // HashiCorp Vault
+    9000,  // LocalStack (AWS services)
+    4566   // LocalStack edge port
+  ],
+
+  "portsAttributes": {
+    "8200": {
+      "label": "HashiCorp Vault",
+      "onAutoForward": "notify"
+    },
+    "9000": {
+      "label": "LocalStack UI",
+      "onAutoForward": "notify"
+    },
+    "4566": {
+      "label": "LocalStack Services",
+      "onAutoForward": "silent"
+    }
+  },
+
+  // Mount points (SSH keys and Git config)
+  "mounts": [
+    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.ssh,target=/home/vscode/.ssh,readonly,type=bind,consistency=cached",
+    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.gitconfig,target=/home/vscode/.gitconfig,readonly,type=bind,consistency=cached"
+  ],
+
+  // Container environment variables
+  "containerEnv": {
+    "PYTHONPATH": "/workspace",
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "PYTHONUNBUFFERED": "1",
+    "PIP_NO_CACHE_DIR": "1",
+    "VAULT_ADDR": "http://vault:8200",
+    "VAULT_DEV_ROOT_TOKEN_ID": "dev-token-12345",
+    "AWS_ENDPOINT_URL": "http://localstack:4566",
+    "AWS_ACCESS_KEY_ID": "test",
+    "AWS_SECRET_ACCESS_KEY": "test",
+    "AWS_DEFAULT_REGION": "us-east-1"
+  },
+
+  // Remote environment variables
+  "remoteEnv": {
+    "PATH": "${containerEnv:PATH}:/home/vscode/.local/bin"
+  },
+
+  // User to run as
+  "remoteUser": "vscode",
+
+  // Keep container running
+  "shutdownAction": "stopCompose",
+
+  // Wait for services
+  "waitFor": "postCreateCommand",
+
+  // Update remote user UID to match local user
+  "updateRemoteUserUID": true
+}

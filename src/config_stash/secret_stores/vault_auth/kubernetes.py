@@ -4,8 +4,8 @@ import os
 from typing import Any, Optional
 
 from config_stash.secret_stores.vault_auth.base import (
-    VaultAuthMethod,
     VaultAuthenticationError,
+    VaultAuthMethod,
 )
 
 
@@ -89,9 +89,7 @@ class KubernetesAuth(VaultAuthMethod):
                 f"Are you running inside a Kubernetes pod?"
             )
         except Exception as e:
-            raise VaultAuthenticationError(
-                f"Failed to read JWT token: {e}"
-            )
+            raise VaultAuthenticationError(f"Failed to read JWT token: {e}")
 
     def authenticate(self, client: Any) -> str:
         """Authenticate using Kubernetes service account.
@@ -117,9 +115,7 @@ class KubernetesAuth(VaultAuthMethod):
             return response["auth"]["client_token"]
 
         except Exception as e:
-            raise VaultAuthenticationError(
-                f"Kubernetes authentication failed: {e}"
-            )
+            raise VaultAuthenticationError(f"Kubernetes authentication failed: {e}")
 
     def get_mount_point(self) -> str:
         """Get the Kubernetes auth mount point."""

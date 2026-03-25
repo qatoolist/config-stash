@@ -1,8 +1,9 @@
 """Pydantic model validation for configurations."""
 
 import logging
-from abc import ABC
 from typing import Any, Dict, Generic, Optional, Type, TypeVar
+
+from config_stash.exceptions import ConfigValidationError
 
 logger = logging.getLogger(__name__)
 
@@ -47,18 +48,34 @@ class PydanticValidator(Generic[T]):
             Validated Pydantic model instance
 
         Raises:
-            ValidationError: If validation fails
+            ConfigValidationError: If validation fails (wraps Pydantic ValidationError)
         """
         try:
             return self.model_class(**config)
         except ValidationError as e:
             logger.error(f"Pydantic validation failed: {e}")
+            validation_errors = []
             for error in e.errors():
-                logger.error(
-                    f"  Field '{'.'.join(str(p) for p in error['loc'])}': "
+                error_msg = (
+                    f"Field '{'.'.join(str(p) for p in error['loc'])}': "
                     f"{error['msg']} (type: {error['type']})"
                 )
-            raise
+                logger.error(f"  {error_msg}")
+                validation_errors.append(
+                    {
+                        "loc": error["loc"],
+                        "msg": error["msg"],
+                        "type": error["type"],
+                        "input": error.get("input"),
+                    }
+                )
+
+            # Convert Pydantic ValidationError to ConfigValidationError
+            raise ConfigValidationError(
+                f"Configuration validation failed: {e}",
+                validation_errors=validation_errors,
+                original_error=e,
+            ) from e
 
     def validate_to_dict(self, config: Dict[str, Any]) -> Dict[str, Any]:
         """Validate and return as dictionary with defaults applied.

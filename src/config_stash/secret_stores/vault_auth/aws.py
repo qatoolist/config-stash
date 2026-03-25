@@ -3,8 +3,8 @@
 from typing import Any, Optional
 
 from config_stash.secret_stores.vault_auth.base import (
-    VaultAuthMethod,
     VaultAuthenticationError,
+    VaultAuthMethod,
 )
 
 
@@ -82,16 +82,13 @@ class AWSAuth(VaultAuthMethod):
                 )
             else:
                 raise VaultAuthenticationError(
-                    f"Unknown AWS auth type: {self.auth_type}. "
-                    f"Must be 'ec2' or 'iam'"
+                    f"Unknown AWS auth type: {self.auth_type}. " f"Must be 'ec2' or 'iam'"
                 )
 
             return response["auth"]["client_token"]
 
         except Exception as e:
-            raise VaultAuthenticationError(
-                f"AWS authentication failed: {e}"
-            )
+            raise VaultAuthenticationError(f"AWS authentication failed: {e}")
 
     def get_mount_point(self) -> str:
         """Get the AWS auth mount point."""

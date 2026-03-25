@@ -173,26 +173,28 @@ class SecretStore(ABC):
             >>> metadata = store.get_secret_metadata("database/password")
             >>> print(f"Created: {metadata['created_date']}")
         """
-        raise NotImplementedError(
-            f"{self.__class__.__name__} does not support metadata retrieval"
-        )
+        raise NotImplementedError(f"{self.__class__.__name__} does not support metadata retrieval")
 
 
 class SecretStoreError(Exception):
     """Base exception for secret store errors."""
+
     pass
 
 
 class SecretNotFoundError(SecretStoreError):
     """Raised when a requested secret does not exist."""
+
     pass
 
 
 class SecretAccessError(SecretStoreError):
     """Raised when there's a permission or authentication error."""
+
     pass
 
 
 class SecretValidationError(SecretStoreError):
     """Raised when secret validation fails."""
+
     pass

@@ -4,8 +4,8 @@ import getpass
 from typing import Any, Callable, Optional
 
 from config_stash.secret_stores.vault_auth.base import (
-    VaultAuthMethod,
     VaultAuthenticationError,
+    VaultAuthMethod,
 )
 
 
@@ -95,9 +95,7 @@ class LDAPAuth(VaultAuthMethod):
             try:
                 return self.password_provider()
             except Exception as e:
-                raise VaultAuthenticationError(
-                    f"Password provider failed: {e}"
-                )
+                raise VaultAuthenticationError(f"Password provider failed: {e}")
 
         # Use stored password if available
         if self.password:
@@ -107,9 +105,7 @@ class LDAPAuth(VaultAuthMethod):
         try:
             return getpass.getpass(f"Enter LDAP password for {self.username}: ")
         except Exception as e:
-            raise VaultAuthenticationError(
-                f"Failed to get password: {e}"
-            )
+            raise VaultAuthenticationError(f"Failed to get password: {e}")
 
     def authenticate(self, client: Any) -> str:
         """Authenticate using LDAP.
@@ -135,9 +131,7 @@ class LDAPAuth(VaultAuthMethod):
             return response["auth"]["client_token"]
 
         except Exception as e:
-            raise VaultAuthenticationError(
-                f"LDAP authentication failed: {e}"
-            )
+            raise VaultAuthenticationError(f"LDAP authentication failed: {e}")
 
     def get_mount_point(self) -> str:
         """Get the LDAP auth mount point."""

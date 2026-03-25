@@ -10,13 +10,56 @@ import os
 from typing import Optional
 
 from config_stash.config import Config
+from config_stash.config_builder import ConfigBuilder, builder
+from config_stash.exceptions import (
+    ConfigAccessError,
+    ConfigFormatError,
+    ConfigLoadError,
+    ConfigMergeConflictError,
+    ConfigNotFoundError,
+    ConfigStashError,
+    ConfigValidationError,
+)
+
+# Async support (optional)
+try:
+    from config_stash.async_config import AsyncConfig, AsyncHTTPLoader, AsyncLoader, AsyncYamlLoader
+
+    HAS_ASYNC = True
+except ImportError:
+    HAS_ASYNC = False
+    AsyncConfig = None  # type: ignore
+    AsyncLoader = None  # type: ignore
+    AsyncYamlLoader = None  # type: ignore
+    AsyncHTTPLoader = None  # type: ignore
 
 __version__ = "0.0.1"
-__all__ = ["Config", "setup_logging"]
+__all__ = [
+    "Config",
+    "ConfigBuilder",
+    "builder",
+    "setup_logging",
+    # Exceptions
+    "ConfigStashError",
+    "ConfigLoadError",
+    "ConfigValidationError",
+    "ConfigMergeConflictError",
+    "ConfigNotFoundError",
+    "ConfigFormatError",
+    "ConfigAccessError",
+]
+
+# Add async exports if available
+if HAS_ASYNC:
+    __all__.extend(["AsyncConfig", "AsyncLoader", "AsyncYamlLoader", "AsyncHTTPLoader"])
 
 
 def setup_logging(level: Optional[str] = None) -> None:
     """Configure logging for the config-stash library.
+
+    Call this explicitly if you want config-stash log output.
+    Libraries should not configure logging by default — that is the
+    application's responsibility.
 
     Args:
         level: Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL).
@@ -24,7 +67,6 @@ def setup_logging(level: Optional[str] = None) -> None:
               variable or defaults to WARNING.
     """
     log_level = level or os.environ.get("CONFIG_STASH_LOG_LEVEL", "WARNING")
-    assert log_level is not None  # Always true due to default value
 
     # Configure the logger for this package
     logger = logging.getLogger("config_stash")
@@ -43,5 +85,6 @@ def setup_logging(level: Optional[str] = None) -> None:
     logger.propagate = False
 
 
-# Set up default logging configuration (can be overridden by users)
-setup_logging()
+# Library best practice: add NullHandler to avoid "No handler found" warnings.
+# Users who want log output should call setup_logging() explicitly.
+logging.getLogger("config_stash").addHandler(logging.NullHandler())

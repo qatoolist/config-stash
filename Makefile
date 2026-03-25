@@ -79,12 +79,12 @@ lint-fix: ## Run linting with automatic fixes
 	ruff check $(SRC_DIR) $(TEST_DIR) --fix
 
 format: ## Format code with black and isort
-	black $(SRC_DIR) $(TEST_DIR) --line-length 100
-	isort $(SRC_DIR) $(TEST_DIR) --profile black --line-length 100
+	black $(SRC_DIR) $(TEST_DIR) --line-length 88
+	isort $(SRC_DIR) $(TEST_DIR) --profile black --line-length 88
 
 format-check: ## Check code formatting without making changes
-	black $(SRC_DIR) $(TEST_DIR) --line-length 100 --check
-	isort $(SRC_DIR) $(TEST_DIR) --profile black --line-length 100 --check-only
+	black $(SRC_DIR) $(TEST_DIR) --line-length 88 --check
+	isort $(SRC_DIR) $(TEST_DIR) --profile black --line-length 88 --check-only
 
 type-check: ## Run type checking with mypy
 	mypy $(SRC_DIR) --ignore-missing-imports
@@ -102,15 +102,32 @@ pre-commit-update: ## Update pre-commit hooks to latest versions
 	pre-commit autoupdate
 
 # Documentation targets
-docs: ## Generate HTML documentation
-	@echo "$(YELLOW)Building documentation...$(NC)"
-	@mkdir -p $(DOCS_DIR)
-	cd $(DOCS_DIR) && $(PYTHON) -m pydoc -w ../$(SRC_DIR)
-	@echo "$(GREEN)Documentation generated in $(DOCS_DIR)/$(NC)"
+DOCS_DIR = docs
+DOCS_SOURCE = $(DOCS_DIR)/source
+DOCS_BUILD = $(DOCS_DIR)/_build
+SPHINX_OPTS = -W --keep-going
 
-docs-serve: ## Serve documentation locally
+docs: docs-html ## Generate HTML documentation with Sphinx
+
+docs-html: ## Build HTML documentation
+	@echo "$(YELLOW)Building Sphinx documentation...$(NC)"
+	@command -v sphinx-build >/dev/null 2>&1 || (echo "$(RED)Please install sphinx: pip install sphinx sphinx-rtd-theme$(NC)" && exit 1)
+	$(PYTHON) -m sphinx -b html $(SPHINX_OPTS) $(DOCS_SOURCE) $(DOCS_BUILD)/html
+	@echo "$(GREEN)✓ Documentation generated in $(DOCS_BUILD)/html/$(NC)"
+	@echo "$(GREEN)Open $(DOCS_BUILD)/html/index.html in your browser$(NC)"
+
+docs-clean: ## Clean documentation build files
+	rm -rf $(DOCS_BUILD)
+	rm -rf $(DOCS_DIR)/.doctrees
+	@echo "$(GREEN)✓ Documentation build files cleaned$(NC)"
+
+docs-serve: docs-html ## Serve documentation locally
 	@echo "$(GREEN)Serving documentation at http://localhost:8000$(NC)"
-	$(PYTHON) -m http.server 8000 --directory $(DOCS_DIR)
+	$(PYTHON) -m http.server 8000 --directory $(DOCS_BUILD)/html
+
+docs-live: ## Build and serve documentation with auto-reload (requires sphinx-autobuild)
+	@command -v sphinx-autobuild >/dev/null 2>&1 || (echo "$(RED)Please install sphinx-autobuild: pip install sphinx-autobuild$(NC)" && exit 1)
+	sphinx-autobuild -b html $(DOCS_SOURCE) $(DOCS_BUILD)/html --host 0.0.0.0 --port 8000
 
 # Build and release targets
 build: clean ## Build distribution packages

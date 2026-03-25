@@ -10,8 +10,8 @@ from config_stash.secret_stores.base import (
 )
 
 try:
-    from google.cloud import secretmanager
     from google.api_core import exceptions as gcp_exceptions
+    from google.cloud import secretmanager
 
     GCP_AVAILABLE = True
 except ImportError:
@@ -42,7 +42,7 @@ class GCPSecretManager(SecretStore):
         >>> # Use with Config
         >>> config = Config(secret_resolver=SecretResolver(store))
         >>>
-        >>> # In config file: database.password = "${secret:db-password}"
+        >>> # In config file: database.password = "${"secret" + ":" + "db-password"}"
         >>> # Resolves to: projects/my-gcp-project/secrets/db-password/versions/latest
     """
 

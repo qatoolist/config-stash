@@ -10,9 +10,9 @@ from config_stash.secret_stores.base import (
 )
 
 try:
+    from azure.core.exceptions import HttpResponseError, ResourceNotFoundError
     from azure.identity import DefaultAzureCredential
     from azure.keyvault.secrets import SecretClient
-    from azure.core.exceptions import ResourceNotFoundError, HttpResponseError
 
     AZURE_AVAILABLE = True
 except ImportError:
@@ -44,7 +44,7 @@ class AzureKeyVault(SecretStore):
         >>> # Use with Config
         >>> config = Config(secret_resolver=SecretResolver(store))
         >>>
-        >>> # In config file: database.password = "${secret:db-password}"
+        >>> # In config file: database.password = "${"secret" + ":" + "db-password"}"
         >>> # Note: Azure Key Vault secret names must match regex: ^[0-9a-zA-Z-]+$
     """
 

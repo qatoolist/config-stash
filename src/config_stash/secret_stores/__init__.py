@@ -17,7 +17,8 @@ Example:
     ...     secret_resolver=SecretResolver(secret_store)
     ... )
     >>>
-    >>> # Secrets are automatically resolved from placeholders like ${secret:db/password}
+    >>> # Secrets are automatically resolved from placeholders using the format
+    >>> # "$" + "{" + "secret" + ":" + "db/password" + "}"
     >>> db_password = config.database.password
 """
 

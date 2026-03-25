@@ -22,6 +22,7 @@ class TestIniLoader(unittest.TestCase):
         """Clean up test environment."""
         os.chdir(self.original_dir)
         import shutil
+
         shutil.rmtree(self.temp_dir)
 
     def test_basic_ini_loading(self):
@@ -45,15 +46,15 @@ retries = 3
         config = loader.load()
 
         # Check database section
-        self.assertEqual(config['database']['host'], 'localhost')
-        self.assertEqual(config['database']['port'], 5432)
-        self.assertEqual(config['database']['username'], 'admin')
-        self.assertEqual(config['database']['password'], 'secret')
+        self.assertEqual(config["database"]["host"], "localhost")
+        self.assertEqual(config["database"]["port"], 5432)
+        self.assertEqual(config["database"]["username"], "admin")
+        self.assertEqual(config["database"]["password"], "secret")
 
         # Check api section
-        self.assertEqual(config['api']['endpoint'], 'https://api.example.com')
-        self.assertEqual(config['api']['timeout'], 30)
-        self.assertEqual(config['api']['retries'], 3)
+        self.assertEqual(config["api"]["endpoint"], "https://api.example.com")
+        self.assertEqual(config["api"]["timeout"], 30)
+        self.assertEqual(config["api"]["retries"], 3)
 
     def test_type_conversion(self):
         """Test automatic type conversion for boolean, int, and float values."""
@@ -86,25 +87,25 @@ environment = production
         config = loader.load()
 
         # Check booleans
-        self.assertIsInstance(config['types']['enabled'], bool)
-        self.assertTrue(config['types']['enabled'])
-        self.assertFalse(config['types']['disabled'])
-        self.assertTrue(config['types']['verbose'])
-        self.assertFalse(config['types']['quiet'])
+        self.assertIsInstance(config["types"]["enabled"], bool)
+        self.assertTrue(config["types"]["enabled"])
+        self.assertFalse(config["types"]["disabled"])
+        self.assertTrue(config["types"]["verbose"])
+        self.assertFalse(config["types"]["quiet"])
 
         # Check integers
-        self.assertIsInstance(config['types']['port'], int)
-        self.assertEqual(config['types']['port'], 8080)
-        self.assertEqual(config['types']['max_connections'], 100)
+        self.assertIsInstance(config["types"]["port"], int)
+        self.assertEqual(config["types"]["port"], 8080)
+        self.assertEqual(config["types"]["max_connections"], 100)
 
         # Check floats
-        self.assertIsInstance(config['types']['pi'], float)
-        self.assertAlmostEqual(config['types']['pi'], 3.14159)
-        self.assertAlmostEqual(config['types']['tax_rate'], 0.08)
+        self.assertIsInstance(config["types"]["pi"], float)
+        self.assertAlmostEqual(config["types"]["pi"], 3.14159)
+        self.assertAlmostEqual(config["types"]["tax_rate"], 0.08)
 
         # Check strings
-        self.assertIsInstance(config['types']['name'], str)
-        self.assertEqual(config['types']['name'], 'MyApp')
+        self.assertIsInstance(config["types"]["name"], str)
+        self.assertEqual(config["types"]["name"], "MyApp")
 
     def test_multiple_sections(self):
         """Test loading INI file with multiple sections."""
@@ -131,19 +132,19 @@ database_host = prod.db.example.com
         config = loader.load()
 
         # Check all sections are loaded
-        self.assertIn('development', config)
-        self.assertIn('staging', config)
-        self.assertIn('production', config)
+        self.assertIn("development", config)
+        self.assertIn("staging", config)
+        self.assertIn("production", config)
 
         # Check values in each section
-        self.assertTrue(config['development']['debug'])
-        self.assertEqual(config['development']['log_level'], 'DEBUG')
+        self.assertTrue(config["development"]["debug"])
+        self.assertEqual(config["development"]["log_level"], "DEBUG")
 
-        self.assertFalse(config['staging']['debug'])
-        self.assertEqual(config['staging']['log_level'], 'INFO')
+        self.assertFalse(config["staging"]["debug"])
+        self.assertEqual(config["staging"]["log_level"], "INFO")
 
-        self.assertFalse(config['production']['debug'])
-        self.assertEqual(config['production']['log_level'], 'WARNING')
+        self.assertFalse(config["production"]["debug"])
+        self.assertEqual(config["production"]["log_level"], "WARNING")
 
     def test_comments_in_ini(self):
         """Test that comments are properly ignored."""
@@ -167,9 +168,9 @@ key3 = value3
         config = loader.load()
 
         # Check that only actual config values are loaded
-        self.assertEqual(config['section1']['key1'], 'value1')
-        self.assertEqual(config['section1']['key2'], 'value2 ; inline comment (if supported)')
-        self.assertEqual(config['section2']['key3'], 'value3')
+        self.assertEqual(config["section1"]["key1"], "value1")
+        self.assertEqual(config["section1"]["key2"], "value2 ; inline comment (if supported)")
+        self.assertEqual(config["section2"]["key3"], "value3")
 
     def test_special_characters_in_values(self):
         """Test handling of special characters in values."""
@@ -194,12 +195,13 @@ email = user@example.com
         loader = IniLoader("config.ini")
         config = loader.load()
 
-        self.assertEqual(config['credentials']['password'], 'p@ssw0rd!#$%')
-        self.assertEqual(config['credentials']['connection_string'],
-                        'mongodb://user:pass@host:27017/db?option=value')
-        self.assertEqual(config['paths']['url'],
-                        'https://example.com/path?query=value&other=123')
-        self.assertEqual(config['patterns']['regex'], '^[a-zA-Z0-9]+$')
+        self.assertEqual(config["credentials"]["password"], "p@ssw0rd!#$%")
+        self.assertEqual(
+            config["credentials"]["connection_string"],
+            "mongodb://user:pass@host:27017/db?option=value",
+        )
+        self.assertEqual(config["paths"]["url"], "https://example.com/path?query=value&other=123")
+        self.assertEqual(config["patterns"]["regex"], "^[a-zA-Z0-9]+$")
 
     def test_whitespace_handling(self):
         """Test handling of whitespace in keys and values."""
@@ -218,9 +220,9 @@ multiline_attempt = line1
         config = loader.load()
 
         # configparser typically strips whitespace
-        self.assertIn('whitespace', config)
+        self.assertIn("whitespace", config)
         # Keys should be present (exact behavior depends on configparser)
-        self.assertTrue(len(config['whitespace']) > 0)
+        self.assertTrue(len(config["whitespace"]) > 0)
 
     def test_empty_sections(self):
         """Test handling of empty sections."""
@@ -244,15 +246,15 @@ key3 = value3
         config = loader.load()
 
         # Empty sections should exist but be empty dicts
-        self.assertIn('empty_section', config)
-        self.assertEqual(config['empty_section'], {})
+        self.assertIn("empty_section", config)
+        self.assertEqual(config["empty_section"], {})
 
-        self.assertIn('another_empty', config)
-        self.assertEqual(config['another_empty'], {})
+        self.assertIn("another_empty", config)
+        self.assertEqual(config["another_empty"], {})
 
         # Non-empty sections should have values
-        self.assertEqual(config['section_with_values']['key1'], 'value1')
-        self.assertEqual(config['final_section']['key3'], 'value3')
+        self.assertEqual(config["section_with_values"]["key1"], "value1")
+        self.assertEqual(config["final_section"]["key3"], "value3")
 
     def test_nonexistent_file(self):
         """Test loading from nonexistent file returns None."""
@@ -291,14 +293,14 @@ MixedKey = value3
 
         # configparser preserves case for section names
         # (RawConfigParser default behavior)
-        self.assertIn('UPPERCASE', config)
-        self.assertIn('lowercase', config)
-        self.assertIn('MixedCase', config)
+        self.assertIn("UPPERCASE", config)
+        self.assertIn("lowercase", config)
+        self.assertIn("MixedCase", config)
 
-        self.assertEqual(config['UPPERCASE']['key'], 'value1')
-        self.assertEqual(config['lowercase']['key'], 'value2')
+        self.assertEqual(config["UPPERCASE"]["key"], "value1")
+        self.assertEqual(config["lowercase"]["key"], "value2")
         # configparser lowercases option names (keys)
-        self.assertEqual(config['MixedCase']['mixedkey'], 'value3')
+        self.assertEqual(config["MixedCase"]["mixedkey"], "value3")
 
     def test_duplicate_sections(self):
         """Test handling of duplicate section names."""
@@ -339,10 +341,10 @@ base64 = SGVsbG8gV29ybGQ=
         loader = IniLoader("config.ini")
         config = loader.load()
 
-        self.assertEqual(config['formulas']['equation'], 'a = b + c')
-        self.assertEqual(config['formulas']['expression'], '2 + 2 = 4')
-        self.assertEqual(config['config']['connection'], 'key1=value1;key2=value2')
-        self.assertEqual(config['config']['base64'], 'SGVsbG8gV29ybGQ=')
+        self.assertEqual(config["formulas"]["equation"], "a = b + c")
+        self.assertEqual(config["formulas"]["expression"], "2 + 2 = 4")
+        self.assertEqual(config["config"]["connection"], "key1=value1;key2=value2")
+        self.assertEqual(config["config"]["base64"], "SGVsbG8gV29ybGQ=")
 
     def test_unicode_support(self):
         """Test support for Unicode characters."""
@@ -355,16 +357,16 @@ accented = café
 cyrillic = Привет
 arabic = مرحبا
 """
-        with open("config.ini", "w", encoding='utf-8') as f:
+        with open("config.ini", "w", encoding="utf-8") as f:
             f.write(ini_content)
 
         loader = IniLoader("config.ini")
         config = loader.load()
 
-        self.assertEqual(config['unicode']['greeting'], 'Hello, 世界')
-        self.assertEqual(config['unicode']['emoji'], '🚀 Launch')
-        self.assertEqual(config['unicode']['currency'], '€100')
-        self.assertEqual(config['unicode']['accented'], 'café')
+        self.assertEqual(config["unicode"]["greeting"], "Hello, 世界")
+        self.assertEqual(config["unicode"]["emoji"], "🚀 Launch")
+        self.assertEqual(config["unicode"]["currency"], "€100")
+        self.assertEqual(config["unicode"]["accented"], "café")
 
     def test_long_values(self):
         """Test handling of long values."""
@@ -380,9 +382,9 @@ long = {long_value}
         loader = IniLoader("config.ini")
         config = loader.load()
 
-        self.assertEqual(config['section']['short'], 'short_value')
-        self.assertEqual(config['section']['long'], long_value)
-        self.assertEqual(len(config['section']['long']), 1000)
+        self.assertEqual(config["section"]["short"], "short_value")
+        self.assertEqual(config["section"]["long"], long_value)
+        self.assertEqual(len(config["section"]["long"]), 1000)
 
     def test_source_attribute(self):
         """Test that loader has correct source attribute."""
@@ -435,21 +437,21 @@ allowed_hosts = example.com,www.example.com
         config = loader.load()
 
         # Verify complex real-world config loads correctly
-        self.assertEqual(config['server']['host'], '0.0.0.0')
-        self.assertEqual(config['server']['port'], 8080)
-        self.assertFalse(config['server']['debug'])
+        self.assertEqual(config["server"]["host"], "0.0.0.0")
+        self.assertEqual(config["server"]["port"], 8080)
+        self.assertFalse(config["server"]["debug"])
 
-        self.assertEqual(config['database']['engine'], 'postgresql')
-        self.assertEqual(config['database']['pool_size'], 20)
+        self.assertEqual(config["database"]["engine"], "postgresql")
+        self.assertEqual(config["database"]["pool_size"], 20)
 
-        self.assertEqual(config['cache']['backend'], 'redis')
-        self.assertEqual(config['cache']['ttl'], 300)
+        self.assertEqual(config["cache"]["backend"], "redis")
+        self.assertEqual(config["cache"]["ttl"], 300)
 
-        self.assertEqual(config['logging']['level'], 'INFO')
-        self.assertEqual(config['logging']['max_size'], 10485760)
+        self.assertEqual(config["logging"]["level"], "INFO")
+        self.assertEqual(config["logging"]["max_size"], 10485760)
 
-        self.assertTrue(config['security']['csrf_enabled'])
-        self.assertEqual(config['security']['session_timeout'], 3600)
+        self.assertTrue(config["security"]["csrf_enabled"])
+        self.assertEqual(config["security"]["session_timeout"], 3600)
 
 
 if __name__ == "__main__":

@@ -3,8 +3,8 @@
 from typing import Any
 
 from config_stash.secret_stores.vault_auth.base import (
-    VaultAuthMethod,
     VaultAuthenticationError,
+    VaultAuthMethod,
 )
 
 
@@ -63,9 +63,7 @@ class AzureAuth(VaultAuthMethod):
             return response["auth"]["client_token"]
 
         except Exception as e:
-            raise VaultAuthenticationError(
-                f"Azure authentication failed: {e}"
-            )
+            raise VaultAuthenticationError(f"Azure authentication failed: {e}")
 
     def get_mount_point(self) -> str:
         """Get the Azure auth mount point."""

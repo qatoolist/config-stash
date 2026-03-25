@@ -3,8 +3,8 @@
 from typing import Any, Optional
 
 from config_stash.secret_stores.vault_auth.base import (
-    VaultAuthMethod,
     VaultAuthenticationError,
+    VaultAuthMethod,
 )
 
 
@@ -71,9 +71,7 @@ class AppRoleAuth(VaultAuthMethod):
             )
             return response["auth"]["client_token"]
         except Exception as e:
-            raise VaultAuthenticationError(
-                f"AppRole authentication failed: {e}"
-            )
+            raise VaultAuthenticationError(f"AppRole authentication failed: {e}")
 
     def get_mount_point(self) -> str:
         """Get the AppRole mount point."""

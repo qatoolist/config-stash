@@ -10,17 +10,18 @@ def get_loader(name):
 
     # Fall back to built-in loaders
     builtin_loaders = {
-        'yaml': 'config_stash.loaders.YamlLoader',
-        'json': 'config_stash.loaders.JsonLoader',
-        'toml': 'config_stash.loaders.TomlLoader',
-        'env': 'config_stash.loaders.EnvironmentLoader',
-        'envfile': 'config_stash.loaders.EnvFileLoader',
-        'ini': 'config_stash.loaders.IniLoader',
+        "yaml": "config_stash.loaders.YamlLoader",
+        "json": "config_stash.loaders.JsonLoader",
+        "toml": "config_stash.loaders.TomlLoader",
+        "env": "config_stash.loaders.EnvironmentLoader",
+        "envfile": "config_stash.loaders.EnvFileLoader",
+        "ini": "config_stash.loaders.IniLoader",
     }
 
     if name in builtin_loaders:
-        module_path, class_name = builtin_loaders[name].rsplit('.', 1)
+        module_path, class_name = builtin_loaders[name].rsplit(".", 1)
         import importlib
+
         module = importlib.import_module(module_path)
         return getattr(module, class_name)
 

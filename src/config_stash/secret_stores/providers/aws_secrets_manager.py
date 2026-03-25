@@ -12,7 +12,7 @@ from config_stash.secret_stores.base import (
 
 try:
     import boto3
-    from botocore.exceptions import ClientError, NoCredentialsError, BotoCoreError
+    from botocore.exceptions import BotoCoreError, ClientError, NoCredentialsError
 
     BOTO3_AVAILABLE = True
 except ImportError:
@@ -99,8 +99,7 @@ class AWSSecretsManager(SecretStore):
         """
         if not BOTO3_AVAILABLE:
             raise ImportError(
-                "boto3 is required for AWSSecretsManager. "
-                "Install it with: pip install boto3"
+                "boto3 is required for AWSSecretsManager. " "Install it with: pip install boto3"
             )
 
         # Build client configuration
@@ -170,7 +169,11 @@ class AWSSecretsManager(SecretStore):
 
         if version:
             # Check if version is a stage or version ID
-            if version.startswith("AWSCURRENT") or version.startswith("AWSPENDING") or version.startswith("AWSPREVIOUS"):
+            if (
+                version.startswith("AWSCURRENT")
+                or version.startswith("AWSPENDING")
+                or version.startswith("AWSPREVIOUS")
+            ):
                 request_params["VersionStage"] = version
             else:
                 request_params["VersionId"] = version
@@ -216,9 +219,7 @@ class AWSSecretsManager(SecretStore):
                     f"(region: {self.region_name})"
                 )
             elif error_code in ("AccessDeniedException", "InvalidRequestException"):
-                raise SecretAccessError(
-                    f"Access denied to secret '{secret_name}': {e}"
-                )
+                raise SecretAccessError(f"Access denied to secret '{secret_name}': {e}")
             else:
                 raise SecretStoreError(
                     f"AWS Secrets Manager error for '{secret_name}': {error_code} - {e}"
@@ -280,7 +281,9 @@ class AWSSecretsManager(SecretStore):
                 except ClientError as create_error:
                     error_code = create_error.response.get("Error", {}).get("Code", "")
                     if error_code in ("AccessDeniedException", "InvalidRequestException"):
-                        raise SecretAccessError(f"Access denied creating secret '{key}': {create_error}")
+                        raise SecretAccessError(
+                            f"Access denied creating secret '{key}': {create_error}"
+                        )
                     else:
                         raise SecretStoreError(f"Failed to create secret '{key}': {create_error}")
             elif error_code in ("AccessDeniedException", "InvalidRequestException"):

@@ -91,9 +91,7 @@ class DictSecretStore(SecretStore):
         # Handle versioned access
         if version is not None:
             if key not in self._versions:
-                raise SecretNotFoundError(
-                    f"No versions found for secret '{key}'"
-                )
+                raise SecretNotFoundError(f"No versions found for secret '{key}'")
             try:
                 version_idx = int(version)
                 return self._versions[key][version_idx]
@@ -147,9 +145,7 @@ class DictSecretStore(SecretStore):
             >>> store.delete_secret("api/key")
         """
         if key not in self._secrets:
-            raise SecretNotFoundError(
-                f"Cannot delete secret '{key}': not found in DictSecretStore"
-            )
+            raise SecretNotFoundError(f"Cannot delete secret '{key}': not found in DictSecretStore")
 
         del self._secrets[key]
 

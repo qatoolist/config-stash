@@ -41,8 +41,9 @@ class EnvSecretStore(SecretStore):
         >>> # Use with Config
         >>> config = Config(secret_resolver=SecretResolver(store))
         >>>
-        >>> # In config: database.password = "${secret:db/password}"
-        >>> # Resolves to os.environ['DB_PASSWORD']
+        >>> # In config file, use format with placeholder syntax
+        >>> # Example: database.password = "$" + "{" + "db/password" + "}"
+        >>> # This resolves to os.environ['DB_PASSWORD']
     """
 
     def __init__(
@@ -56,19 +57,20 @@ class EnvSecretStore(SecretStore):
 
         Args:
             prefix: Prefix to prepend to all environment variable names.
-                Example: prefix="SECRET_" will look for "SECRET_API_KEY"
+                If prefix="MYAPP" is provided, it will look for "MYAPP_API_KEY".
             suffix: Suffix to append to all environment variable names.
-            transform_key: If True, transforms secret keys for env var lookup:
+            transform_key: If True, transforms keys for environment variable lookup.
+                The transformation process:
                 - Replaces "/" and "." with "_"
                 - Converts to uppercase (if not case_sensitive)
-                Example: "api/key" -> "API_KEY"
+                For example, "api/key" becomes "API_KEY".
                 If False, uses the key as-is.
             case_sensitive: If True, preserves case when looking up variables.
                 Only applicable when transform_key=False (default: False).
 
-        Example:
-            >>> # Look for SECRET_* variables
-            >>> store = EnvSecretStore(prefix="SECRET_")
+        Examples:
+            >>> # Look for variables with a specific prefix
+            >>> store = EnvSecretStore(prefix="MYAPP")
             >>>
             >>> # Custom transformation
             >>> store = EnvSecretStore(transform_key=True)
@@ -130,8 +132,7 @@ class EnvSecretStore(SecretStore):
         if env_var_name not in os.environ:
             raise SecretNotFoundError(
                 f"Environment variable '{env_var_name}' not found "
-                f"(secret key: '{key}'). "
-                f"Available variables: {list(os.environ.keys())[:10]}..."
+                f"(secret key: '{key}')."
             )
 
         return os.environ[env_var_name]
@@ -241,9 +242,7 @@ class EnvSecretStore(SecretStore):
         env_var_name = self._transform_key(key)
 
         if env_var_name not in os.environ:
-            raise SecretNotFoundError(
-                f"Environment variable '{env_var_name}' not found"
-            )
+            raise SecretNotFoundError(f"Environment variable '{env_var_name}' not found")
 
         value = os.environ[env_var_name]
 

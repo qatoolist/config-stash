@@ -283,3 +283,10 @@ pyrightconfig.json
 .pdm.toml
 .pdm-python
 __pypackages__/
+
+# Dev Containers
+.devcontainer/.env
+.devcontainer/*.local.yml
+.devcontainer/.docker/
+.devcontainer/docker-compose.override.yml
+docs/.doctrees/
