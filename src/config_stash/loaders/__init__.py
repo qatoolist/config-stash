@@ -52,6 +52,7 @@ from config_stash.loaders.toml_loader import TomlLoader
 from config_stash.loaders.yaml_loader import YamlLoader
 
 __all__ = [
+    "Loader",
     "JsonLoader",
     "YamlLoader",
     "TomlLoader",
