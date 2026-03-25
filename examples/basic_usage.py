@@ -22,7 +22,7 @@ def example_1_simple_config():
     print("=" * 70)
 
     # Create a temporary config file
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
         f.write("""
 database:
   host: localhost
@@ -55,7 +55,7 @@ def example_2_multiple_sources():
     print("=" * 70)
 
     # Create base config
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
         f.write("""
 database:
   host: localhost
@@ -64,7 +64,7 @@ database:
         base_file = f.name
 
     # Create override config
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
         import json
         json.dump({
             "database": {
@@ -100,9 +100,9 @@ def example_3_environment_variables():
     print("=" * 70)
 
     # Set environment variables (in real usage, set these externally)
-    os.environ['APP_DATABASE__HOST'] = 'prod.db.example.com'
-    os.environ['APP_DATABASE__PORT'] = '5432'
-    os.environ['APP_API__TIMEOUT'] = '60'
+    os.environ["APP_DATABASE__HOST"] = "prod.db.example.com"
+    os.environ["APP_DATABASE__PORT"] = "5432"
+    os.environ["APP_API__TIMEOUT"] = "60"
 
     try:
         # Load from environment with prefix 'APP'
@@ -117,7 +117,7 @@ def example_3_environment_variables():
 
     finally:
         # Clean up
-        for key in ['APP_DATABASE__HOST', 'APP_DATABASE__PORT', 'APP_API__TIMEOUT']:
+        for key in ["APP_DATABASE__HOST", "APP_DATABASE__PORT", "APP_API__TIMEOUT"]:
             os.environ.pop(key, None)
 
 
@@ -128,7 +128,7 @@ def example_4_environment_specific():
     print("=" * 70)
 
     # Create config with multiple environments
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
         f.write("""
 development:
   database:
@@ -177,7 +177,7 @@ def example_5_config_builder():
     print("Example 5: ConfigBuilder Pattern")
     print("=" * 70)
 
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
         f.write("""
 database:
   host: localhost

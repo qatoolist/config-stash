@@ -12,8 +12,6 @@ import os
 import subprocess
 import threading
 import webbrowser
-
-logger = logging.getLogger(__name__)
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from typing import Any, Callable, Optional
 from urllib.parse import parse_qs, urlparse
@@ -22,6 +20,8 @@ from config_stash.secret_stores.vault_auth.base import (
     VaultAuthenticationError,
     VaultAuthMethod,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class OIDCAuth(VaultAuthMethod):
@@ -174,10 +174,14 @@ class OIDCAuth(VaultAuthMethod):
             result = subprocess.run(["klist", "-s"], capture_output=True, timeout=5)
 
             if result.returncode != 0:
-                raise VaultAuthenticationError("No valid Kerberos ticket found. Run 'kinit' first.")
+                raise VaultAuthenticationError(
+                    "No valid Kerberos ticket found. Run 'kinit' first."
+                )
 
             # Get Kerberos principal
-            result = subprocess.run(["klist"], capture_output=True, text=True, timeout=5)
+            result = subprocess.run(
+                ["klist"], capture_output=True, text=True, timeout=5
+            )
 
             # Use hvac's OIDC with Kerberos
             # Note: This requires the Vault OIDC auth to be configured
@@ -221,7 +225,9 @@ class OIDCAuth(VaultAuthMethod):
             username, password = self.credential_provider()
 
             if not username or not password:
-                raise VaultAuthenticationError("Credential provider returned empty credentials")
+                raise VaultAuthenticationError(
+                    "Credential provider returned empty credentials"
+                )
 
             # Use OIDC with username/password
             # This typically requires the OIDC provider to support
@@ -236,7 +242,9 @@ class OIDCAuth(VaultAuthMethod):
             return response["auth"]["client_token"]
 
         except Exception as e:
-            raise VaultAuthenticationError(f"Credential-based authentication failed: {e}")
+            raise VaultAuthenticationError(
+                f"Credential-based authentication failed: {e}"
+            )
 
     def _authenticate_browser(self, client: Any) -> str:
         """Authenticate using browser-based OIDC flow.
@@ -288,7 +296,9 @@ class OIDCAuth(VaultAuthMethod):
                     pass  # Suppress log messages
 
             # Start callback server
-            server = HTTPServer((self.callback_host, self.callback_port), CallbackHandler)
+            server = HTTPServer(
+                (self.callback_host, self.callback_port), CallbackHandler
+            )
 
             def run_server():
                 server.handle_request()
@@ -309,7 +319,9 @@ class OIDCAuth(VaultAuthMethod):
             server.server_close()
 
             if not callback_data.get("code"):
-                raise VaultAuthenticationError("Authentication timeout or callback not received")
+                raise VaultAuthenticationError(
+                    "Authentication timeout or callback not received"
+                )
 
             # Complete OIDC authentication
             response = client.auth.oidc.oidc_callback(
@@ -323,7 +335,9 @@ class OIDCAuth(VaultAuthMethod):
             return response["auth"]["client_token"]
 
         except Exception as e:
-            raise VaultAuthenticationError(f"Browser-based OIDC authentication failed: {e}")
+            raise VaultAuthenticationError(
+                f"Browser-based OIDC authentication failed: {e}"
+            )
 
     def get_mount_point(self) -> str:
         """Get the OIDC auth mount point."""

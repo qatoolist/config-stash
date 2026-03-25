@@ -3,6 +3,7 @@
 Every test creates real files on disk, uses real environment variables,
 and exercises actual code paths end-to-end.
 """
+
 # pyright: reportOptionalSubscript=false, reportOptionalMemberAccess=false
 # pyright: reportArgumentType=false, reportPossiblyUnboundVariable=false
 # pyright: reportAttributeAccessIssue=false, reportCallIssue=false
@@ -57,23 +58,32 @@ class TestRealMultiSourceLoading(RealWorldTestBase):
         from config_stash import Config
         from config_stash.loaders import JsonLoader, TomlLoader, YamlLoader
 
-        yaml_path = self.write_yaml("base.yaml", {
-            "default": {
-                "database": {"host": "localhost", "port": 5432},
-                "app": {"name": "myapp", "debug": False},
-            }
-        })
-        json_path = self.write_json("override.json", {
-            "default": {
-                "database": {"host": "production.db"},
-                "cache": {"ttl": 300},
-            }
-        })
-        toml_path = self.write_file("final.toml", """
+        yaml_path = self.write_yaml(
+            "base.yaml",
+            {
+                "default": {
+                    "database": {"host": "localhost", "port": 5432},
+                    "app": {"name": "myapp", "debug": False},
+                }
+            },
+        )
+        json_path = self.write_json(
+            "override.json",
+            {
+                "default": {
+                    "database": {"host": "production.db"},
+                    "cache": {"ttl": 300},
+                }
+            },
+        )
+        toml_path = self.write_file(
+            "final.toml",
+            """
 [default.app]
 debug = true
 version = "2.0"
-""")
+""",
+        )
 
         config = Config(
             env="default",
@@ -104,16 +114,22 @@ version = "2.0"
         from config_stash import Config
         from config_stash.loaders import EnvFileLoader, YamlLoader
 
-        env_path = self.write_file(".env", """
+        env_path = self.write_file(
+            ".env",
+            """
 DATABASE_HOST=localhost
 DATABASE_PORT=5432
 DEBUG=true
 RETRIES=-3
 PI=3.14
-""")
-        yaml_path = self.write_yaml("config.yaml", {
-            "default": {"DATABASE_HOST": "yaml-host"},
-        })
+""",
+        )
+        yaml_path = self.write_yaml(
+            "config.yaml",
+            {
+                "default": {"DATABASE_HOST": "yaml-host"},
+            },
+        )
 
         config = Config(
             env="default",
@@ -135,7 +151,9 @@ PI=3.14
         """Load INI file, verify sections become nested dicts."""
         from config_stash.loaders import IniLoader
 
-        ini_path = self.write_file("config.ini", """
+        ini_path = self.write_file(
+            "config.ini",
+            """
 [database]
 host = localhost
 port = 5432
@@ -144,7 +162,8 @@ ssl = true
 [app]
 name = myapp
 workers = -4
-""")
+""",
+        )
         loader = IniLoader(ini_path)
         config = loader.load()
 
@@ -163,16 +182,19 @@ class TestRealEnvironmentResolution(RealWorldTestBase):
         from config_stash import Config
         from config_stash.loaders import YamlLoader
 
-        yaml_path = self.write_yaml("config.yaml", {
-            "default": {
-                "database": {"host": "localhost", "port": 5432, "ssl": False},
-                "app": {"debug": True},
+        yaml_path = self.write_yaml(
+            "config.yaml",
+            {
+                "default": {
+                    "database": {"host": "localhost", "port": 5432, "ssl": False},
+                    "app": {"debug": True},
+                },
+                "production": {
+                    "database": {"host": "prod.db.com", "ssl": True},
+                    "app": {"debug": False},
+                },
             },
-            "production": {
-                "database": {"host": "prod.db.com", "ssl": True},
-                "app": {"debug": False},
-            },
-        })
+        )
 
         config = Config(
             env="production",
@@ -193,13 +215,19 @@ class TestRealEnvironmentResolution(RealWorldTestBase):
         from config_stash import Config
         from config_stash.loaders import EnvironmentLoader, YamlLoader
 
-        yaml_path = self.write_yaml("config.yaml", {
-            "default": {"database": {"host": "localhost"}},
-        })
+        yaml_path = self.write_yaml(
+            "config.yaml",
+            {
+                "default": {"database": {"host": "localhost"}},
+            },
+        )
 
-        with unittest.mock.patch.dict(os.environ, {
-            "MYAPP_DATABASE__PORT": "9999",
-        }):
+        with unittest.mock.patch.dict(
+            os.environ,
+            {
+                "MYAPP_DATABASE__PORT": "9999",
+            },
+        ):
             config = Config(
                 env="default",
                 loaders=[
@@ -222,9 +250,12 @@ class TestRealReloadAndCallbacks(RealWorldTestBase):
         from config_stash import Config
         from config_stash.loaders import YamlLoader
 
-        yaml_path = self.write_yaml("config.yaml", {
-            "default": {"host": "original", "port": 5432},
-        })
+        yaml_path = self.write_yaml(
+            "config.yaml",
+            {
+                "default": {"host": "original", "port": 5432},
+            },
+        )
 
         config = Config(
             env="default",
@@ -235,9 +266,12 @@ class TestRealReloadAndCallbacks(RealWorldTestBase):
         self.assertEqual(config.host, "original")
 
         # Modify file
-        self.write_yaml("config.yaml", {
-            "default": {"host": "changed", "port": 5432, "new_key": "new_value"},
-        })
+        self.write_yaml(
+            "config.yaml",
+            {
+                "default": {"host": "changed", "port": 5432, "new_key": "new_value"},
+            },
+        )
 
         config.reload()
 
@@ -249,9 +283,12 @@ class TestRealReloadAndCallbacks(RealWorldTestBase):
         from config_stash import Config
         from config_stash.loaders import YamlLoader
 
-        yaml_path = self.write_yaml("config.yaml", {
-            "default": {"host": "original"},
-        })
+        yaml_path = self.write_yaml(
+            "config.yaml",
+            {
+                "default": {"host": "original"},
+            },
+        )
 
         config = Config(
             env="default",
@@ -265,9 +302,12 @@ class TestRealReloadAndCallbacks(RealWorldTestBase):
         def track_change(key, old_val, new_val):
             changes.append((key, old_val, new_val))
 
-        self.write_yaml("config.yaml", {
-            "default": {"host": "changed"},
-        })
+        self.write_yaml(
+            "config.yaml",
+            {
+                "default": {"host": "changed"},
+            },
+        )
 
         config.reload()
 
@@ -284,9 +324,12 @@ class TestRealReloadAndCallbacks(RealWorldTestBase):
         from config_stash import Config
         from config_stash.loaders import YamlLoader
 
-        yaml_path = self.write_yaml("config.yaml", {
-            "default": {"host": "original"},
-        })
+        yaml_path = self.write_yaml(
+            "config.yaml",
+            {
+                "default": {"host": "original"},
+            },
+        )
 
         config = Config(
             env="default",
@@ -299,9 +342,12 @@ class TestRealReloadAndCallbacks(RealWorldTestBase):
             "merged": copy.deepcopy(config.merged_config),
         }
 
-        self.write_yaml("config.yaml", {
-            "default": {"host": "changed"},
-        })
+        self.write_yaml(
+            "config.yaml",
+            {
+                "default": {"host": "changed"},
+            },
+        )
 
         config.reload(dry_run=True)
 
@@ -316,9 +362,12 @@ class TestRealSetAndIntrospection(RealWorldTestBase):
         from config_stash import Config
         from config_stash.loaders import YamlLoader
 
-        yaml_path = self.write_yaml("config.yaml", {
-            "default": {"database": {"host": "localhost"}},
-        })
+        yaml_path = self.write_yaml(
+            "config.yaml",
+            {
+                "default": {"database": {"host": "localhost"}},
+            },
+        )
 
         config = Config(
             env="default",
@@ -338,12 +387,15 @@ class TestRealSetAndIntrospection(RealWorldTestBase):
         from config_stash import Config
         from config_stash.loaders import YamlLoader
 
-        yaml_path = self.write_yaml("config.yaml", {
-            "default": {
-                "database": {"host": "localhost", "port": 5432},
-                "app": {"name": "test"},
+        yaml_path = self.write_yaml(
+            "config.yaml",
+            {
+                "default": {
+                    "database": {"host": "localhost", "port": 5432},
+                    "app": {"name": "test"},
+                },
             },
-        })
+        )
 
         config = Config(
             env="default",
@@ -367,9 +419,12 @@ class TestRealVersioning(RealWorldTestBase):
         from config_stash import Config
         from config_stash.loaders import YamlLoader
 
-        yaml_path = self.write_yaml("config.yaml", {
-            "default": {"host": "v1-host", "port": 5432},
-        })
+        yaml_path = self.write_yaml(
+            "config.yaml",
+            {
+                "default": {"host": "v1-host", "port": 5432},
+            },
+        )
 
         version_dir = os.path.join(self.temp_dir, "versions")
         config = Config(
@@ -382,9 +437,12 @@ class TestRealVersioning(RealWorldTestBase):
         v1 = config.save_version(metadata={"author": "test"})
 
         # Modify config
-        self.write_yaml("config.yaml", {
-            "default": {"host": "v2-host", "port": 5432},
-        })
+        self.write_yaml(
+            "config.yaml",
+            {
+                "default": {"host": "v2-host", "port": 5432},
+            },
+        )
         config.reload()
         self.assertEqual(config.host, "v2-host")
 
@@ -405,23 +463,30 @@ class TestRealSecretResolution(RealWorldTestBase):
     def test_secrets_resolved_in_config(self):
         from config_stash import Config
         from config_stash.loaders import YamlLoader
-        from config_stash.secret_stores.providers.dict_secret_store import DictSecretStore
+        from config_stash.secret_stores.providers.dict_secret_store import (
+            DictSecretStore,
+        )
         from config_stash.secret_stores.resolver import SecretResolver
 
-        yaml_path = self.write_yaml("config.yaml", {
-            "default": {
-                "database": {
-                    "host": "localhost",
-                    "password": "${secret:db/password}",
+        yaml_path = self.write_yaml(
+            "config.yaml",
+            {
+                "default": {
+                    "database": {
+                        "host": "localhost",
+                        "password": "${secret:db/password}",
+                    },
+                    "api_key": "${secret:api/key}",
                 },
-                "api_key": "${secret:api/key}",
             },
-        })
+        )
 
-        secrets = DictSecretStore({
-            "db/password": "super-secret-pw",
-            "api/key": "ak_12345",
-        })
+        secrets = DictSecretStore(
+            {
+                "db/password": "super-secret-pw",
+                "api/key": "ak_12345",
+            }
+        )
         resolver = SecretResolver(secrets)
 
         config = Config(
@@ -449,8 +514,8 @@ class TestRealComposition(RealWorldTestBase):
         self.write_file("base.yaml", "database:\n  host: localhost\n  port: 5432\n")
 
         # Create main config that includes base
-        main_path = self.write_file("main.yaml",
-            "_include:\n  - base.yaml\ndefault:\n  app:\n    name: myapp\n"
+        main_path = self.write_file(
+            "main.yaml", "_include:\n  - base.yaml\ndefault:\n  app:\n    name: myapp\n"
         )
 
         config = Config(
@@ -506,12 +571,18 @@ class TestRealConfigBuilder(RealWorldTestBase):
         from config_stash import ConfigBuilder
         from config_stash.loaders import JsonLoader, YamlLoader
 
-        yaml_path = self.write_yaml("base.yaml", {
-            "default": {"database": {"host": "localhost"}},
-        })
-        json_path = self.write_json("override.json", {
-            "default": {"database": {"port": 5432}},
-        })
+        yaml_path = self.write_yaml(
+            "base.yaml",
+            {
+                "default": {"database": {"host": "localhost"}},
+            },
+        )
+        json_path = self.write_json(
+            "override.json",
+            {
+                "default": {"database": {"port": 5432}},
+            },
+        )
 
         config = (
             ConfigBuilder()
@@ -533,9 +604,12 @@ class TestRealExport(RealWorldTestBase):
         from config_stash import Config
         from config_stash.loaders import YamlLoader
 
-        yaml_path = self.write_yaml("config.yaml", {
-            "default": {"host": "localhost", "port": 5432},
-        })
+        yaml_path = self.write_yaml(
+            "config.yaml",
+            {
+                "default": {"host": "localhost", "port": 5432},
+            },
+        )
 
         config = Config(
             env="default",
@@ -570,9 +644,12 @@ class TestRealValidation(RealWorldTestBase):
             host: str
             port: int
 
-        yaml_path = self.write_yaml("config.yaml", {
-            "default": {"host": "localhost", "port": 5432},
-        })
+        yaml_path = self.write_yaml(
+            "config.yaml",
+            {
+                "default": {"host": "localhost", "port": 5432},
+            },
+        )
 
         config = Config(
             env="default",
@@ -644,9 +721,12 @@ class TestRealHookProcessing(RealWorldTestBase):
         from config_stash import Config
         from config_stash.loaders import YamlLoader
 
-        yaml_path = self.write_yaml("config.yaml", {
-            "default": {"greeting": "hello world"},
-        })
+        yaml_path = self.write_yaml(
+            "config.yaml",
+            {
+                "default": {"greeting": "hello world"},
+            },
+        )
 
         config = Config(
             env="default",
@@ -667,9 +747,12 @@ class TestRealHookProcessing(RealWorldTestBase):
         from config_stash import Config
         from config_stash.loaders import YamlLoader
 
-        yaml_path = self.write_yaml("config.yaml", {
-            "default": {"home_dir": "${HOME}"},
-        })
+        yaml_path = self.write_yaml(
+            "config.yaml",
+            {
+                "default": {"home_dir": "${HOME}"},
+            },
+        )
 
         config = Config(
             env="default",
@@ -704,16 +787,21 @@ class TestRealEdgeCases(RealWorldTestBase):
 
         for LoaderClass in [YamlLoader, JsonLoader, TomlLoader]:
             result = LoaderClass("/nonexistent/path/config.xyz").load()
-            self.assertIsNone(result, f"{LoaderClass.__name__} did not return None for missing file")
+            self.assertIsNone(
+                result, f"{LoaderClass.__name__} did not return None for missing file"
+            )
 
     def test_unicode_config_values(self):
         """Unicode values should be handled correctly."""
         from config_stash import Config
         from config_stash.loaders import YamlLoader
 
-        yaml_path = self.write_yaml("config.yaml", {
-            "default": {"greeting": "Hello, World!", "emoji": "Test"},
-        })
+        yaml_path = self.write_yaml(
+            "config.yaml",
+            {
+                "default": {"greeting": "Hello, World!", "emoji": "Test"},
+            },
+        )
 
         config = Config(
             env="default",
@@ -728,17 +816,14 @@ class TestRealEdgeCases(RealWorldTestBase):
         from config_stash import Config
         from config_stash.loaders import YamlLoader
 
-        yaml_path = self.write_yaml("config.yaml", {
-            "default": {
-                "level1": {
-                    "level2": {
-                        "level3": {
-                            "level4": {"value": "deep"}
-                        }
-                    }
-                }
+        yaml_path = self.write_yaml(
+            "config.yaml",
+            {
+                "default": {
+                    "level1": {"level2": {"level3": {"level4": {"value": "deep"}}}}
+                },
             },
-        })
+        )
 
         config = Config(
             env="default",

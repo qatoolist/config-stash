@@ -10,10 +10,11 @@ from config_stash.loaders import EnvFileLoader
 
 class TestEnvFileLoader(unittest.TestCase):
     """Test .env file loading functionality."""
-# pyright: reportOptionalSubscript=false, reportOptionalMemberAccess=false
-# pyright: reportArgumentType=false, reportPossiblyUnboundVariable=false
-# pyright: reportAttributeAccessIssue=false, reportCallIssue=false
-# pyright: reportMissingImports=false
+
+    # pyright: reportOptionalSubscript=false, reportOptionalMemberAccess=false
+    # pyright: reportArgumentType=false, reportPossiblyUnboundVariable=false
+    # pyright: reportAttributeAccessIssue=false, reportCallIssue=false
+    # pyright: reportMissingImports=false
 
     def setUp(self):
         """Set up test environment."""
@@ -147,7 +148,9 @@ JSON='{"key": "value", "number": 42}'
         self.assertEqual(config["MIXED_QUOTES"], "it's a value")
         self.assertEqual(config["NO_QUOTES"], "no_quotes_needed")
         self.assertEqual(config["EMPTY_QUOTES"], "")
-        self.assertEqual(config["URL"], "https://example.com/path?query=value&other=123")
+        self.assertEqual(
+            config["URL"], "https://example.com/path?query=value&other=123"
+        )
         self.assertEqual(config["JSON"], '{"key": "value", "number": 42}')
 
     def test_escape_sequences(self):
@@ -216,7 +219,8 @@ MATH_EXPRESSION=2+2=4
         self.assertEqual(config["PASSWORD"], "p@ssw0rd!#$%")
         self.assertEqual(config["EMAIL"], "user@example.com")
         self.assertEqual(
-            config["CONNECTION_STRING"], "mongodb://user:pass@host:27017/db?option=value"
+            config["CONNECTION_STRING"],
+            "mongodb://user:pass@host:27017/db?option=value",
         )
         self.assertEqual(config["REGEX_PATTERN"], "^[a-zA-Z0-9]+$")
         self.assertEqual(config["MATH_EXPRESSION"], "2+2=4")
@@ -276,7 +280,9 @@ CONFIG=key1=val1;key2=val2
 
         # Everything after first = should be the value
         self.assertEqual(config["EQUATION"], "a=b+c")
-        self.assertEqual(config["URL"], "https://example.com?param1=value1&param2=value2")
+        self.assertEqual(
+            config["URL"], "https://example.com?param1=value1&param2=value2"
+        )
         self.assertEqual(config["BASE64"], "SGVsbG8gV29ybGQ=")
         self.assertEqual(config["CONFIG"], "key1=val1;key2=val2")
 
@@ -357,8 +363,12 @@ app.database.replica.port=5433
         # Verify deep nesting
         self.assertEqual(config["app"]["server"]["host"], "localhost")
         self.assertEqual(config["app"]["server"]["ssl"]["enabled"], True)
-        self.assertEqual(config["app"]["server"]["ssl"]["cert"]["path"], "/etc/ssl/cert.pem")
-        self.assertEqual(config["app"]["database"]["primary"]["host"], "db1.example.com")
+        self.assertEqual(
+            config["app"]["server"]["ssl"]["cert"]["path"], "/etc/ssl/cert.pem"
+        )
+        self.assertEqual(
+            config["app"]["database"]["primary"]["host"], "db1.example.com"
+        )
         self.assertEqual(config["app"]["database"]["replica"]["port"], 5433)
 
     def test_source_attribute(self):

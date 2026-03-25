@@ -1,4 +1,5 @@
 """Pydantic model validation for configurations."""
+
 # pyright: reportPossiblyUnboundVariable=false
 # pyright: reportInvalidTypeForm=false
 # pyright: reportGeneralTypeIssues=false
@@ -68,7 +69,8 @@ class PydanticValidator(Generic[T]):
         """
         if not HAS_PYDANTIC:
             raise ImportError(
-                "pydantic is required for model validation. " "Install with: pip install pydantic"
+                "pydantic is required for model validation. "
+                "Install with: pip install pydantic"
             )
         self.model_class: Type[T] = model_class
 
@@ -153,7 +155,9 @@ if HAS_PYDANTIC:
         database: str = Field(..., description="Database name")
         username: str = Field(..., description="Database username")
         password: Optional[str] = Field(default=None, description="Database password")
-        pool_size: int = Field(default=10, ge=1, le=100, description="Connection pool size")
+        pool_size: int = Field(
+            default=10, ge=1, le=100, description="Connection pool size"
+        )
         ssl: bool = Field(default=False, description="Enable SSL")
 
     class RedisConfig(BaseModel):
@@ -172,6 +176,8 @@ if HAS_PYDANTIC:
 
         app_name: str = Field(..., description="Application name")
         debug: bool = Field(default=False)
-        log_level: str = Field(default="INFO", pattern="^(DEBUG|INFO|WARNING|ERROR|CRITICAL)$")
+        log_level: str = Field(
+            default="INFO", pattern="^(DEBUG|INFO|WARNING|ERROR|CRITICAL)$"
+        )
         database: DatabaseConfig
         redis: Optional[RedisConfig] = None

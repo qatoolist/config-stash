@@ -7,9 +7,9 @@ from TOML files.
 from typing import Any, Dict, Optional
 
 from config_stash.exceptions import ConfigFormatError, ConfigLoadError
+from config_stash.loaders.loader import Loader
 from config_stash.utils.toml_compat import TomlDecodeError
 from config_stash.utils.toml_compat import loads as toml_loads
-from config_stash.loaders.loader import Loader
 
 
 class TomlLoader(Loader):

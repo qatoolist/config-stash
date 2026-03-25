@@ -291,7 +291,9 @@ class TestSecretResolver(unittest.TestCase):
         store = DictSecretStore({"db/password": "secret123"})
         resolver = SecretResolver(store)
 
-        result = resolver.resolve("postgresql://user:${secret:db/password}@localhost/db")
+        result = resolver.resolve(
+            "postgresql://user:${secret:db/password}@localhost/db"
+        )
         self.assertEqual(result, "postgresql://user:secret123@localhost/db")
 
     def test_multiple_placeholders(self):
@@ -304,7 +306,9 @@ class TestSecretResolver(unittest.TestCase):
         )
         resolver = SecretResolver(store)
 
-        result = resolver.resolve("User: ${secret:db/user}, Pass: ${secret:db/password}")
+        result = resolver.resolve(
+            "User: ${secret:db/user}, Pass: ${secret:db/password}"
+        )
         self.assertEqual(result, "User: admin, Pass: secret123")
 
     def test_json_path_extraction(self):

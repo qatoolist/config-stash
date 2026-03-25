@@ -23,10 +23,11 @@ except ImportError:
 @unittest.skipUnless(HAS_PYDANTIC, "pydantic not installed")
 class TestPydanticValidator(unittest.TestCase):
     """Test cases for PydanticValidator."""
-# pyright: reportOptionalSubscript=false, reportOptionalMemberAccess=false
-# pyright: reportArgumentType=false, reportPossiblyUnboundVariable=false
-# pyright: reportAttributeAccessIssue=false, reportCallIssue=false
-# pyright: reportMissingImports=false
+
+    # pyright: reportOptionalSubscript=false, reportOptionalMemberAccess=false
+    # pyright: reportArgumentType=false, reportPossiblyUnboundVariable=false
+    # pyright: reportAttributeAccessIssue=false, reportCallIssue=false
+    # pyright: reportMissingImports=false
 
     def setUp(self):
         """Set up test fixtures."""
@@ -66,7 +67,9 @@ class TestPydanticValidator(unittest.TestCase):
             validator.validate(config)
 
         errors = context.exception.validation_errors
-        self.assertTrue(any(e.get("loc") == ("name",) or e.get("loc") == ["name"] for e in errors))
+        self.assertTrue(
+            any(e.get("loc") == ("name",) or e.get("loc") == ["name"] for e in errors)
+        )
 
     def test_type_validation(self):
         """Test that types are validated correctly."""
@@ -180,7 +183,11 @@ class TestPydanticValidator(unittest.TestCase):
             "app_name": "TestApp",
             "debug": True,
             "log_level": "DEBUG",
-            "database": {"database": "appdb", "username": "appuser", "host": "db.test.com"},
+            "database": {
+                "database": "appdb",
+                "username": "appuser",
+                "host": "db.test.com",
+            },
             "redis": {"host": "redis.test.com", "db": 2},
         }
         result = validator.validate(config)
@@ -197,7 +204,10 @@ class TestPydanticValidator(unittest.TestCase):
         """Test AppConfig without optional redis field."""
         validator = PydanticValidator(AppConfig)
 
-        config = {"app_name": "SimpleApp", "database": {"database": "simpledb", "username": "user"}}
+        config = {
+            "app_name": "SimpleApp",
+            "database": {"database": "simpledb", "username": "user"},
+        }
         result = validator.validate(config)
 
         self.assertEqual(result.app_name, "SimpleApp")

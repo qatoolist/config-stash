@@ -52,7 +52,9 @@ class ConfigComposer:
         self.loaders = loaders or []
         self._loaded_files: Set[str] = set()  # Track loaded files to prevent cycles
 
-    def compose(self, config: Dict[str, Any], source: str = "", depth: int = 0) -> Dict[str, Any]:
+    def compose(
+        self, config: Dict[str, Any], source: str = "", depth: int = 0
+    ) -> Dict[str, Any]:
         """Compose a configuration by processing includes and defaults.
 
         Args:
@@ -153,7 +155,9 @@ class ConfigComposer:
         if isinstance(includes, str):
             includes = [includes]
         elif not isinstance(includes, list):
-            logger.warning(f"Invalid include format in {source}, expected string or list")
+            logger.warning(
+                f"Invalid include format in {source}, expected string or list"
+            )
             return config
 
         # Resolve base directory from source file
@@ -258,10 +262,10 @@ class ConfigComposer:
         from config_stash.utils.dict_utils import deep_merge_dicts
 
         return deep_merge_dicts(
-            base, new,
+            base,
+            new,
             skip_keys={INCLUDE_KEY, DEFAULTS_KEY, MERGE_STRATEGY_KEY},
         )
-        return result
 
 
 def process_composition(

@@ -51,7 +51,9 @@ class ConfigDebug:
         """
         self.enhanced_source_tracker.print_debug_info(key)
 
-    def export_debug_report(self, output_path: str = "config_debug_report.json") -> None:
+    def export_debug_report(
+        self, output_path: str = "config_debug_report.json"
+    ) -> None:
         """Export a detailed debug report to a JSON file.
 
         Args:

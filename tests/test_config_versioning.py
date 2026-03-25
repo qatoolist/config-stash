@@ -17,10 +17,11 @@ from config_stash.loaders import YamlLoader
 
 class TestConfigVersion(unittest.TestCase):
     """Test configuration version class."""
-# pyright: reportOptionalSubscript=false, reportOptionalMemberAccess=false
-# pyright: reportArgumentType=false, reportPossiblyUnboundVariable=false
-# pyright: reportAttributeAccessIssue=false, reportCallIssue=false
-# pyright: reportMissingImports=false
+
+    # pyright: reportOptionalSubscript=false, reportOptionalMemberAccess=false
+    # pyright: reportArgumentType=false, reportPossiblyUnboundVariable=false
+    # pyright: reportAttributeAccessIssue=false, reportCallIssue=false
+    # pyright: reportMissingImports=false
 
     def test_version_initialization(self):
         """Test initializing version."""
@@ -133,7 +134,9 @@ class TestConfigVersionManager(unittest.TestCase):
         version1 = self.version_manager.save_version(config1)
         version2 = self.version_manager.save_version(config2)
 
-        diffs = self.version_manager.diff_versions(version1.version_id, version2.version_id)
+        diffs = self.version_manager.diff_versions(
+            version1.version_id, version2.version_id
+        )
         self.assertGreater(len(diffs), 0)
 
 

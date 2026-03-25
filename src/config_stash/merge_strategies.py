@@ -107,7 +107,9 @@ class AdvancedConfigMerger:
                 for key in common_keys:
                     full_path = f"{path}.{key}" if path else key
                     strategy = self._get_strategy(full_path)
-                    result[key] = self._apply_strategy(base[key], new[key], strategy, full_path)
+                    result[key] = self._apply_strategy(
+                        base[key], new[key], strategy, full_path
+                    )
                 return result
             # For non-dicts, return intersection logic
             return new if base == new else {}
@@ -119,7 +121,9 @@ class AdvancedConfigMerger:
             strategy = self._get_strategy(full_path)
 
             if key in result:
-                result[key] = self._apply_strategy(result[key], value, strategy, full_path)
+                result[key] = self._apply_strategy(
+                    result[key], value, strategy, full_path
+                )
             else:
                 result[key] = value
 
@@ -212,7 +216,10 @@ class AdvancedConfigMerger:
                 for key in common_keys:
                     full_path = f"{path}.{key}"
                     result[key] = self._apply_strategy(
-                        base_value[key], new_value[key], self._get_strategy(full_path), full_path
+                        base_value[key],
+                        new_value[key],
+                        self._get_strategy(full_path),
+                        full_path,
                     )
                 return result
             else:

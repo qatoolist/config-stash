@@ -2,6 +2,7 @@
 
 Run with: pytest tests/benchmarks/test_performance.py --benchmark-only
 """
+
 # pyright: reportOptionalSubscript=false, reportOptionalMemberAccess=false
 # pyright: reportArgumentType=false, reportPossiblyUnboundVariable=false
 # pyright: reportAttributeAccessIssue=false, reportCallIssue=false
@@ -64,7 +65,9 @@ class TestConfigPerformance:
         from config_stash.loaders import YamlLoader
 
         def init_config():
-            return Config(loaders=[YamlLoader(large_config_file)], enable_ide_support=False)
+            return Config(
+                loaders=[YamlLoader(large_config_file)], enable_ide_support=False
+            )
 
         benchmark(init_config)
 
@@ -73,7 +76,9 @@ class TestConfigPerformance:
         from config_stash import Config
         from config_stash.loaders import YamlLoader
 
-        config = Config(loaders=[YamlLoader(large_config_file)], enable_ide_support=False)
+        config = Config(
+            loaders=[YamlLoader(large_config_file)], enable_ide_support=False
+        )
 
         def access_value():
             return config.section_0.key_0
@@ -113,7 +118,9 @@ class TestConfigPerformance:
         from config_stash import Config
         from config_stash.loaders import YamlLoader
 
-        config = Config(loaders=[YamlLoader(large_config_file)], enable_ide_support=False)
+        config = Config(
+            loaders=[YamlLoader(large_config_file)], enable_ide_support=False
+        )
 
         def get_all_keys():
             return config.keys()
@@ -125,7 +132,9 @@ class TestConfigPerformance:
         from config_stash import Config
         from config_stash.loaders import YamlLoader
 
-        config = Config(loaders=[YamlLoader(large_config_file)], enable_ide_support=False)
+        config = Config(
+            loaders=[YamlLoader(large_config_file)], enable_ide_support=False
+        )
 
         def get_with_default():
             return config.get("non.existent.key", "default_value")

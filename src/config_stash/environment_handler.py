@@ -44,7 +44,9 @@ class EnvironmentHandler:
         """
         # If no environment structure exists (e.g., flat config from EnvironmentLoader),
         # return the entire config
-        if "default" not in self.config and (not self.env or self.env not in self.config):
+        if "default" not in self.config and (
+            not self.env or self.env not in self.config
+        ):
             # Flat configuration without environment sections
             return self.config.copy()
 

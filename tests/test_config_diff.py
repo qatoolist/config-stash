@@ -132,8 +132,12 @@ class TestConfigDiff(unittest.TestCase):
             with open(config2_file, "w") as f:
                 yaml.dump({"database": {"host": "remote"}}, f)
 
-            config1 = Config(loaders=[YamlLoader(config1_file)], enable_ide_support=False)
-            config2 = Config(loaders=[YamlLoader(config2_file)], enable_ide_support=False)
+            config1 = Config(
+                loaders=[YamlLoader(config1_file)], enable_ide_support=False
+            )
+            config2 = Config(
+                loaders=[YamlLoader(config2_file)], enable_ide_support=False
+            )
 
             diffs = config1.diff(config2)
             self.assertGreater(len(diffs), 0)
@@ -200,7 +204,9 @@ class TestConfigDriftDetector(unittest.TestCase):
             with open(actual_file, "w") as f:
                 yaml.dump({"database": {"host": "actual"}}, f)
 
-            intended = Config(loaders=[YamlLoader(intended_file)], enable_ide_support=False)
+            intended = Config(
+                loaders=[YamlLoader(intended_file)], enable_ide_support=False
+            )
             actual = Config(loaders=[YamlLoader(actual_file)], enable_ide_support=False)
 
             drift = actual.detect_drift(intended)

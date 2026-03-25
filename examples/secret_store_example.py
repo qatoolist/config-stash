@@ -21,7 +21,7 @@ def example_dict_secret_store():
     from config_stash.loaders import YamlLoader
 
     # Create temporary config file
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
         f.write("""
 default:
   database:
@@ -49,7 +49,7 @@ default:
 
         # Create config with secret resolver
         config = Config(
-            env='default',
+            env="default",
             loaders=[YamlLoader(config_file)],
             secret_resolver=SecretResolver(secrets),
             enable_ide_support=False
@@ -76,11 +76,11 @@ def example_env_secret_store():
     from config_stash.loaders import YamlLoader
 
     # Set some environment variables
-    os.environ['DB_PASSWORD'] = 'env-password-456'
-    os.environ['API_KEY'] = 'env-api-key-xyz789'
+    os.environ["DB_PASSWORD"] = "env-password-456"
+    os.environ["API_KEY"] = "env-api-key-xyz789"
 
     # Create temporary config file
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
         f.write("""
 default:
   database:
@@ -96,7 +96,7 @@ default:
         store = EnvSecretStore(transform_key=True)
 
         config = Config(
-            env='default',
+            env="default",
             loaders=[YamlLoader(config_file)],
             secret_resolver=SecretResolver(store),
             enable_ide_support=False
@@ -108,8 +108,8 @@ default:
 
     finally:
         os.unlink(config_file)
-        del os.environ['DB_PASSWORD']
-        del os.environ['API_KEY']
+        del os.environ["DB_PASSWORD"]
+        del os.environ["API_KEY"]
 
 
 # Example 3: Multi-Store with Fallback
@@ -129,9 +129,9 @@ def example_multi_store():
     from config_stash.loaders import YamlLoader
 
     # Setup environment
-    os.environ['FALLBACK_SECRET'] = 'from-environment'
+    os.environ["FALLBACK_SECRET"] = "from-environment"
 
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
         f.write("""
 default:
   primary_secret: "${secret:primary/key}"
@@ -164,7 +164,7 @@ default:
         ])
 
         config = Config(
-            env='default',
+            env="default",
             loaders=[YamlLoader(config_file)],
             secret_resolver=SecretResolver(multi_store),
             enable_ide_support=False
@@ -177,7 +177,7 @@ default:
 
     finally:
         os.unlink(config_file)
-        del os.environ['FALLBACK_SECRET']
+        del os.environ["FALLBACK_SECRET"]
 
 
 # Example 4: JSON Path Extraction from Secrets
@@ -191,7 +191,7 @@ def example_json_path_extraction():
     from config_stash.secret_stores import DictSecretStore, SecretResolver
     from config_stash.loaders import YamlLoader
 
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
         f.write("""
 default:
   database:
@@ -218,7 +218,7 @@ default:
         })
 
         config = Config(
-            env='default',
+            env="default",
             loaders=[YamlLoader(config_file)],
             secret_resolver=SecretResolver(secrets),
             enable_ide_support=False
@@ -245,7 +245,7 @@ def example_env_prefixed_secrets():
     from config_stash.secret_stores import DictSecretStore, SecretResolver
     from config_stash.loaders import YamlLoader
 
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
         f.write("""
 default:
   api:
@@ -268,7 +268,7 @@ default:
         )
 
         config = Config(
-            env='default',
+            env="default",
             loaders=[YamlLoader(config_file)],
             secret_resolver=prod_resolver,
             enable_ide_support=False
@@ -427,7 +427,7 @@ def example_custom_secret_store():
 
     # Use the custom store
     with tempfile.TemporaryDirectory() as secrets_dir:
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             f.write("""
 default:
   api:
@@ -445,7 +445,7 @@ default:
 
             # Use with Config
             config = Config(
-                env='default',
+                env="default",
                 loaders=[YamlLoader(config_file)],
                 secret_resolver=SecretResolver(store),
                 enable_ide_support=False

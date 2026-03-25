@@ -85,7 +85,9 @@ class AsyncYamlLoader(AsyncLoader):
 
             # Read file in thread pool to avoid blocking
             loop = asyncio.get_running_loop()
-            content = await loop.run_in_executor(None, self._read_file_sync, self.source)
+            content = await loop.run_in_executor(
+                None, self._read_file_sync, self.source
+            )
             self.config = yaml.safe_load(content)
             return self.config
         except FileNotFoundError:
@@ -158,7 +160,9 @@ class AsyncHTTPLoader(AsyncLoader):
                         import json
 
                         self.config = json.loads(content)
-                    elif "yaml" in content_type or self.source.endswith((".yaml", ".yml")):
+                    elif "yaml" in content_type or self.source.endswith(
+                        (".yaml", ".yml")
+                    ):
                         import yaml
 
                         self.config = yaml.safe_load(content)
@@ -287,8 +291,12 @@ class AsyncConfig:
         # Merge configurations
         from config_stash.config_merger import ConfigMerger
 
-        config_tuples = [(config, f"async_source_{i}") for i, config in enumerate(configs)]
-        self._merged_config = ConfigMerger.merge_configs(config_tuples, deep_merge=self.deep_merge)
+        config_tuples = [
+            (config, f"async_source_{i}") for i, config in enumerate(configs)
+        ]
+        self._merged_config = ConfigMerger.merge_configs(
+            config_tuples, deep_merge=self.deep_merge
+        )
         self._config = self._merged_config
 
     async def get_async(self, key_path: str, default: Any = None) -> Any:
@@ -339,7 +347,9 @@ class AsyncConfig:
 
         # Validation is typically CPU-bound, so run in executor
         loop = asyncio.get_running_loop()
-        return await loop.run_in_executor(None, self._validate_sync, self._config or {}, schema)
+        return await loop.run_in_executor(
+            None, self._validate_sync, self._config or {}, schema
+        )
 
     def _validate_sync(self, config: Dict[str, Any], schema: Any) -> bool:
         """Synchronous validation (run in executor)."""
@@ -350,6 +360,7 @@ class AsyncConfig:
         is_pydantic = False
         try:
             from pydantic import BaseModel
+
             is_pydantic = isinstance(schema, type) and issubclass(schema, BaseModel)
         except ImportError:
             pass

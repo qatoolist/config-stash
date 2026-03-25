@@ -14,10 +14,11 @@ from config_stash.loaders import EnvironmentLoader, JsonLoader, YamlLoader
 
 class TestEnhancedSourceTracker:
     """Test enhanced source tracking features."""
-# pyright: reportOptionalSubscript=false, reportOptionalMemberAccess=false
-# pyright: reportArgumentType=false, reportPossiblyUnboundVariable=false
-# pyright: reportAttributeAccessIssue=false, reportCallIssue=false
-# pyright: reportMissingImports=false
+
+    # pyright: reportOptionalSubscript=false, reportOptionalMemberAccess=false
+    # pyright: reportArgumentType=false, reportPossiblyUnboundVariable=false
+    # pyright: reportAttributeAccessIssue=false, reportCallIssue=false
+    # pyright: reportMissingImports=false
 
     def test_basic_source_tracking(self):
         """Test basic source tracking without debug mode."""
@@ -43,7 +44,9 @@ class TestEnhancedSourceTracker:
         tracker.track_value("api.endpoint", "http://api.v1", "base.yaml", "YamlLoader")
 
         # Override the value
-        tracker.track_value("api.endpoint", "http://api.v2", "override.json", "JsonLoader")
+        tracker.track_value(
+            "api.endpoint", "http://api.v2", "override.json", "JsonLoader"
+        )
 
         # Check current value
         info = tracker.get_source_info("api.endpoint")
@@ -252,7 +255,10 @@ default:
         # Check source info for overridden value
         port_info = config.get_source_info("database.port")
         if port_info:
-            assert port_info.value in [3306, 5432]  # Could be either depending on tracking order
+            assert port_info.value in [
+                3306,
+                5432,
+            ]  # Could be either depending on tracking order
             if port_info.override_count > 0:
                 history = config.get_override_history("database.port")
                 assert len(history) > 0

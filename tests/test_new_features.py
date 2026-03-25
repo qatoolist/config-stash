@@ -32,17 +32,23 @@ class TestMergeStrategyIntegration(TestBase):
     def test_merge_strategy_replace(self):
         from config_stash.merge_strategies import MergeStrategy
 
-        base = self.write_yaml("base.yaml", {
-            "default": {
-                "database": {"host": "localhost", "port": 5432},
-                "app": {"name": "myapp", "debug": False},
-            }
-        })
-        override = self.write_yaml("override.yaml", {
-            "default": {
-                "database": {"host": "production.db"},
-            }
-        })
+        base = self.write_yaml(
+            "base.yaml",
+            {
+                "default": {
+                    "database": {"host": "localhost", "port": 5432},
+                    "app": {"name": "myapp", "debug": False},
+                }
+            },
+        )
+        override = self.write_yaml(
+            "override.yaml",
+            {
+                "default": {
+                    "database": {"host": "production.db"},
+                }
+            },
+        )
 
         config = Config(
             env="default",
@@ -54,21 +60,29 @@ class TestMergeStrategyIntegration(TestBase):
 
         # database section should be REPLACED entirely (not deep merged)
         self.assertEqual(config.database.host, "production.db")
-        self.assertFalse(hasattr(config.database, "port") and config.database.port == 5432)
+        self.assertFalse(
+            hasattr(config.database, "port") and config.database.port == 5432
+        )
 
     def test_merge_strategy_default_merge(self):
         from config_stash.merge_strategies import MergeStrategy
 
-        base = self.write_yaml("base.yaml", {
-            "default": {
-                "database": {"host": "localhost", "port": 5432},
-            }
-        })
-        override = self.write_yaml("override.yaml", {
-            "default": {
-                "database": {"host": "production.db", "ssl": True},
-            }
-        })
+        base = self.write_yaml(
+            "base.yaml",
+            {
+                "default": {
+                    "database": {"host": "localhost", "port": 5432},
+                }
+            },
+        )
+        override = self.write_yaml(
+            "override.yaml",
+            {
+                "default": {
+                    "database": {"host": "production.db", "ssl": True},
+                }
+            },
+        )
 
         config = Config(
             env="default",
@@ -87,9 +101,12 @@ class TestEnvPrefix(TestBase):
     """Test env_prefix auto-adds EnvironmentLoader."""
 
     def test_env_prefix_overrides_file_config(self):
-        yaml_path = self.write_yaml("config.yaml", {
-            "default": {"database": {"host": "localhost", "port": 5432}},
-        })
+        yaml_path = self.write_yaml(
+            "config.yaml",
+            {
+                "default": {"database": {"host": "localhost", "port": 5432}},
+            },
+        )
 
         with patch.dict(os.environ, {"MYAPP_DATABASE__HOST": "from-env"}, clear=False):
             config = Config(
@@ -106,9 +123,12 @@ class TestEnvPrefix(TestBase):
             self.assertEqual(config.database.port, 5432)
 
     def test_env_prefix_none_does_nothing(self):
-        yaml_path = self.write_yaml("config.yaml", {
-            "default": {"host": "localhost"},
-        })
+        yaml_path = self.write_yaml(
+            "config.yaml",
+            {
+                "default": {"host": "localhost"},
+            },
+        )
 
         config = Config(
             env="default",
@@ -124,9 +144,12 @@ class TestFreeze(TestBase):
     """Test config.freeze() prevents modifications."""
 
     def test_freeze_blocks_set(self):
-        yaml_path = self.write_yaml("config.yaml", {
-            "default": {"host": "localhost"},
-        })
+        yaml_path = self.write_yaml(
+            "config.yaml",
+            {
+                "default": {"host": "localhost"},
+            },
+        )
 
         config = Config(
             env="default",
@@ -144,9 +167,12 @@ class TestFreeze(TestBase):
             config.set("host", "new-value")
 
     def test_freeze_blocks_reload(self):
-        yaml_path = self.write_yaml("config.yaml", {
-            "default": {"host": "localhost"},
-        })
+        yaml_path = self.write_yaml(
+            "config.yaml",
+            {
+                "default": {"host": "localhost"},
+            },
+        )
 
         config = Config(
             env="default",
@@ -160,9 +186,12 @@ class TestFreeze(TestBase):
             config.reload()
 
     def test_freeze_does_not_block_reads(self):
-        yaml_path = self.write_yaml("config.yaml", {
-            "default": {"host": "localhost", "port": 5432},
-        })
+        yaml_path = self.write_yaml(
+            "config.yaml",
+            {
+                "default": {"host": "localhost", "port": 5432},
+            },
+        )
 
         config = Config(
             env="default",
@@ -184,12 +213,18 @@ class TestLayers(TestBase):
     """Test config.layers property for precedence visibility."""
 
     def test_layers_shows_all_sources(self):
-        yaml_path = self.write_yaml("base.yaml", {
-            "default": {"host": "localhost", "port": 5432},
-        })
-        override_path = self.write_yaml("override.yaml", {
-            "default": {"host": "production"},
-        })
+        yaml_path = self.write_yaml(
+            "base.yaml",
+            {
+                "default": {"host": "localhost", "port": 5432},
+            },
+        )
+        override_path = self.write_yaml(
+            "override.yaml",
+            {
+                "default": {"host": "production"},
+            },
+        )
 
         config = Config(
             env="default",
@@ -205,12 +240,15 @@ class TestLayers(TestBase):
         self.assertEqual(layers[0]["loader_type"], "YamlLoader")
 
     def test_layers_shows_key_counts(self):
-        yaml_path = self.write_yaml("config.yaml", {
-            "default": {
-                "database": {"host": "localhost", "port": 5432},
-                "app": {"name": "test"},
+        yaml_path = self.write_yaml(
+            "config.yaml",
+            {
+                "default": {
+                    "database": {"host": "localhost", "port": 5432},
+                    "app": {"name": "test"},
+                },
             },
-        })
+        )
 
         config = Config(
             env="default",
@@ -236,9 +274,12 @@ class TestStandaloneValidate(TestBase):
             host: str
             port: int
 
-        yaml_path = self.write_yaml("config.yaml", {
-            "default": {"host": "localhost", "port": 5432},
-        })
+        yaml_path = self.write_yaml(
+            "config.yaml",
+            {
+                "default": {"host": "localhost", "port": 5432},
+            },
+        )
 
         config = Config(
             env="default",
@@ -256,9 +297,12 @@ class TestStandaloneValidate(TestBase):
         except ImportError:
             self.skipTest("jsonschema not installed")
 
-        yaml_path = self.write_yaml("config.yaml", {
-            "default": {"host": "localhost", "port": 5432},
-        })
+        yaml_path = self.write_yaml(
+            "config.yaml",
+            {
+                "default": {"host": "localhost", "port": 5432},
+            },
+        )
 
         config = Config(
             env="default",

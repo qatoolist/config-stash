@@ -82,7 +82,8 @@ class AWSAuth(VaultAuthMethod):
                 )
             else:
                 raise VaultAuthenticationError(
-                    f"Unknown AWS auth type: {self.auth_type}. " f"Must be 'ec2' or 'iam'"
+                    f"Unknown AWS auth type: {self.auth_type}. "
+                    f"Must be 'ec2' or 'iam'"
                 )
 
             return response["auth"]["client_token"]

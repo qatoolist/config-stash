@@ -61,9 +61,7 @@ class ConfigValidation:
 
                 validator = SchemaValidator(self._schema)
                 validator.validate(config_dict)
-                logger.info(
-                    "Configuration validated successfully against JSON Schema"
-                )
+                logger.info("Configuration validated successfully against JSON Schema")
             else:
                 logger.warning(f"Unknown schema type: {type(self._schema)}")
         except Exception as e:

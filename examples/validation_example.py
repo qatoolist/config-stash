@@ -36,7 +36,7 @@ def example_1_pydantic_validation():
             debug: bool = False
 
         # Create config file
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             f.write("""
 app_name: MyApp
 database:
@@ -96,7 +96,7 @@ def example_2_json_schema_validation():
         "required": ["app_name"],
     }
 
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
         f.write("""
 app_name: MyApp
 port: 8080
@@ -143,7 +143,7 @@ def example_3_validation_with_defaults():
     }
 
     # Config file missing some fields with defaults
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
         f.write("app_name: MyApp\n")
         config_file = f.name
 

@@ -115,9 +115,7 @@ class ConfigLoading:
                 continue
             if config:
                 if self._enable_composition:
-                    source_file = getattr(
-                        loader, "source", loader.__class__.__name__
-                    )
+                    source_file = getattr(loader, "source", loader.__class__.__name__)
                     try:
                         config = self.config_composer.compose(
                             config, source=source_file
@@ -130,9 +128,7 @@ class ConfigLoading:
                 if self.env and self.env in config:
                     has_env_structure = True
 
-                source_file = getattr(
-                    loader, "source", loader.__class__.__name__
-                )
+                source_file = getattr(loader, "source", loader.__class__.__name__)
                 loader_type = loader.__class__.__name__
                 configs.append((config, source_file, loader_type, loader))
 
@@ -170,19 +166,17 @@ class ConfigLoading:
         env_prefix = f"{self.env}."
         for key in list(self.enhanced_source_tracker.sources.keys()):
             if key.startswith(env_prefix):
-                unprefixed_key = key[len(env_prefix):]
+                unprefixed_key = key[len(env_prefix) :]
                 if unprefixed_key not in self.enhanced_source_tracker.sources:
                     source_info = self.enhanced_source_tracker.sources[key]
-                    self.enhanced_source_tracker.sources[unprefixed_key] = (
-                        SourceInfo(
-                            key=unprefixed_key,
-                            value=source_info.value,
-                            source_file=source_info.source_file,
-                            loader_type=source_info.loader_type,
-                            line_number=source_info.line_number,
-                            environment=source_info.environment,
-                            override_count=source_info.override_count,
-                        )
+                    self.enhanced_source_tracker.sources[unprefixed_key] = SourceInfo(
+                        key=unprefixed_key,
+                        value=source_info.value,
+                        source_file=source_info.source_file,
+                        loader_type=source_info.loader_type,
+                        line_number=source_info.line_number,
+                        environment=source_info.environment,
+                        override_count=source_info.override_count,
                     )
 
                 if key in self.enhanced_source_tracker.override_history:
@@ -213,9 +207,7 @@ class ConfigLoading:
                     loader_type,
                     environment=self.env if key == self.env else None,
                 )
-                self._track_config_values(
-                    value, source_file, loader_type, full_key
-                )
+                self._track_config_values(value, source_file, loader_type, full_key)
             else:
                 self.enhanced_source_tracker.track_value(
                     full_key,
@@ -223,9 +215,7 @@ class ConfigLoading:
                     source_file,
                     loader_type,
                     environment=(
-                        self.env
-                        if self.env and prefix.startswith(self.env)
-                        else None
+                        self.env if self.env and prefix.startswith(self.env) else None
                     ),
                 )
 
@@ -309,9 +299,7 @@ class ConfigLoading:
         if self.event_emitter:
             self.event_emitter.emit("reload", new_env_config, reload_duration)
 
-        should_validate = (
-            validate if validate is not None else self.validate_on_load
-        )
+        should_validate = validate if validate is not None else self.validate_on_load
         temp_env_config = self.env_config
         if should_validate and self._schema:
             self.env_config = new_env_config

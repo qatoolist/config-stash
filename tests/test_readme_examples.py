@@ -168,7 +168,9 @@ endpoint = https://api.example.com
 
     def test_env_file_loader_example(self):
         """Test .env file loading as shown in README."""
-        config = Config(loaders=[EnvFileLoader(".env")], env="default", enable_ide_support=False)
+        config = Config(
+            loaders=[EnvFileLoader(".env")], env="default", enable_ide_support=False
+        )
 
         self.assertEqual(config.DATABASE_URL, "postgresql://user:pass@localhost/dbname")
         self.assertEqual(config.SECRET_KEY, "your-secret-key-here")
@@ -176,7 +178,9 @@ endpoint = https://api.example.com
 
     def test_ini_file_loader_example(self):
         """Test INI file loading as shown in README."""
-        config = Config(loaders=[IniLoader("config.ini")], env="default", enable_ide_support=False)
+        config = Config(
+            loaders=[IniLoader("config.ini")], env="default", enable_ide_support=False
+        )
 
         self.assertEqual(config.database.host, "localhost")
         self.assertEqual(config.database.port, 5432)
@@ -475,7 +479,9 @@ default:
         runner = CliRunner()
 
         # config-stash validate <env>
-        result = runner.invoke(cli, ["validate", "default", "--loader", "yaml:config.yaml"])
+        result = runner.invoke(
+            cli, ["validate", "default", "--loader", "yaml:config.yaml"]
+        )
         self.assertEqual(result.exit_code, 0)
         self.assertIn("valid", result.output.lower())
 
@@ -489,7 +495,8 @@ default:
 
         # config-stash export <env> --format json
         result = runner.invoke(
-            cli, ["export", "default", "--loader", "yaml:config.yaml", "--format", "json"]
+            cli,
+            ["export", "default", "--loader", "yaml:config.yaml", "--format", "json"],
         )
         self.assertEqual(result.exit_code, 0)
         # Output should be valid JSON
@@ -504,7 +511,9 @@ default:
         runner = CliRunner()
 
         # config-stash debug <env>
-        result = runner.invoke(cli, ["debug", "default", "--loader", "yaml:config.yaml"])
+        result = runner.invoke(
+            cli, ["debug", "default", "--loader", "yaml:config.yaml"]
+        )
         self.assertEqual(result.exit_code, 0)
         self.assertIn("Configuration Source Debug Information", result.output)
 

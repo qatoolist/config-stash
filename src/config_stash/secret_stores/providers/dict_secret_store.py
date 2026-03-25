@@ -145,7 +145,9 @@ class DictSecretStore(SecretStore):
             >>> store.delete_secret("api/key")
         """
         if key not in self._secrets:
-            raise SecretNotFoundError(f"Cannot delete secret '{key}': not found in DictSecretStore")
+            raise SecretNotFoundError(
+                f"Cannot delete secret '{key}': not found in DictSecretStore"
+            )
 
         del self._secrets[key]
 

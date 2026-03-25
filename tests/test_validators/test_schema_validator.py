@@ -103,7 +103,9 @@ class TestSchemaValidator(unittest.TestCase):
     def test_from_file(self):
         """Test loading schema from file."""
         # Create temporary schema file
-        schema_file = tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False)
+        schema_file = tempfile.NamedTemporaryFile(
+            mode="w", suffix=".json", delete=False
+        )
         json.dump(self.simple_schema, schema_file)
         schema_file.close()
 
@@ -133,7 +135,9 @@ class TestSchemaValidator(unittest.TestCase):
         """Test number minimum and maximum constraints."""
         schema = {
             "type": "object",
-            "properties": {"percentage": {"type": "number", "minimum": 0, "maximum": 100}},
+            "properties": {
+                "percentage": {"type": "number", "minimum": 0, "maximum": 100}
+            },
         }
 
         validator = SchemaValidator(schema)
@@ -153,7 +157,9 @@ class TestSchemaValidator(unittest.TestCase):
         """Test string pattern validation."""
         schema = {
             "type": "object",
-            "properties": {"username": {"type": "string", "pattern": "^[a-zA-Z0-9_]+$"}},
+            "properties": {
+                "username": {"type": "string", "pattern": "^[a-zA-Z0-9_]+$"}
+            },
         }
 
         validator = SchemaValidator(schema)

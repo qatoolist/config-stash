@@ -95,7 +95,9 @@ class LoaderManager:
                     self.configs.append((config, loader.source))
             except Exception as e:
                 # Log warning but continue with other loaders
-                logger.warning(f"Failed to load configuration from {loader.source}: {e}")
+                logger.warning(
+                    f"Failed to load configuration from {loader.source}: {e}"
+                )
                 continue
 
     def get_configs(self) -> List[Tuple[Dict[str, Any], str]]:

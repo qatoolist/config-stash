@@ -79,8 +79,7 @@ class ConfigAccess:
             if prefix and not prefix.endswith("."):
                 prefix = prefix + "."
             return [
-                k[len(prefix):] if k.startswith(prefix) else k
-                for k in filtered_keys
+                k[len(prefix) :] if k.startswith(prefix) else k for k in filtered_keys
             ]
         return all_keys
 
@@ -190,12 +189,14 @@ class ConfigAccess:
                     break
 
             flat_keys = get_all_keys(config_dict)
-            result.append({
-                "source": source,
-                "loader_type": loader_type,
-                "keys": flat_keys,
-                "key_count": len(flat_keys),
-            })
+            result.append(
+                {
+                    "source": source,
+                    "loader_type": loader_type,
+                    "keys": flat_keys,
+                    "key_count": len(flat_keys),
+                }
+            )
         return result
 
     def diff(self, other: "Config") -> List[ConfigDiff]:
@@ -310,6 +311,4 @@ class ConfigAccess:
                     try:
                         callback(key, old_value, new_value)
                     except Exception as e:
-                        logger.error(
-                            f"Error in change callback for key '{key}': {e}"
-                        )
+                        logger.error(f"Error in change callback for key '{key}': {e}")

@@ -57,7 +57,10 @@ development:
                 "database": {
                     "type": "object",
                     "required": ["host", "port"],
-                    "properties": {"host": {"type": "string"}, "port": {"type": "integer"}},
+                    "properties": {
+                        "host": {"type": "string"},
+                        "port": {"type": "integer"},
+                    },
                 }
             },
         }
@@ -75,7 +78,9 @@ development:
 
     def test_validate_command_success(self):
         """Test validate command with valid configuration."""
-        result = self.runner.invoke(cli, ["validate", "default", "--loader", "yaml:config.yaml"])
+        result = self.runner.invoke(
+            cli, ["validate", "default", "--loader", "yaml:config.yaml"]
+        )
 
         self.assertEqual(result.exit_code, 0)
         self.assertIn("Configuration is valid", result.output)
@@ -83,7 +88,15 @@ development:
     def test_validate_command_with_schema(self):
         """Test validate command with schema validation."""
         result = self.runner.invoke(
-            cli, ["validate", "default", "--loader", "yaml:config.yaml", "--schema", "schema.json"]
+            cli,
+            [
+                "validate",
+                "default",
+                "--loader",
+                "yaml:config.yaml",
+                "--schema",
+                "schema.json",
+            ],
         )
 
         self.assertEqual(result.exit_code, 0)
@@ -96,7 +109,9 @@ development:
             f.write("default: {}")
 
         with patch("config_stash.config.Config.validate", return_value=False):
-            result = self.runner.invoke(cli, ["validate", "default", "--loader", "yaml:empty.yaml"])
+            result = self.runner.invoke(
+                cli, ["validate", "default", "--loader", "yaml:empty.yaml"]
+            )
 
             self.assertNotEqual(result.exit_code, 0)
             self.assertIn("Configuration is invalid", result.output)
@@ -114,7 +129,14 @@ development:
         """Test validate command with multiple configuration sources."""
         result = self.runner.invoke(
             cli,
-            ["validate", "default", "--loader", "yaml:config.yaml", "--loader", "json:config.json"],
+            [
+                "validate",
+                "default",
+                "--loader",
+                "yaml:config.yaml",
+                "--loader",
+                "json:config.json",
+            ],
         )
 
         self.assertEqual(result.exit_code, 0)
@@ -124,7 +146,8 @@ development:
     def test_export_command_json_format(self):
         """Test export command with JSON format."""
         result = self.runner.invoke(
-            cli, ["export", "default", "--loader", "yaml:config.yaml", "--format", "json"]
+            cli,
+            ["export", "default", "--loader", "yaml:config.yaml", "--format", "json"],
         )
 
         self.assertEqual(result.exit_code, 0)
@@ -137,7 +160,8 @@ development:
     def test_export_command_yaml_format(self):
         """Test export command with YAML format."""
         result = self.runner.invoke(
-            cli, ["export", "default", "--loader", "yaml:config.yaml", "--format", "yaml"]
+            cli,
+            ["export", "default", "--loader", "yaml:config.yaml", "--format", "yaml"],
         )
 
         self.assertEqual(result.exit_code, 0)
@@ -147,7 +171,8 @@ development:
     def test_export_command_toml_format(self):
         """Test export command with TOML format."""
         result = self.runner.invoke(
-            cli, ["export", "default", "--loader", "yaml:config.yaml", "--format", "toml"]
+            cli,
+            ["export", "default", "--loader", "yaml:config.yaml", "--format", "toml"],
         )
 
         self.assertEqual(result.exit_code, 0)
@@ -186,7 +211,15 @@ development:
         """Test export command with different environments."""
         # Export production environment
         result = self.runner.invoke(
-            cli, ["export", "production", "--loader", "yaml:config.yaml", "--format", "json"]
+            cli,
+            [
+                "export",
+                "production",
+                "--loader",
+                "yaml:config.yaml",
+                "--format",
+                "json",
+            ],
         )
 
         self.assertEqual(result.exit_code, 0)
@@ -223,7 +256,9 @@ development:
 
     def test_debug_command_general_info(self):
         """Test debug command showing general debug information."""
-        result = self.runner.invoke(cli, ["debug", "default", "--loader", "yaml:config.yaml"])
+        result = self.runner.invoke(
+            cli, ["debug", "default", "--loader", "yaml:config.yaml"]
+        )
 
         self.assertEqual(result.exit_code, 0)
         # Debug output should show source information
@@ -232,7 +267,15 @@ development:
     def test_debug_command_specific_key(self):
         """Test debug command for specific configuration key."""
         result = self.runner.invoke(
-            cli, ["debug", "default", "--loader", "yaml:config.yaml", "--key", "database.host"]
+            cli,
+            [
+                "debug",
+                "default",
+                "--loader",
+                "yaml:config.yaml",
+                "--key",
+                "database.host",
+            ],
         )
 
         self.assertEqual(result.exit_code, 0)
@@ -241,13 +284,11 @@ development:
         """Test debug command showing override history."""
         # Create multiple config sources for overrides
         with open("override.yaml", "w") as f:
-            f.write(
-                """
+            f.write("""
 default:
   database:
     host: overridden.db.com
-"""
-            )
+""")
 
         result = self.runner.invoke(
             cli,
@@ -271,7 +312,14 @@ default:
 
         result = self.runner.invoke(
             cli,
-            ["debug", "default", "--loader", "yaml:config.yaml", "--export-report", report_file],
+            [
+                "debug",
+                "default",
+                "--loader",
+                "yaml:config.yaml",
+                "--export-report",
+                report_file,
+            ],
         )
 
         self.assertEqual(result.exit_code, 0)
@@ -289,7 +337,15 @@ default:
     def test_debug_command_nonexistent_key(self):
         """Test debug command with nonexistent key."""
         result = self.runner.invoke(
-            cli, ["debug", "default", "--loader", "yaml:config.yaml", "--key", "nonexistent.key"]
+            cli,
+            [
+                "debug",
+                "default",
+                "--loader",
+                "yaml:config.yaml",
+                "--key",
+                "nonexistent.key",
+            ],
         )
 
         self.assertEqual(result.exit_code, 0)
@@ -299,7 +355,9 @@ default:
 
     def test_load_command(self):
         """Test load command displays merged configuration."""
-        result = self.runner.invoke(cli, ["load", "default", "--loader", "yaml:config.yaml"])
+        result = self.runner.invoke(
+            cli, ["load", "default", "--loader", "yaml:config.yaml"]
+        )
 
         self.assertEqual(result.exit_code, 0)
         self.assertIn("database", result.output)
@@ -307,7 +365,8 @@ default:
     def test_load_with_dynamic_reloading(self):
         """Test load command with dynamic reloading enabled."""
         result = self.runner.invoke(
-            cli, ["load", "default", "--loader", "yaml:config.yaml", "--dynamic-reloading"]
+            cli,
+            ["load", "default", "--loader", "yaml:config.yaml", "--dynamic-reloading"],
         )
 
         self.assertEqual(result.exit_code, 0)
@@ -317,7 +376,14 @@ default:
         os.environ["TEST_VAR"] = "expanded_value"
 
         result = self.runner.invoke(
-            cli, ["load", "default", "--loader", "yaml:config.yaml", "--no-use-env-expander"]
+            cli,
+            [
+                "load",
+                "default",
+                "--loader",
+                "yaml:config.yaml",
+                "--no-use-env-expander",
+            ],
         )
 
         self.assertEqual(result.exit_code, 0)
@@ -359,14 +425,18 @@ default:
 
     def test_invalid_loader_spec(self):
         """Test commands with invalid loader specification."""
-        result = self.runner.invoke(cli, ["load", "default", "--loader", "invalid_spec"])
+        result = self.runner.invoke(
+            cli, ["load", "default", "--loader", "invalid_spec"]
+        )
 
         self.assertNotEqual(result.exit_code, 0)
         self.assertIn("Invalid loader spec", result.output)
 
     def test_unknown_loader_type(self):
         """Test commands with unknown loader type."""
-        result = self.runner.invoke(cli, ["load", "default", "--loader", "unknown:config.file"])
+        result = self.runner.invoke(
+            cli, ["load", "default", "--loader", "unknown:config.file"]
+        )
 
         self.assertNotEqual(result.exit_code, 0)
         self.assertIn("Unknown loader type", result.output)
@@ -404,7 +474,15 @@ default:
         """Test debug command across different environments."""
         for env in ["default", "production", "development"]:
             result = self.runner.invoke(
-                cli, ["debug", env, "--loader", "yaml:config.yaml", "--key", "database.host"]
+                cli,
+                [
+                    "debug",
+                    env,
+                    "--loader",
+                    "yaml:config.yaml",
+                    "--key",
+                    "database.host",
+                ],
             )
             self.assertEqual(result.exit_code, 0)
 

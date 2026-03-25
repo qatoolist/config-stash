@@ -7,7 +7,12 @@ from unittest.mock import MagicMock, Mock, patch
 try:
     import requests
 
-    from config_stash.loaders.remote_loader import GitLoader, HTTPLoader, RemoteLoader, S3Loader
+    from config_stash.loaders.remote_loader import (
+        GitLoader,
+        HTTPLoader,
+        RemoteLoader,
+        S3Loader,
+    )
 
     HAS_REQUESTS = True
 except ImportError:
@@ -16,10 +21,11 @@ except ImportError:
 
 class TestRemoteLoader(unittest.TestCase):
     """Test base RemoteLoader class."""
-# pyright: reportOptionalSubscript=false, reportOptionalMemberAccess=false
-# pyright: reportArgumentType=false, reportPossiblyUnboundVariable=false
-# pyright: reportAttributeAccessIssue=false, reportCallIssue=false
-# pyright: reportMissingImports=false
+
+    # pyright: reportOptionalSubscript=false, reportOptionalMemberAccess=false
+    # pyright: reportArgumentType=false, reportPossiblyUnboundVariable=false
+    # pyright: reportAttributeAccessIssue=false, reportCallIssue=false
+    # pyright: reportMissingImports=false
 
     @unittest.skipUnless(HAS_REQUESTS, "requests not installed")
     def test_initialization(self):
@@ -134,7 +140,10 @@ version = "1.0.0"
 
         self.assertEqual(config, self.test_config)
         mock_get.assert_called_once_with(
-            "http://api.example.com/config", timeout=30, headers={}, auth=("user", "password")
+            "http://api.example.com/config",
+            timeout=30,
+            headers={},
+            auth=("user", "password"),
         )
 
     @patch("requests.get")
@@ -210,17 +219,23 @@ class TestS3Loader(unittest.TestCase):
 
         test_config = {"key": "value", "nested": {"data": 123}}
         mock_response = {
-            "Body": Mock(read=Mock(return_value=json.dumps(test_config).encode("utf-8")))
+            "Body": Mock(
+                read=Mock(return_value=json.dumps(test_config).encode("utf-8"))
+            )
         }
         mock_s3.get_object.return_value = mock_response
 
         loader = S3Loader(
-            "s3://test-bucket/configs/app.json", aws_access_key="KEY", aws_secret_key="SECRET"
+            "s3://test-bucket/configs/app.json",
+            aws_access_key="KEY",
+            aws_secret_key="SECRET",
         )
         config = loader.load()
 
         self.assertEqual(config, test_config)
-        mock_s3.get_object.assert_called_once_with(Bucket="test-bucket", Key="configs/app.json")
+        mock_s3.get_object.assert_called_once_with(
+            Bucket="test-bucket", Key="configs/app.json"
+        )
 
     @patch("boto3.client")
     def test_load_from_s3_yaml(self, mock_boto_client):
@@ -229,7 +244,9 @@ class TestS3Loader(unittest.TestCase):
         mock_boto_client.return_value = mock_s3
 
         yaml_content = "key: value\nnested:\n  data: 123"
-        mock_response = {"Body": Mock(read=Mock(return_value=yaml_content.encode("utf-8")))}
+        mock_response = {
+            "Body": Mock(read=Mock(return_value=yaml_content.encode("utf-8")))
+        }
         mock_s3.get_object.return_value = mock_response
 
         loader = S3Loader("s3://test-bucket/config.yaml")
@@ -264,7 +281,9 @@ class TestGitLoader(unittest.TestCase):
         mock_http_load.return_value = {"test": "config"}
 
         loader = GitLoader(
-            repo_url="https://github.com/user/repo", file_path="config/app.json", branch="main"
+            repo_url="https://github.com/user/repo",
+            file_path="config/app.json",
+            branch="main",
         )
         config = loader.load()
 
@@ -278,7 +297,9 @@ class TestGitLoader(unittest.TestCase):
         mock_http_load.return_value = {"test": "config"}
 
         loader = GitLoader(
-            repo_url="https://gitlab.com/user/repo", file_path="config/app.yaml", branch="develop"
+            repo_url="https://gitlab.com/user/repo",
+            file_path="config/app.yaml",
+            branch="develop",
         )
         config = loader.load()
 
@@ -300,7 +321,9 @@ class TestGitLoader(unittest.TestCase):
 
     def test_unsupported_git_provider(self):
         """Test that unsupported Git providers are rejected."""
-        loader = GitLoader(repo_url="https://bitbucket.org/user/repo", file_path="config.json")
+        loader = GitLoader(
+            repo_url="https://bitbucket.org/user/repo", file_path="config.json"
+        )
         with self.assertRaises(ValueError) as context:
             loader.load()
 

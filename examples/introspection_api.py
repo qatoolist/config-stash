@@ -20,7 +20,7 @@ def example_keys_and_has():
     print("Example 1: keys() and has() Methods")
     print("=" * 70)
 
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
         f.write("""
 database:
   host: localhost
@@ -60,7 +60,7 @@ def example_get_with_defaults():
     print("Example 2: get() Method with Defaults")
     print("=" * 70)
 
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
         f.write("""
 database:
   host: localhost
@@ -92,7 +92,7 @@ def example_schema_introspection():
     print("Example 3: schema() Method")
     print("=" * 70)
 
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
         f.write("""
 database:
   host: localhost
@@ -125,7 +125,7 @@ api:
         print("\nSSL configuration schema:")
         ssl_schema = config.schema("database.ssl")
         print(f"  Type: {ssl_schema['type']}")
-        if ssl_schema['type'] == 'dict':
+        if ssl_schema["type"] == "dict":
             print(f"  Keys: {ssl_schema['keys']}")
 
     finally:
@@ -139,7 +139,7 @@ def example_explain():
     print("=" * 70)
 
     # Create multiple config files to show resolution
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
         f.write("""
 database:
   host: localhost
@@ -147,7 +147,7 @@ database:
         """)
         base_file = f.name
 
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
         f.write("""
 database:
   port: 3306
@@ -164,10 +164,10 @@ database:
         # Explain how a value was resolved
         print("Explaining configuration resolution:")
         info = config.explain("database.port")
-        print(f"  Key: database.port")
+        print("  Key: database.port")
         print(f"  Value: {info.get('value')}")
         print(f"  Source: {info.get('source')}")
-        if 'override_count' in info:
+        if "override_count" in info:
             print(f"  Override count: {info.get('override_count')}")
 
     finally:
@@ -181,7 +181,7 @@ def example_set():
     print("Example 5: set() Method for Overrides")
     print("=" * 70)
 
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
         f.write("""
 database:
   host: localhost

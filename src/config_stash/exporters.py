@@ -152,7 +152,9 @@ class ConfigExporter:
         def flatten_dict(d: Dict, parent_key: str = "") -> Dict[str, str]:
             items: List[Tuple[str, str]] = []
             for k, v in d.items():
-                new_key = f"{parent_key}{separator}{k}".upper() if parent_key else k.upper()
+                new_key = (
+                    f"{parent_key}{separator}{k}".upper() if parent_key else k.upper()
+                )
                 if isinstance(v, dict):
                     items.extend(flatten_dict(v, new_key).items())
                 elif isinstance(v, (list, tuple)):
@@ -171,7 +173,9 @@ class ConfigExporter:
         return "\n".join(f"{k}={v}" for k, v in sorted(flat_dict.items()))
 
     @staticmethod
-    def dump(config: Any, file_path: Union[str, Path], format: Optional[str] = None) -> None:
+    def dump(
+        config: Any, file_path: Union[str, Path], format: Optional[str] = None
+    ) -> None:
         """Write configuration to a file in the specified format.
 
         The output format is auto-detected from the file extension when
@@ -222,7 +226,9 @@ class ConfigExporter:
         }
 
         if format not in exporters:
-            raise ValueError(f"Unknown format: {format}. Supported: {list(exporters.keys())}")
+            raise ValueError(
+                f"Unknown format: {format}. Supported: {list(exporters.keys())}"
+            )
 
         content = exporters[format](config)
 

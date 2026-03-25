@@ -12,10 +12,11 @@ from config_stash.loaders import JsonLoader, YamlLoader
 
 class TestDeepMergeComprehensive(unittest.TestCase):
     """Comprehensive tests for deep merge functionality."""
-# pyright: reportOptionalSubscript=false, reportOptionalMemberAccess=false
-# pyright: reportArgumentType=false, reportPossiblyUnboundVariable=false
-# pyright: reportAttributeAccessIssue=false, reportCallIssue=false
-# pyright: reportMissingImports=false
+
+    # pyright: reportOptionalSubscript=false, reportOptionalMemberAccess=false
+    # pyright: reportArgumentType=false, reportPossiblyUnboundVariable=false
+    # pyright: reportAttributeAccessIssue=false, reportCallIssue=false
+    # pyright: reportMissingImports=false
 
     def test_shallow_merge_behavior(self):
         """Test shallow merge replaces entire nested structures."""
@@ -78,7 +79,9 @@ class TestDeepMergeComprehensive(unittest.TestCase):
                     "level1": {
                         "level2": {
                             "level3": {
-                                "level4": {"level5": {"value": "original", "keep": "this"}},
+                                "level4": {
+                                    "level5": {"value": "original", "keep": "this"}
+                                },
                                 "other": "data",
                             },
                             "preserve": "me",
@@ -91,7 +94,11 @@ class TestDeepMergeComprehensive(unittest.TestCase):
                 {
                     "level1": {
                         "level2": {
-                            "level3": {"level4": {"level5": {"value": "updated", "new": "added"}}},
+                            "level3": {
+                                "level4": {
+                                    "level5": {"value": "updated", "new": "added"}
+                                }
+                            },
                             "also_add": "this",
                         }
                     }
@@ -106,9 +113,13 @@ class TestDeepMergeComprehensive(unittest.TestCase):
         self.assertEqual(
             merged["level1"]["level2"]["level3"]["level4"]["level5"]["value"], "updated"
         )
-        self.assertEqual(merged["level1"]["level2"]["level3"]["level4"]["level5"]["new"], "added")
+        self.assertEqual(
+            merged["level1"]["level2"]["level3"]["level4"]["level5"]["new"], "added"
+        )
         # Check preservation
-        self.assertEqual(merged["level1"]["level2"]["level3"]["level4"]["level5"]["keep"], "this")
+        self.assertEqual(
+            merged["level1"]["level2"]["level3"]["level4"]["level5"]["keep"], "this"
+        )
         self.assertEqual(merged["level1"]["level2"]["level3"]["other"], "data")
         self.assertEqual(merged["level1"]["level2"]["preserve"], "me")
         self.assertEqual(merged["level1"]["level2"]["also_add"], "this")
@@ -147,7 +158,11 @@ class TestDeepMergeComprehensive(unittest.TestCase):
         """Test handling of None values in merge."""
         configs = [
             (
-                {"key1": "value1", "key2": "value2", "nested": {"a": "alpha", "b": "beta"}},
+                {
+                    "key1": "value1",
+                    "key2": "value2",
+                    "nested": {"a": "alpha", "b": "beta"},
+                },
                 "source1",
             ),
             (
@@ -365,7 +380,9 @@ default:
             self.assertEqual(config_shallow.database.host, "production.db.com")
             self.assertFalse(hasattr(config_shallow.database, "port"))  # Lost
             self.assertTrue(config_shallow.database.options.ssl)
-            self.assertFalse(hasattr(config_shallow.database.options, "timeout"))  # Lost
+            self.assertFalse(
+                hasattr(config_shallow.database.options, "timeout")
+            )  # Lost
             self.assertFalse(hasattr(config_shallow.features, "auth"))  # Lost
             self.assertFalse(hasattr(config_shallow.features, "cache"))  # Lost
             self.assertTrue(config_shallow.features.monitoring)
@@ -416,7 +433,11 @@ default:
             ),
             (
                 {
-                    "messages": {"greeting": "Bonjour", "special": "café", "emoji": "🎉"},
+                    "messages": {
+                        "greeting": "Bonjour",
+                        "special": "café",
+                        "emoji": "🎉",
+                    },
                     "paths": {"network": "\\\\server\\share"},
                 },
                 "source2",

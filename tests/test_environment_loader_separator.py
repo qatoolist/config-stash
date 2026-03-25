@@ -9,10 +9,11 @@ from config_stash.loaders import EnvironmentLoader
 
 class TestEnvironmentLoaderSeparator(unittest.TestCase):
     """Test EnvironmentLoader with custom separator functionality."""
-# pyright: reportOptionalSubscript=false, reportOptionalMemberAccess=false
-# pyright: reportArgumentType=false, reportPossiblyUnboundVariable=false
-# pyright: reportAttributeAccessIssue=false, reportCallIssue=false
-# pyright: reportMissingImports=false
+
+    # pyright: reportOptionalSubscript=false, reportOptionalMemberAccess=false
+    # pyright: reportArgumentType=false, reportPossiblyUnboundVariable=false
+    # pyright: reportAttributeAccessIssue=false, reportCallIssue=false
+    # pyright: reportMissingImports=false
 
     def test_default_separator_double_underscore(self):
         """Test default separator (__) for nested keys."""
@@ -136,7 +137,9 @@ class TestEnvironmentLoaderSeparator(unittest.TestCase):
             loader = EnvironmentLoader("DEEP", separator="_")
             config = loader.load()
 
-            self.assertEqual(config["level1"]["level2"]["level3"]["level4"]["value"], "deep_value")
+            self.assertEqual(
+                config["level1"]["level2"]["level3"]["level4"]["value"], "deep_value"
+            )
             self.assertEqual(config["level1"]["level2"]["another"], "test")
             self.assertEqual(config["a"]["b"]["c"]["d"]["e"]["f"], "six_levels")
 

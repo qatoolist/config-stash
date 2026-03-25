@@ -1,4 +1,5 @@
 """HashiCorp Vault secret store provider."""
+
 # pyright: reportPossiblyUnboundVariable=false
 
 from typing import Any, Dict, List, Optional
@@ -125,7 +126,8 @@ class HashiCorpVault(SecretStore):
         """
         if not HVAC_AVAILABLE:
             raise ImportError(
-                "hvac is required for HashiCorpVault. " "Install it with: pip install hvac"
+                "hvac is required for HashiCorpVault. "
+                "Install it with: pip install hvac"
             )
 
         self.url = url
@@ -143,7 +145,9 @@ class HashiCorpVault(SecretStore):
             elif token:
                 self.client.token = token
             elif role_id and secret_id:
-                auth_response = self.client.auth.approle.login(role_id=role_id, secret_id=secret_id)
+                auth_response = self.client.auth.approle.login(
+                    role_id=role_id, secret_id=secret_id
+                )
                 self.client.token = auth_response["auth"]["client_token"]
             else:
                 raise ValueError(
@@ -202,7 +206,10 @@ class HashiCorpVault(SecretStore):
         try:
             if self.kv_version == 2:
                 # KV v2 API
-                read_params: Dict[str, Any] = {"path": path, "mount_point": self.mount_point}
+                read_params: Dict[str, Any] = {
+                    "path": path,
+                    "mount_point": self.mount_point,
+                }
                 if version:
                     read_params["version"] = int(version)
                 read_params.update(kwargs)
@@ -338,7 +345,9 @@ class HashiCorpVault(SecretStore):
                 )
             else:
                 # KV v1 delete
-                self.client.secrets.kv.v1.delete_secret(path=key, mount_point=self.mount_point)
+                self.client.secrets.kv.v1.delete_secret(
+                    path=key, mount_point=self.mount_point
+                )
 
         except InvalidPath:
             raise SecretNotFoundError(f"Secret '{key}' not found")
@@ -416,7 +425,9 @@ class HashiCorpVault(SecretStore):
             >>> print(f"Created: {metadata['created_time']}")
         """
         if self.kv_version != 2:
-            raise NotImplementedError("Metadata is only available for KV v2 secrets engine")
+            raise NotImplementedError(
+                "Metadata is only available for KV v2 secrets engine"
+            )
 
         try:
             response = self.client.secrets.kv.v2.read_secret_metadata(

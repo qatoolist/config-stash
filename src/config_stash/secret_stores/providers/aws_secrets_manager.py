@@ -1,4 +1,5 @@
 """AWS Secrets Manager secret store provider."""
+
 # pyright: reportPossiblyUnboundVariable=false
 # pyright: reportMissingImports=false
 
@@ -101,7 +102,8 @@ class AWSSecretsManager(SecretStore):
         """
         if not BOTO3_AVAILABLE:
             raise ImportError(
-                "boto3 is required for AWSSecretsManager. " "Install it with: pip install boto3"
+                "boto3 is required for AWSSecretsManager. "
+                "Install it with: pip install boto3"
             )
 
         # Build client configuration
@@ -126,7 +128,9 @@ class AWSSecretsManager(SecretStore):
                 "environment variables, ~/.aws/credentials, or IAM role."
             )
         except Exception as e:
-            raise SecretStoreError(f"Failed to initialize AWS Secrets Manager client: {e}")
+            raise SecretStoreError(
+                f"Failed to initialize AWS Secrets Manager client: {e}"
+            )
 
     def get_secret(self, key: str, version: Optional[str] = None, **kwargs) -> Any:
         """Retrieve a secret from AWS Secrets Manager.
@@ -266,7 +270,9 @@ class AWSSecretsManager(SecretStore):
         try:
             # Try to update existing secret
             update_params = {"SecretId": key, "SecretString": secret_string}
-            update_params.update({k: v for k, v in kwargs.items() if k in ["Description"]})
+            update_params.update(
+                {k: v for k, v in kwargs.items() if k in ["Description"]}
+            )
 
             self.client.update_secret(**update_params)
 
@@ -282,12 +288,17 @@ class AWSSecretsManager(SecretStore):
                     self.client.create_secret(**create_params)
                 except ClientError as create_error:
                     error_code = create_error.response.get("Error", {}).get("Code", "")
-                    if error_code in ("AccessDeniedException", "InvalidRequestException"):
+                    if error_code in (
+                        "AccessDeniedException",
+                        "InvalidRequestException",
+                    ):
                         raise SecretAccessError(
                             f"Access denied creating secret '{key}': {create_error}"
                         )
                     else:
-                        raise SecretStoreError(f"Failed to create secret '{key}': {create_error}")
+                        raise SecretStoreError(
+                            f"Failed to create secret '{key}': {create_error}"
+                        )
             elif error_code in ("AccessDeniedException", "InvalidRequestException"):
                 raise SecretAccessError(f"Access denied updating secret '{key}': {e}")
             else:
@@ -421,7 +432,9 @@ class AWSSecretsManager(SecretStore):
             if error_code == "ResourceNotFoundException":
                 raise SecretNotFoundError(f"Secret '{key}' not found")
             elif error_code in ("AccessDeniedException", "InvalidRequestException"):
-                raise SecretAccessError(f"Access denied to secret metadata '{key}': {e}")
+                raise SecretAccessError(
+                    f"Access denied to secret metadata '{key}': {e}"
+                )
             else:
                 raise SecretStoreError(f"Failed to get secret metadata '{key}': {e}")
 

@@ -92,7 +92,7 @@ class ConfigMetrics:
         self.reload_durations.append(duration)
         # Evict oldest entries to prevent unbounded memory growth
         if len(self.reload_durations) > self.MAX_RELOAD_DURATIONS:
-            self.reload_durations = self.reload_durations[-self.MAX_RELOAD_DURATIONS:]
+            self.reload_durations = self.reload_durations[-self.MAX_RELOAD_DURATIONS :]
 
     def record_change(self) -> None:
         """Record a configuration change."""
@@ -132,7 +132,9 @@ class ConfigMetrics:
             "total_keys": self.total_keys,
             "accessed_keys": len(self.access_metrics),
             "access_rate": (
-                len(self.access_metrics) / self.total_keys if self.total_keys > 0 else 0.0
+                len(self.access_metrics) / self.total_keys
+                if self.total_keys > 0
+                else 0.0
             ),
             "reload_count": self.reload_count,
             "last_reload": self.last_reload,

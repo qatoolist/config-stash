@@ -223,7 +223,9 @@ class EnhancedSourceTracker:
         Returns:
             Dictionary mapping keys to their override history
         """
-        return {key: history for key, history in self.override_history.items() if history}
+        return {
+            key: history for key, history in self.override_history.items() if history
+        }
 
     def print_debug_info(self, key: Optional[str] = None) -> None:
         """Print debug information for a key or all keys.
@@ -284,14 +286,18 @@ class EnhancedSourceTracker:
                     for info in history[-3:]:  # Show last 3 overrides
                         print(f"      - Was: {info.value} (from {info.source_file})")
 
-    def export_debug_report(self, output_path: str = "config_debug_report.json") -> None:
+    def export_debug_report(
+        self, output_path: str = "config_debug_report.json"
+    ) -> None:
         """Export a detailed debug report to a JSON file.
 
         Args:
             output_path: Path to output JSON file
         """
         if not self.debug_mode:
-            print("Debug mode is not enabled. Set debug_mode=True to export debug reports.")
+            print(
+                "Debug mode is not enabled. Set debug_mode=True to export debug reports."
+            )
             return
 
         report = {
@@ -337,7 +343,9 @@ class EnhancedSourceTracker:
 
         stats: Dict[str, Any] = {
             "total_keys": len(self.sources),
-            "total_overrides": sum(info.override_count for info in self.sources.values()),
+            "total_overrides": sum(
+                info.override_count for info in self.sources.values()
+            ),
             "unique_sources": len({info.source_file for info in self.sources.values()}),
             "keys_with_overrides": len(self.override_history),
             "sources_by_loader": sources_by_loader,

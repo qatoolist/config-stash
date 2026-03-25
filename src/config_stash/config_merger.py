@@ -39,7 +39,9 @@ class ConfigMerger:
         merged_config: Dict[str, Any] = {}
         for config, source in configs:
             try:
-                merged_config = ConfigMerger._merge_dicts(merged_config, config, deep_merge, source)
+                merged_config = ConfigMerger._merge_dicts(
+                    merged_config, config, deep_merge, source
+                )
             except Exception as e:
                 raise ConfigMergeConflictError(
                     f"Failed to merge configuration from {source}: {e}",

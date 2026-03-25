@@ -96,9 +96,7 @@ class ConfigObservabilityMixin:
             self.enable_versioning()
 
         if self.version_manager:
-            return self.version_manager.save_version(
-                self.to_dict(), metadata=metadata
-            )
+            return self.version_manager.save_version(self.to_dict(), metadata=metadata)
         return None
 
     def get_version(self, version_id: str) -> Optional[ConfigVersion]:
@@ -124,9 +122,7 @@ class ConfigObservabilityMixin:
             ValueError: If version not found or versioning not enabled
         """
         if not self.version_manager:
-            raise ValueError(
-                "Versioning not enabled. Call enable_versioning() first."
-            )
+            raise ValueError("Versioning not enabled. Call enable_versioning() first.")
 
         config_dict = self.version_manager.rollback(version_id)
 

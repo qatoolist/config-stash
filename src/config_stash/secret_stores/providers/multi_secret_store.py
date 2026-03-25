@@ -133,7 +133,9 @@ class MultiSecretStore(SecretStore):
                     errors.append(f"Store {i} ({store.__class__.__name__}): {e}")
 
             if errors:
-                raise SecretStoreError(f"Failed to set secret in some stores: {'; '.join(errors)}")
+                raise SecretStoreError(
+                    f"Failed to set secret in some stores: {'; '.join(errors)}"
+                )
 
     def delete_secret(self, key: str, **kwargs) -> None:
         """Delete a secret from one or all stores.

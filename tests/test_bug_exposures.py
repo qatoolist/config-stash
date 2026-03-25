@@ -5,6 +5,7 @@ demonstrating a specific real bug. Tests are named after the bug they expose.
 
 Once a bug is fixed, the corresponding test should PASS.
 """
+
 # pyright: reportOptionalSubscript=false, reportOptionalMemberAccess=false
 # pyright: reportArgumentType=false, reportPossiblyUnboundVariable=false
 # pyright: reportAttributeAccessIssue=false, reportCallIssue=false
@@ -596,9 +597,13 @@ class TestBug14_VersionMetadataOverwritten(unittest.TestCase):
             manager = ConfigVersionManager(storage_path=temp_dir)
             config = {"database": {"host": "localhost"}}
 
-            v1 = manager.save_version(config, metadata={"author": "alice", "message": "initial"})
+            v1 = manager.save_version(
+                config, metadata={"author": "alice", "message": "initial"}
+            )
             time.sleep(0.01)  # Ensure different timestamp
-            v2 = manager.save_version(config, metadata={"author": "bob", "message": "reviewed"})
+            v2 = manager.save_version(
+                config, metadata={"author": "bob", "message": "reviewed"}
+            )
 
             # Both versions have the same ID (content hash) — that's the root issue
             # At minimum, the first version's metadata should still be retrievable
@@ -887,8 +892,12 @@ class TestBug23_DiffSummaryDoubleCount(unittest.TestCase):
         # Create a parent MODIFIED diff with nested child diffs
         parent = ConfigDiff(key="database", diff_type=DiffType.MODIFIED)
         parent.nested_diffs = [
-            ConfigDiff(key="host", diff_type=DiffType.MODIFIED,
-                       old_value="old", new_value="new"),
+            ConfigDiff(
+                key="host",
+                diff_type=DiffType.MODIFIED,
+                old_value="old",
+                new_value="new",
+            ),
             ConfigDiff(key="ssl", diff_type=DiffType.ADDED, new_value=True),
         ]
 
@@ -926,10 +935,12 @@ class TestBug24_AsyncioDeprecatedGetEventLoop(unittest.TestCase):
                 for child in ast.walk(node):
                     if isinstance(child, ast.Call):
                         func = child.func
-                        if (isinstance(func, ast.Attribute) and
-                                func.attr == "get_event_loop" and
-                                isinstance(func.value, ast.Name) and
-                                func.value.id == "asyncio"):
+                        if (
+                            isinstance(func, ast.Attribute)
+                            and func.attr == "get_event_loop"
+                            and isinstance(func.value, ast.Name)
+                            and func.value.id == "asyncio"
+                        ):
                             deprecated_calls.append(
                                 f"line {child.lineno}: asyncio.get_event_loop() "
                                 f"in async def {node.name}"
@@ -1021,8 +1032,9 @@ class TestBug27_SchemaMethodShadowed(unittest.TestCase):
 
         # config.schema should be callable as a method
         self.assertTrue(
-            callable(getattr(config, "schema", None)) or
-            hasattr(type(config), "schema") and callable(type(config).schema),
+            callable(getattr(config, "schema", None))
+            or hasattr(type(config), "schema")
+            and callable(type(config).schema),
             "config.schema is not callable — the schema attribute shadows the "
             "schema() method.",
         )
@@ -1100,10 +1112,11 @@ class TestBug29_OidcServerNotClosed(unittest.TestCase):
 
         # Check if server_close() or server.close() appears in the source
         has_cleanup = (
-            "server_close()" in source or
-            "server.close()" in source or
-            "with HTTPServer" in source or
-            "finally:" in source and "server" in source
+            "server_close()" in source
+            or "server.close()" in source
+            or "with HTTPServer" in source
+            or "finally:" in source
+            and "server" in source
         )
 
         self.assertTrue(
@@ -1123,14 +1136,16 @@ class TestBug30_VaultDoubleWrapsExceptions(unittest.TestCase):
     def test_vault_init_error_not_double_wrapped(self):
         """Check that SecretAccessError is re-raised before the catch-all
         except Exception handler to prevent double-wrapping."""
-        with open("src/config_stash/secret_stores/providers/hashicorp_vault.py", "r") as f:
+        with open(
+            "src/config_stash/secret_stores/providers/hashicorp_vault.py", "r"
+        ) as f:
             source = f.read()
 
         # The fix should have a handler that re-raises SecretAccessError
         # before the catch-all 'except Exception' handler
         has_reraise_guard = (
-            "except (SecretAccessError" in source or
-            "except SecretAccessError" in source
+            "except (SecretAccessError" in source
+            or "except SecretAccessError" in source
         )
 
         self.assertTrue(
@@ -1281,10 +1296,14 @@ class TestBug34_EnvironmentLoaderStaleKeys(unittest.TestCase):
         loader = EnvironmentLoader("TESTCFG")
 
         # First load with two env vars
-        with patch.dict(os.environ, {
-            "TESTCFG_HOST": "localhost",
-            "TESTCFG_PORT": "8080",
-        }, clear=False):
+        with patch.dict(
+            os.environ,
+            {
+                "TESTCFG_HOST": "localhost",
+                "TESTCFG_PORT": "8080",
+            },
+            clear=False,
+        ):
             result1 = loader.load()
             self.assertEqual(result1["host"], "localhost")
             self.assertEqual(result1["port"], 8080)
@@ -1456,8 +1475,8 @@ class TestBug40_HTTPLoaderParseError(unittest.TestCase):
         except ImportError:
             self.skipTest("requests not installed")
 
+        from config_stash.exceptions import ConfigFormatError, ConfigLoadError
         from config_stash.loaders.remote_loader import HTTPLoader
-        from config_stash.exceptions import ConfigLoadError, ConfigFormatError
 
         loader = HTTPLoader("https://example.com/config.json")
 
@@ -1563,6 +1582,7 @@ class TestBug43_AsyncConfigSilentFailure(unittest.TestCase):
 
     def test_all_loaders_fail_raises_error(self):
         import asyncio
+
         from config_stash.async_config import AsyncConfig, AsyncLoader
         from config_stash.exceptions import ConfigLoadError
 

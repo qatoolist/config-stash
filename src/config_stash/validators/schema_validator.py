@@ -1,4 +1,5 @@
 """JSON Schema validation for configurations."""
+
 # pyright: reportPossiblyUnboundVariable=false
 
 import json
@@ -152,8 +153,14 @@ class SchemaValidator:
         for prop, prop_schema in schema["properties"].items():
             if prop not in config and "default" in prop_schema:
                 config[prop] = prop_schema["default"]
-                logger.debug(f"Applied default value for '{prop}': {prop_schema['default']}")
-            elif prop in config and isinstance(config[prop], dict) and prop_schema.get("type") == "object":
+                logger.debug(
+                    f"Applied default value for '{prop}': {prop_schema['default']}"
+                )
+            elif (
+                prop in config
+                and isinstance(config[prop], dict)
+                and prop_schema.get("type") == "object"
+            ):
                 self._apply_defaults(config[prop], prop_schema)
 
     @classmethod
@@ -189,7 +196,11 @@ DATABASE_SCHEMA = {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "type": "object",
     "properties": {
-        "host": {"type": "string", "description": "Database host", "default": "localhost"},
+        "host": {
+            "type": "string",
+            "description": "Database host",
+            "default": "localhost",
+        },
         "port": {"type": "integer", "minimum": 1, "maximum": 65535, "default": 5432},
         "database": {"type": "string", "description": "Database name"},
         "username": {"type": "string", "description": "Database username"},

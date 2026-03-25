@@ -10,25 +10,21 @@ class TestCsAlias(unittest.TestCase):
     """Verify cs.* imports resolve to the same objects as config_stash.*"""
 
     def test_top_level_imports(self):
-        from cs import Config, ConfigBuilder
-
         from config_stash import Config as CS_Config
         from config_stash import ConfigBuilder as CS_Builder
+        from cs import Config, ConfigBuilder
 
         self.assertIs(Config, CS_Config)
         self.assertIs(ConfigBuilder, CS_Builder)
 
     def test_exceptions(self):
+        from config_stash import ConfigLoadError as CL
+        from config_stash import ConfigStashError as CS
+        from config_stash import ConfigValidationError as CV
         from cs import (
             ConfigLoadError,
             ConfigStashError,
             ConfigValidationError,
-        )
-
-        from config_stash import (
-            ConfigLoadError as CL,
-            ConfigStashError as CS,
-            ConfigValidationError as CV,
         )
 
         self.assertIs(ConfigStashError, CS)
@@ -36,6 +32,12 @@ class TestCsAlias(unittest.TestCase):
         self.assertIs(ConfigValidationError, CV)
 
     def test_loaders(self):
+        from config_stash.loaders import EnvFileLoader as EFL
+        from config_stash.loaders import EnvironmentLoader as EL
+        from config_stash.loaders import IniLoader as IL
+        from config_stash.loaders import JsonLoader as JL
+        from config_stash.loaders import TomlLoader as TL
+        from config_stash.loaders import YamlLoader as YL
         from cs.loaders import (
             EnvFileLoader,
             EnvironmentLoader,
@@ -43,15 +45,6 @@ class TestCsAlias(unittest.TestCase):
             JsonLoader,
             TomlLoader,
             YamlLoader,
-        )
-
-        from config_stash.loaders import (
-            EnvFileLoader as EFL,
-            EnvironmentLoader as EL,
-            IniLoader as IL,
-            JsonLoader as JL,
-            TomlLoader as TL,
-            YamlLoader as YL,
         )
 
         self.assertIs(YamlLoader, YL)
@@ -62,43 +55,34 @@ class TestCsAlias(unittest.TestCase):
         self.assertIs(EnvironmentLoader, EL)
 
     def test_secret_stores(self):
+        from config_stash.secret_stores import DictSecretStore as DS
+        from config_stash.secret_stores import SecretResolver as SR
+        from config_stash.secret_stores import SecretStore as SS
         from cs.secret_stores import DictSecretStore, SecretResolver, SecretStore
-
-        from config_stash.secret_stores import (
-            DictSecretStore as DS,
-            SecretResolver as SR,
-            SecretStore as SS,
-        )
 
         self.assertIs(SecretStore, SS)
         self.assertIs(SecretResolver, SR)
         self.assertIs(DictSecretStore, DS)
 
     def test_merge_strategies(self):
+        from config_stash.merge_strategies import AdvancedConfigMerger as AM
+        from config_stash.merge_strategies import MergeStrategy as MS
         from cs.merge_strategies import AdvancedConfigMerger, MergeStrategy
-
-        from config_stash.merge_strategies import (
-            AdvancedConfigMerger as AM,
-            MergeStrategy as MS,
-        )
 
         self.assertIs(MergeStrategy, MS)
         self.assertIs(AdvancedConfigMerger, AM)
 
     def test_config_diff(self):
+        from config_stash.config_diff import ConfigDiff as CD
+        from config_stash.config_diff import ConfigDiffer as CDr
         from cs.config_diff import ConfigDiff, ConfigDiffer
-
-        from config_stash.config_diff import (
-            ConfigDiff as CD,
-            ConfigDiffer as CDr,
-        )
 
         self.assertIs(ConfigDiff, CD)
         self.assertIs(ConfigDiffer, CDr)
 
     def test_version(self):
-        import cs
         import config_stash
+        import cs
 
         self.assertEqual(cs.__version__, config_stash.__version__)
 
@@ -112,9 +96,7 @@ class TestCsAlias(unittest.TestCase):
         from cs import Config
         from cs.loaders import YamlLoader
 
-        tmp = tempfile.NamedTemporaryFile(
-            mode="w", suffix=".yaml", delete=False
-        )
+        tmp = tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False)
         yaml.dump({"default": {"host": "localhost", "port": 5432}}, tmp)
         tmp.close()
 

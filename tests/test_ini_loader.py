@@ -11,10 +11,11 @@ from config_stash.loaders import IniLoader
 
 class TestIniLoader(unittest.TestCase):
     """Test INI file loading functionality."""
-# pyright: reportOptionalSubscript=false, reportOptionalMemberAccess=false
-# pyright: reportArgumentType=false, reportPossiblyUnboundVariable=false
-# pyright: reportAttributeAccessIssue=false, reportCallIssue=false
-# pyright: reportMissingImports=false
+
+    # pyright: reportOptionalSubscript=false, reportOptionalMemberAccess=false
+    # pyright: reportArgumentType=false, reportPossiblyUnboundVariable=false
+    # pyright: reportAttributeAccessIssue=false, reportCallIssue=false
+    # pyright: reportMissingImports=false
 
     def setUp(self):
         """Set up test environment."""
@@ -173,7 +174,9 @@ key3 = value3
 
         # Check that only actual config values are loaded
         self.assertEqual(config["section1"]["key1"], "value1")
-        self.assertEqual(config["section1"]["key2"], "value2 ; inline comment (if supported)")
+        self.assertEqual(
+            config["section1"]["key2"], "value2 ; inline comment (if supported)"
+        )
         self.assertEqual(config["section2"]["key3"], "value3")
 
     def test_special_characters_in_values(self):
@@ -204,7 +207,9 @@ email = user@example.com
             config["credentials"]["connection_string"],
             "mongodb://user:pass@host:27017/db?option=value",
         )
-        self.assertEqual(config["paths"]["url"], "https://example.com/path?query=value&other=123")
+        self.assertEqual(
+            config["paths"]["url"], "https://example.com/path?query=value&other=123"
+        )
         self.assertEqual(config["patterns"]["regex"], "^[a-zA-Z0-9]+$")
 
     def test_whitespace_handling(self):

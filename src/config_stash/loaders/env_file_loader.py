@@ -117,7 +117,9 @@ class EnvFileLoader(Loader):
                         parts = key.split(".")
                         current = config
                         for part in parts[:-1]:
-                            if part not in current or not isinstance(current[part], dict):
+                            if part not in current or not isinstance(
+                                current[part], dict
+                            ):
                                 current[part] = {}
                             current = current[part]
                         current[parts[-1]] = parsed_value

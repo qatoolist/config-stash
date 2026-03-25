@@ -58,7 +58,9 @@ default:
     def test_on_change_decorator_registration(self):
         """Test that callbacks can be registered using the decorator."""
         config = Config(
-            loaders=[YamlLoader(self.config_file)], env="default", enable_ide_support=False
+            loaders=[YamlLoader(self.config_file)],
+            env="default",
+            enable_ide_support=False,
         )
 
         callback_mock = MagicMock()
@@ -74,7 +76,9 @@ default:
     def test_multiple_callbacks_registration(self):
         """Test that multiple callbacks can be registered."""
         config = Config(
-            loaders=[YamlLoader(self.config_file)], env="default", enable_ide_support=False
+            loaders=[YamlLoader(self.config_file)],
+            env="default",
+            enable_ide_support=False,
         )
 
         callback1 = MagicMock()
@@ -98,7 +102,9 @@ default:
     def test_callbacks_triggered_on_reload(self):
         """Test that callbacks are triggered when config is reloaded."""
         config = Config(
-            loaders=[YamlLoader(self.config_file)], env="default", enable_ide_support=False
+            loaders=[YamlLoader(self.config_file)],
+            env="default",
+            enable_ide_support=False,
         )
 
         changes_captured = []
@@ -134,7 +140,9 @@ default:
     def test_callback_error_handling(self):
         """Test that errors in callbacks don't break the reload process."""
         config = Config(
-            loaders=[YamlLoader(self.config_file)], env="default", enable_ide_support=False
+            loaders=[YamlLoader(self.config_file)],
+            env="default",
+            enable_ide_support=False,
         )
 
         good_callback = MagicMock()
@@ -158,7 +166,9 @@ default:
             # Check that error was logged
             mock_logger.error.assert_called()
             error_calls = mock_logger.error.call_args_list
-            self.assertTrue(any("Error in change callback" in str(call) for call in error_calls))
+            self.assertTrue(
+                any("Error in change callback" in str(call) for call in error_calls)
+            )
 
         # Good callback should still have been called
         good_callback.assert_called()
@@ -198,7 +208,9 @@ default:
     def test_callbacks_with_nested_changes(self):
         """Test callbacks properly handle nested configuration changes."""
         config = Config(
-            loaders=[YamlLoader(self.config_file)], env="default", enable_ide_support=False
+            loaders=[YamlLoader(self.config_file)],
+            env="default",
+            enable_ide_support=False,
         )
 
         changes = {}
@@ -232,7 +244,9 @@ default:
     def test_callback_return_value(self):
         """Test that callback decorator returns the original function."""
         config = Config(
-            loaders=[YamlLoader(self.config_file)], env="default", enable_ide_support=False
+            loaders=[YamlLoader(self.config_file)],
+            env="default",
+            enable_ide_support=False,
         )
 
         def my_callback(key, old, new):
@@ -247,7 +261,9 @@ default:
     def test_callbacks_with_value_deletion(self):
         """Test callbacks when configuration values are deleted."""
         config = Config(
-            loaders=[YamlLoader(self.config_file)], env="default", enable_ide_support=False
+            loaders=[YamlLoader(self.config_file)],
+            env="default",
+            enable_ide_support=False,
         )
 
         deletions = []
@@ -274,7 +290,9 @@ default:
     def test_callbacks_with_type_changes(self):
         """Test callbacks when value types change."""
         config = Config(
-            loaders=[YamlLoader(self.config_file)], env="default", enable_ide_support=False
+            loaders=[YamlLoader(self.config_file)],
+            env="default",
+            enable_ide_support=False,
         )
 
         type_changes = []
@@ -335,7 +353,9 @@ development:
 
         # Test with production environment
         config = Config(
-            loaders=[YamlLoader(self.config_file)], env="production", enable_ide_support=False
+            loaders=[YamlLoader(self.config_file)],
+            env="production",
+            enable_ide_support=False,
         )
 
         changes = []

@@ -227,7 +227,9 @@ default:
             )
 
             # Verify environment-specific values
-            self.assertEqual(config.database.host, environments[env_name]["database"]["host"])
+            self.assertEqual(
+                config.database.host, environments[env_name]["database"]["host"]
+            )
             self.assertEqual(config.app.debug, environments[env_name]["app"]["debug"])
 
             # Verify base values are preserved
@@ -262,7 +264,9 @@ default:
 
         @config.on_change
         def track_changes(key, old, new):
-            changes.append({"key": key, "old": old, "new": new, "timestamp": time.time()})
+            changes.append(
+                {"key": key, "old": old, "new": new, "timestamp": time.time()}
+            )
 
         # Verify initial state
         self.assertFalse(config.feature.enabled)
@@ -323,7 +327,9 @@ user = olduser
 
         # Step 3: Load from new format
         new_config_obj = Config(
-            loaders=[YamlLoader("migrated.yaml")], env="default", enable_ide_support=False
+            loaders=[YamlLoader("migrated.yaml")],
+            env="default",
+            enable_ide_support=False,
         )
 
         # Step 4: Verify data integrity
@@ -595,11 +601,17 @@ default:
                 "database": {
                     "type": "object",
                     "required": ["host", "port"],
-                    "properties": {"host": {"type": "string"}, "port": {"type": "integer"}},
+                    "properties": {
+                        "host": {"type": "string"},
+                        "port": {"type": "integer"},
+                    },
                 },
                 "api": {
                     "type": "object",
-                    "properties": {"endpoint": {"type": "string"}, "timeout": {"type": "integer"}},
+                    "properties": {
+                        "endpoint": {"type": "string"},
+                        "timeout": {"type": "integer"},
+                    },
                 },
             },
         }
@@ -670,7 +682,9 @@ default:
         with open("empty.yaml", "w") as f:
             f.write(empty)
 
-        config = Config(loaders=[YamlLoader("empty.yaml")], env="default", enable_ide_support=False)
+        config = Config(
+            loaders=[YamlLoader("empty.yaml")], env="default", enable_ide_support=False
+        )
 
         # Should not crash
         config_dict = config.to_dict()

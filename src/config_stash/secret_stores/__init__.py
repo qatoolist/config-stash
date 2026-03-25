@@ -27,7 +27,9 @@ from config_stash.secret_stores.resolver import SecretResolver
 
 # Import providers with optional dependencies
 try:
-    from config_stash.secret_stores.providers.aws_secrets_manager import AWSSecretsManager
+    from config_stash.secret_stores.providers.aws_secrets_manager import (
+        AWSSecretsManager,
+    )
 except ImportError:
     AWSSecretsManager = None
 

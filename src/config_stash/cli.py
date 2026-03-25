@@ -12,8 +12,7 @@ try:
     import click
 except ImportError:
     raise ImportError(
-        "click is required for the CLI. "
-        "Install with: pip install config-stash[cli]"
+        "click is required for the CLI. " "Install with: pip install config-stash[cli]"
     )
 
 from config_stash.config import Config
@@ -151,7 +150,12 @@ def cli():
 
 @cli.command()
 @click.argument("env")
-@click.option("--loader", "loader_specs", multiple=True, help='Loader spec in format "type:source"')
+@click.option(
+    "--loader",
+    "loader_specs",
+    multiple=True,
+    help='Loader spec in format "type:source"',
+)
 @click.option(
     "--override",
     "overrides",
@@ -174,7 +178,9 @@ def cli():
     default=True,
     help="Enable/disable automatic type casting",
 )
-def load(env, loader_specs, overrides, dynamic_reloading, use_env_expander, use_type_casting):
+def load(
+    env, loader_specs, overrides, dynamic_reloading, use_env_expander, use_type_casting
+):
     """Load and display the merged configuration.
 
     This command loads configuration from specified sources and displays
@@ -225,7 +231,12 @@ def load(env, loader_specs, overrides, dynamic_reloading, use_env_expander, use_
 @cli.command()
 @click.argument("env")
 @click.argument("key")
-@click.option("--loader", "loader_specs", multiple=True, help='Loader spec in format "type:source"')
+@click.option(
+    "--loader",
+    "loader_specs",
+    multiple=True,
+    help='Loader spec in format "type:source"',
+)
 @click.option(
     "--dynamic-reloading",
     is_flag=True,
@@ -287,9 +298,16 @@ def get(env, key, loader_specs, dynamic_reloading, use_env_expander, use_type_ca
 
 @cli.command()
 @click.argument("env")
-@click.option("--loader", "loader_specs", multiple=True, help='Loader spec in format "type:source"')
+@click.option(
+    "--loader",
+    "loader_specs",
+    multiple=True,
+    help='Loader spec in format "type:source"',
+)
 @click.option("--schema", help="Path to schema file for validation")
-@click.option("--fix", is_flag=True, help="Attempt to auto-fix common validation issues")
+@click.option(
+    "--fix", is_flag=True, help="Attempt to auto-fix common validation issues"
+)
 def validate(env, loader_specs, schema, fix):
     """Validate configuration against a schema.
 
@@ -343,9 +361,17 @@ def validate(env, loader_specs, schema, fix):
 
 @cli.command()
 @click.argument("env")
-@click.option("--loader", "loader_specs", multiple=True, help='Loader spec in format "type:source"')
 @click.option(
-    "--format", type=click.Choice(["json", "yaml", "toml"]), default="json", help="Export format"
+    "--loader",
+    "loader_specs",
+    multiple=True,
+    help='Loader spec in format "type:source"',
+)
+@click.option(
+    "--format",
+    type=click.Choice(["json", "yaml", "toml"]),
+    default="json",
+    help="Export format",
 )
 @click.option("--output", "-o", help="Output file path")
 def export(env, loader_specs, format, output):
@@ -379,7 +405,12 @@ def export(env, loader_specs, format, output):
 
 @cli.command()
 @click.argument("env")
-@click.option("--loader", "loader_specs", multiple=True, help='Loader spec in format "type:source"')
+@click.option(
+    "--loader",
+    "loader_specs",
+    multiple=True,
+    help='Loader spec in format "type:source"',
+)
 @click.option("--key", help="Debug specific configuration key")
 @click.option("--export-report", help="Export debug report to file")
 def debug(env, loader_specs, key, export_report):
@@ -402,7 +433,9 @@ def debug(env, loader_specs, key, export_report):
     try:
         # Create config with debug mode enabled
         loaders = parse_loader_specs(loader_specs) if loader_specs else None
-        config = Config(env=env, loaders=loaders, debug_mode=True, enable_ide_support=False)
+        config = Config(
+            env=env, loaders=loaders, debug_mode=True, enable_ide_support=False
+        )
 
         if export_report:
             config.export_debug_report(export_report)
@@ -432,7 +465,12 @@ def debug(env, loader_specs, key, export_report):
 
 @cli.command()
 @click.argument("env")
-@click.option("--loader", "loader_specs", multiple=True, help='Loader spec in format "type:source"')
+@click.option(
+    "--loader",
+    "loader_specs",
+    multiple=True,
+    help='Loader spec in format "type:source"',
+)
 @click.option("--fix", is_flag=True, help="Attempt to auto-fix linting issues")
 @click.option("--strict", is_flag=True, help="Use strict linting rules")
 def lint(env, loader_specs, fix, strict):
@@ -505,7 +543,9 @@ def lint(env, loader_specs, fix, strict):
 
 
 @cli.command()
-@click.argument("source_format", type=click.Choice(["dynaconf", "hydra", "dotenv", "env"]))
+@click.argument(
+    "source_format", type=click.Choice(["dynaconf", "hydra", "dotenv", "env"])
+)
 @click.argument("config_file", type=click.Path(exists=True))
 @click.option("--output", "-o", help="Output file path (default: stdout)")
 @click.option(
@@ -553,7 +593,9 @@ def migrate(source_format, config_file, output, target_format):
                             current = migrated_config
                             for part in parts[:-1]:
                                 part = part.lower().replace("_", " ")
-                                part = "".join(word.capitalize() for word in part.split())
+                                part = "".join(
+                                    word.capitalize() for word in part.split()
+                                )
                                 if part.lower() not in current:
                                     current[part.lower()] = {}
                                 current = current[part.lower()]
@@ -572,7 +614,8 @@ def migrate(source_format, config_file, output, target_format):
                         migrated_config = json.loads(content) or {}
                     except Exception:
                         click.echo(
-                            f"Warning: Could not parse {config_file} as YAML or JSON", err=True
+                            f"Warning: Could not parse {config_file} as YAML or JSON",
+                            err=True,
                         )
 
         elif source_format == "hydra":
@@ -608,7 +651,12 @@ def migrate(source_format, config_file, output, target_format):
 
 @cli.command()
 @click.argument("env")
-@click.option("--loader", "loader_specs", multiple=True, help='Loader spec in format "type:source"')
+@click.option(
+    "--loader",
+    "loader_specs",
+    multiple=True,
+    help='Loader spec in format "type:source"',
+)
 @click.option("--key", help="Explain specific configuration key")
 def explain(env, loader_specs, key):
     """Explain how configuration values were resolved.
@@ -626,7 +674,9 @@ def explain(env, loader_specs, key):
     """
     try:
         loaders = parse_loader_specs(loader_specs) if loader_specs else None
-        config = Config(env=env, loaders=loaders, debug_mode=True, enable_ide_support=False)
+        config = Config(
+            env=env, loaders=loaders, debug_mode=True, enable_ide_support=False
+        )
 
         if key:
             info = config.explain(key)
@@ -645,8 +695,12 @@ def explain(env, loader_specs, key):
 @cli.command()
 @click.argument("env1")
 @click.argument("env2")
-@click.option("--loader1", "loader_specs1", multiple=True, help="Loaders for first config")
-@click.option("--loader2", "loader_specs2", multiple=True, help="Loaders for second config")
+@click.option(
+    "--loader1", "loader_specs1", multiple=True, help="Loaders for first config"
+)
+@click.option(
+    "--loader2", "loader_specs2", multiple=True, help="Loaders for second config"
+)
 @click.option(
     "--format",
     type=click.Choice(["json", "yaml", "unified"]),
@@ -722,7 +776,9 @@ def list_examples(verbose):
     examples_info = get_examples_info()
 
     if not examples_info:
-        click.echo("No examples found. Examples may not be installed with this package.")
+        click.echo(
+            "No examples found. Examples may not be installed with this package."
+        )
         click.echo("Visit https://github.com/qatoolist/config-stash/tree/main/examples")
         return
 
@@ -746,14 +802,19 @@ def list_examples(verbose):
 @click.argument("name", required=False)
 @click.option("--all", "export_all", is_flag=True, help="Export all examples")
 @click.option(
-    "--output-dir", "-o", type=click.Path(), help="Output directory (default: current directory)"
+    "--output-dir",
+    "-o",
+    type=click.Path(),
+    help="Output directory (default: current directory)",
 )
 def export_examples(name, export_all, output_dir):
     """Export example(s) to your local directory"""
     examples_info = get_examples_info()
 
     if not examples_info:
-        click.echo("No examples found. Examples may not be installed with this package.")
+        click.echo(
+            "No examples found. Examples may not be installed with this package."
+        )
         click.echo("Visit https://github.com/qatoolist/config-stash/tree/main/examples")
         return
 
@@ -812,7 +873,9 @@ def export_examples(name, export_all, output_dir):
 
     # Summary
     if exported:
-        click.echo(f"\n✨ Successfully exported {len(exported)} example(s) to {output_path}")
+        click.echo(
+            f"\n✨ Successfully exported {len(exported)} example(s) to {output_path}"
+        )
         click.echo("\nTo run an example:")
         click.echo(f"  python {exported[0]}")
     else:
@@ -827,7 +890,9 @@ def show_example(name, no_pager):
     examples_info = get_examples_info()
 
     if not examples_info:
-        click.echo("No examples found. Examples may not be installed with this package.")
+        click.echo(
+            "No examples found. Examples may not be installed with this package."
+        )
         return
 
     if name not in examples_info:
@@ -871,7 +936,9 @@ def run_example(name):
     examples_info = get_examples_info()
 
     if not examples_info:
-        click.echo("No examples found. Examples may not be installed with this package.")
+        click.echo(
+            "No examples found. Examples may not be installed with this package."
+        )
         return
 
     if name not in examples_info:

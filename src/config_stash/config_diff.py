@@ -73,7 +73,10 @@ class ConfigDiff:
 
     def __repr__(self) -> str:
         """String representation of the diff."""
-        return f"ConfigDiff(key={self.key}, type={self.diff_type.value}, " f"path={self.path})"
+        return (
+            f"ConfigDiff(key={self.key}, type={self.diff_type.value}, "
+            f"path={self.path})"
+        )
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert diff to dictionary representation.
@@ -144,18 +147,30 @@ class ConfigDiffer:
             if key not in config1:
                 # Key added in config2
                 diffs.append(
-                    ConfigDiff(key=key, diff_type=DiffType.ADDED, new_value=val2, path=full_path)
+                    ConfigDiff(
+                        key=key,
+                        diff_type=DiffType.ADDED,
+                        new_value=val2,
+                        path=full_path,
+                    )
                 )
             elif key not in config2:
                 # Key removed in config2
                 diffs.append(
-                    ConfigDiff(key=key, diff_type=DiffType.REMOVED, old_value=val1, path=full_path)
+                    ConfigDiff(
+                        key=key,
+                        diff_type=DiffType.REMOVED,
+                        old_value=val1,
+                        path=full_path,
+                    )
                 )
             elif isinstance(val1, dict) and isinstance(val2, dict):
                 # Both are dicts - recurse
                 nested_diffs = ConfigDiffer.diff(val1, val2, full_path)
                 if nested_diffs:
-                    diff = ConfigDiff(key=key, diff_type=DiffType.MODIFIED, path=full_path)
+                    diff = ConfigDiff(
+                        key=key, diff_type=DiffType.MODIFIED, path=full_path
+                    )
                     diff.nested_diffs = nested_diffs
                     diffs.append(diff)
             elif val1 != val2:

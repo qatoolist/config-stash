@@ -21,7 +21,7 @@ async def example_1_basic_async():
     print("=" * 70)
 
     # Create a temporary config file
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
         f.write("""
 database:
   host: localhost
@@ -59,11 +59,11 @@ async def example_2_parallel_loading():
     print("=" * 70)
 
     # Create multiple config files
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
         f.write("database:\n  host: localhost\n")
         config1_file = f.name
 
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
         f.write("api:\n  endpoint: http://api.example.com\n")
         config2_file = f.name
 
@@ -93,7 +93,7 @@ async def example_3_async_reload():
     print("Example 3: Async Configuration Reloading")
     print("=" * 70)
 
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
         f.write("""
 database:
   host: localhost
@@ -109,7 +109,7 @@ database:
         print(f"  Host: {await config.get_async('database.host')}")
 
         # Modify config file
-        with open(config_file, 'w') as f:
+        with open(config_file, "w") as f:
             f.write("""
 database:
   host: remote.db.example.com
@@ -133,7 +133,7 @@ async def example_4_async_validation():
     print("Example 4: Async Configuration Validation")
     print("=" * 70)
 
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
         f.write("""
 database:
   host: localhost

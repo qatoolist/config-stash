@@ -71,7 +71,9 @@ class IDESupport:
 
         if not silent:
             logger.info(f"IDE support file generated: {output_path}")
-            logger.info(f"   Import with: from .{Path(output_path).stem} import ConfigType")
+            logger.info(
+                f"   Import with: from .{Path(output_path).stem} import ConfigType"
+            )
 
     @staticmethod
     def _generate_stub_content(config_dict: Dict[str, Any], module_name: str) -> str:
@@ -138,7 +140,9 @@ class IDESupport:
                     has_content = True
                 else:
                     # Primitive type
-                    type_name = type(value).__name__ if value is not None else "Optional[Any]"
+                    type_name = (
+                        type(value).__name__ if value is not None else "Optional[Any]"
+                    )
                     if type_name == "NoneType":
                         type_name = "Optional[Any]"
                     lines.append(f"{inner_spaces}{safe_key}: {type_name}")
@@ -167,7 +171,9 @@ class IDESupport:
         return "\n".join(stub_lines)
 
     @staticmethod
-    def enable_auto_generation(config: Any, output_path: str = ".config_stubs.pyi") -> None:
+    def enable_auto_generation(
+        config: Any, output_path: str = ".config_stubs.pyi"
+    ) -> None:
         """Automatically regenerate stubs when configuration changes.
 
         Registers an ``on_change`` callback on the provided ``Config``
@@ -278,7 +284,10 @@ class VSCodeSupport:
             "python.analysis.autoImportCompletions": True,
             "python.analysis.typeCheckingMode": "basic",
             "python.linting.mypyEnabled": True,
-            "python.linting.mypyArgs": ["--ignore-missing-imports", "--follow-imports=silent"],
+            "python.linting.mypyArgs": [
+                "--ignore-missing-imports",
+                "--follow-imports=silent",
+            ],
         }
 
         import json

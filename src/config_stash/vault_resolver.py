@@ -75,7 +75,9 @@ class VaultResolver:
         )
 
         # Create the SecretResolver
-        self._resolver = SecretResolver(self._store, cache_enabled=True, fail_on_missing=True)
+        self._resolver = SecretResolver(
+            self._store, cache_enabled=True, fail_on_missing=True
+        )
 
     def resolve(self, key: str, version: Optional[str] = None) -> Any:
         """Resolve a secret from Vault.

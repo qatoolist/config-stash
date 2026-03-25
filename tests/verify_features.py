@@ -34,6 +34,7 @@ def run_test(name, fn):
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def make_tmp():
     """Return a fresh temp directory that the caller must clean up."""
     return tempfile.mkdtemp(prefix="cfgstash_verify_")
@@ -54,8 +55,12 @@ def test_yaml_loading():
 
         cfg = Config(loaders=[YamlLoader(path)], enable_ide_support=False)
         d = cfg.to_dict()
-        assert d["database"]["host"] == "myhost", f"Expected 'myhost', got {d['database']['host']}"
-        assert d["database"]["port"] == 5432, f"Expected 5432, got {d['database']['port']}"
+        assert (
+            d["database"]["host"] == "myhost"
+        ), f"Expected 'myhost', got {d['database']['host']}"
+        assert (
+            d["database"]["port"] == 5432
+        ), f"Expected 5432, got {d['database']['port']}"
     finally:
         shutil.rmtree(tmp)
 
@@ -467,7 +472,9 @@ def test_secret_resolution():
 
         from config_stash import Config
         from config_stash.loaders import YamlLoader
-        from config_stash.secret_stores.providers.dict_secret_store import DictSecretStore
+        from config_stash.secret_stores.providers.dict_secret_store import (
+            DictSecretStore,
+        )
         from config_stash.secret_stores.resolver import SecretResolver
 
         store = DictSecretStore({"db/pass": "s3cret", "api/key": "APIKEY123"})

@@ -242,7 +242,9 @@ class EnvSecretStore(SecretStore):
         env_var_name = self._transform_key(key)
 
         if env_var_name not in os.environ:
-            raise SecretNotFoundError(f"Environment variable '{env_var_name}' not found")
+            raise SecretNotFoundError(
+                f"Environment variable '{env_var_name}' not found"
+            )
 
         value = os.environ[env_var_name]
 

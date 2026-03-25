@@ -178,7 +178,9 @@ class ConfigVersionManager:
         version_id = self._generate_version_id(config_dict)
         # Create a deep copy to avoid reference mutations
         version = ConfigVersion(
-            version_id=version_id, config_dict=copy.deepcopy(config_dict), metadata=metadata
+            version_id=version_id,
+            config_dict=copy.deepcopy(config_dict),
+            metadata=metadata,
         )
         self._versions[version_id] = version
 
@@ -189,10 +191,10 @@ class ConfigVersionManager:
 
         # Evict oldest versions if over limit
         if len(self._versions) > self.max_versions:
-            sorted_versions = sorted(
-                self._versions.values(), key=lambda v: v.timestamp
-            )
-            for old_version in sorted_versions[: len(self._versions) - self.max_versions]:
+            sorted_versions = sorted(self._versions.values(), key=lambda v: v.timestamp)
+            for old_version in sorted_versions[
+                : len(self._versions) - self.max_versions
+            ]:
                 old_file = self.storage_path / f"{old_version.version_id}.json"
                 if old_file.exists():
                     old_file.unlink()
@@ -261,7 +263,9 @@ class ConfigVersionManager:
             except Exception as e:
                 logger.warning(f"Failed to load version file {version_file}: {e}")
 
-        versions = sorted(self._versions.values(), key=lambda v: v.timestamp, reverse=True)
+        versions = sorted(
+            self._versions.values(), key=lambda v: v.timestamp, reverse=True
+        )
 
         if limit:
             versions = versions[:limit]

@@ -65,7 +65,9 @@ class ConfigFileHandler(FileSystemEventHandler):  # type: ignore[reportGeneralTy
                 the absolute path of the modified file.
         """
         if event.src_path in self.config.get_watched_files():
-            logger.info(f"Configuration file {event.src_path} has been modified. Reloading...")
+            logger.info(
+                f"Configuration file {event.src_path} has been modified. Reloading..."
+            )
             self.config.reload()
 
 
@@ -141,7 +143,9 @@ class ConfigFileWatcher:
             directory = os.path.dirname(file_path) or "."
             # Avoid watching the same directory multiple times
             if directory not in watched_dirs:
-                self.observer.schedule(self.event_handler, path=directory, recursive=False)
+                self.observer.schedule(
+                    self.event_handler, path=directory, recursive=False
+                )
                 watched_dirs.add(directory)
         self.observer.start()
 

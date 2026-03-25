@@ -23,7 +23,12 @@ from config_stash.exceptions import (
 
 # Async support (optional)
 try:
-    from config_stash.async_config import AsyncConfig, AsyncHTTPLoader, AsyncLoader, AsyncYamlLoader
+    from config_stash.async_config import (
+        AsyncConfig,
+        AsyncHTTPLoader,
+        AsyncLoader,
+        AsyncYamlLoader,
+    )
 
     HAS_ASYNC = True
 except ImportError:
@@ -76,7 +81,8 @@ def setup_logging(level: Optional[str] = None) -> None:
     if not logger.handlers:
         handler = logging.StreamHandler()
         formatter = logging.Formatter(
-            "%(asctime)s - %(name)s - %(levelname)s - %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
+            "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+            datefmt="%Y-%m-%d %H:%M:%S",
         )
         handler.setFormatter(formatter)
         logger.addHandler(handler)

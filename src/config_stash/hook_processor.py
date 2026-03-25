@@ -11,7 +11,12 @@ class HookProcessor:
 
     def __init__(self) -> None:
         """Initialize the hook processor with empty hook registries."""
-        self.hooks: Dict[str, Any] = {"key": {}, "value": {}, "condition": [], "global": []}
+        self.hooks: Dict[str, Any] = {
+            "key": {},
+            "value": {},
+            "condition": [],
+            "global": [],
+        }
         self._lock = RLock()  # Reentrant lock for thread safety
 
     def register_key_hook(self, key: str, hook: Callable[[Any], Any]) -> None:

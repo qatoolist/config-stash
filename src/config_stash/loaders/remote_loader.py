@@ -1,4 +1,5 @@
 """Remote configuration loaders for Config-Stash."""
+
 # pyright: reportPossiblyUnboundVariable=false
 
 import logging
@@ -45,7 +46,9 @@ class RemoteLoader:
         >>> config_dict = loader.load()
     """
 
-    def __init__(self, url: str, timeout: int = 30, headers: Optional[Dict[str, str]] = None):
+    def __init__(
+        self, url: str, timeout: int = 30, headers: Optional[Dict[str, str]] = None
+    ):
         """Initialize remote loader.
 
         Args:
@@ -273,7 +276,9 @@ class S3Loader(RemoteLoader):
         try:
             import boto3  # type: ignore[import-untyped]
         except ImportError:
-            raise ImportError("boto3 is required for S3 loading. Install with: pip install boto3")
+            raise ImportError(
+                "boto3 is required for S3 loading. Install with: pip install boto3"
+            )
 
         try:
             logger.info(f"Loading configuration from S3: {self.url}")
@@ -345,7 +350,11 @@ class GitLoader(RemoteLoader):
     """
 
     def __init__(
-        self, repo_url: str, file_path: str, branch: str = "main", token: Optional[str] = None
+        self,
+        repo_url: str,
+        file_path: str,
+        branch: str = "main",
+        token: Optional[str] = None,
     ):
         """Initialize Git loader.
 
@@ -391,9 +400,7 @@ class GitLoader(RemoteLoader):
         elif "gitlab.com" in self.url:
             # GitLab raw URL format — handle subgroups by joining all path parts
             path = self.url.replace("https://gitlab.com/", "").removesuffix(".git")
-            raw_url = (
-                f"https://gitlab.com/{path}/-/raw/{self.branch}/{self.file_path}"
-            )
+            raw_url = f"https://gitlab.com/{path}/-/raw/{self.branch}/{self.file_path}"
         else:
             raise ValueError(f"Unsupported Git provider: {self.url}")
 
@@ -503,7 +510,9 @@ class AzureBlobLoader(RemoteLoader):
             >>> config = loader.load()
         """
         try:
-            from azure.storage.blob import BlobServiceClient  # type: ignore[import-untyped]
+            from azure.storage.blob import (
+                BlobServiceClient,  # type: ignore[import-untyped]
+            )
         except ImportError:
             raise ImportError(
                 "azure-storage-blob is required for Azure loading. "
@@ -515,7 +524,9 @@ class AzureBlobLoader(RemoteLoader):
 
             # Create blob client based on available credentials
             if self.connection_string:
-                blob_service = BlobServiceClient.from_connection_string(self.connection_string)
+                blob_service = BlobServiceClient.from_connection_string(
+                    self.connection_string
+                )
             elif self.account_name and self.account_key:
                 blob_service = BlobServiceClient(
                     account_url=f"https://{self.account_name}.blob.core.windows.net",
@@ -533,7 +544,9 @@ class AzureBlobLoader(RemoteLoader):
                         "Azure storage account name is required. Provide 'account_name' "
                         "or set the AZURE_STORAGE_ACCOUNT environment variable."
                     )
-                from azure.identity import DefaultAzureCredential  # type: ignore[import-untyped]
+                from azure.identity import (
+                    DefaultAzureCredential,  # type: ignore[import-untyped]
+                )
 
                 blob_service = BlobServiceClient(
                     account_url=f"https://{self.account_name}.blob.core.windows.net",
@@ -629,7 +642,9 @@ class GCPStorageLoader(RemoteLoader):
         self.bucket_name = bucket_name
         self.blob_name = blob_name
         self.project_id = project_id or os.environ.get("GCP_PROJECT_ID")
-        self.credentials_path = credentials_path or os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
+        self.credentials_path = credentials_path or os.environ.get(
+            "GOOGLE_APPLICATION_CREDENTIALS"
+        )
 
     def load(self) -> Dict[str, Any]:
         """Load configuration from Google Cloud Storage.
@@ -668,7 +683,9 @@ class GCPStorageLoader(RemoteLoader):
                 credentials = service_account.Credentials.from_service_account_file(
                     self.credentials_path
                 )
-                client = storage.Client(project=self.project_id, credentials=credentials)
+                client = storage.Client(
+                    project=self.project_id, credentials=credentials
+                )
             else:
                 # Use default credentials (ADC)
                 client = storage.Client(project=self.project_id)
@@ -764,7 +781,9 @@ class IBMCloudObjectStorageLoader(RemoteLoader):
         self.bucket_name = bucket_name
         self.object_key = object_key
         self.api_key = api_key or os.environ.get("IBM_API_KEY")
-        self.service_instance_id = service_instance_id or os.environ.get("IBM_SERVICE_INSTANCE_ID")
+        self.service_instance_id = service_instance_id or os.environ.get(
+            "IBM_SERVICE_INSTANCE_ID"
+        )
         self.region = region
         self.endpoint_url = (
             endpoint_url or f"https://s3.{region}.cloud-object-storage.appdomain.cloud"
@@ -792,7 +811,9 @@ class IBMCloudObjectStorageLoader(RemoteLoader):
         """
         try:
             import ibm_boto3  # type: ignore[import-untyped]
-            from ibm_botocore.client import Config as IBMConfig  # type: ignore[import-untyped]
+            from ibm_botocore.client import (
+                Config as IBMConfig,  # type: ignore[import-untyped]
+            )
         except ImportError:
             raise ImportError(
                 "ibm-cos-sdk is required for IBM COS loading. "
@@ -812,7 +833,9 @@ class IBMCloudObjectStorageLoader(RemoteLoader):
             )
 
             # Get object from IBM COS
-            response = cos_client.get_object(Bucket=self.bucket_name, Key=self.object_key)
+            response = cos_client.get_object(
+                Bucket=self.bucket_name, Key=self.object_key
+            )
             content = response["Body"].read().decode("utf-8")
 
             # Parse based on file extension

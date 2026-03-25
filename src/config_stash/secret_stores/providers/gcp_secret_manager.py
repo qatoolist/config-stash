@@ -1,4 +1,5 @@
 """Google Cloud Secret Manager secret store provider."""
+
 # pyright: reportPossiblyUnboundVariable=false
 # pyright: reportMissingImports=false
 # pyright: reportAttributeAccessIssue=false
@@ -83,11 +84,15 @@ class GCPSecretManager(SecretStore):
 
         try:
             if credentials:
-                self.client = secretmanager.SecretManagerServiceClient(credentials=credentials)
+                self.client = secretmanager.SecretManagerServiceClient(
+                    credentials=credentials
+                )
             else:
                 self.client = secretmanager.SecretManagerServiceClient()
         except Exception as e:
-            raise SecretAccessError(f"Failed to initialize GCP Secret Manager client: {e}")
+            raise SecretAccessError(
+                f"Failed to initialize GCP Secret Manager client: {e}"
+            )
 
     def get_secret(self, key: str, version: Optional[str] = None, **kwargs) -> Any:
         """Retrieve a secret from GCP Secret Manager.
@@ -252,7 +257,9 @@ class GCPSecretManager(SecretStore):
         """
         try:
             secrets = []
-            for secret in self.client.list_secrets(request={"parent": self.project_path}):
+            for secret in self.client.list_secrets(
+                request={"parent": self.project_path}
+            ):
                 # Extract secret name from full path
                 # Format: projects/{project}/secrets/{secret}
                 secret_name = secret.name.split("/")[-1]

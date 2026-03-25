@@ -164,7 +164,9 @@ class ConfigNotFoundError(ConfigStashError):
     key that doesn't exist.
     """
 
-    def __init__(self, message: str, key: str, available_keys: Optional[list] = None) -> None:
+    def __init__(
+        self, message: str, key: str, available_keys: Optional[list] = None
+    ) -> None:
         """Initialize the configuration not found error.
 
         Args:

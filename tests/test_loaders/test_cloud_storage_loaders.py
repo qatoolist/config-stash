@@ -38,7 +38,8 @@ class TestAzureBlobLoader:
             connection_string="DefaultEndpointsProtocol=https;AccountName=myaccount;...",
         )
         assert (
-            loader.connection_string == "DefaultEndpointsProtocol=https;AccountName=myaccount;..."
+            loader.connection_string
+            == "DefaultEndpointsProtocol=https;AccountName=myaccount;..."
         )
 
     def test_init_with_sas_token(self):
@@ -152,7 +153,10 @@ class TestIBMCloudObjectStorageLoader:
             object_key="config.json",
             region="eu-gb",
         )
-        assert loader.endpoint_url == "https://s3.eu-gb.cloud-object-storage.appdomain.cloud"
+        assert (
+            loader.endpoint_url
+            == "https://s3.eu-gb.cloud-object-storage.appdomain.cloud"
+        )
 
     @patch("config_stash.loaders.remote_loader.os.environ.get")
     def test_init_with_env_vars(self, mock_env):
@@ -162,13 +166,17 @@ class TestIBMCloudObjectStorageLoader:
             "IBM_SERVICE_INSTANCE_ID": "env_instance_id",
         }.get(key, default)
 
-        loader = IBMCloudObjectStorageLoader(bucket_name="mybucket", object_key="config.json")
+        loader = IBMCloudObjectStorageLoader(
+            bucket_name="mybucket", object_key="config.json"
+        )
         assert loader.api_key == "env_api_key"
         assert loader.service_instance_id == "env_instance_id"
 
     def test_load_missing_ibm_sdk(self):
         """Test loading when ibm-cos-sdk is not installed."""
-        loader = IBMCloudObjectStorageLoader(bucket_name="mybucket", object_key="config.json")
+        loader = IBMCloudObjectStorageLoader(
+            bucket_name="mybucket", object_key="config.json"
+        )
 
         with patch.dict("sys.modules", {"ibm_boto3": None}):
             with pytest.raises(ImportError) as exc_info:
@@ -235,5 +243,9 @@ class TestCloudLoaderIntegration:
         assert loader.container_url == "mycontainer"
 
         # Test with URL-like container
-        loader = AzureBlobLoader("https://account.blob.core.windows.net/mycontainer", "blob.json")
-        assert loader.container_url == "https://account.blob.core.windows.net/mycontainer"
+        loader = AzureBlobLoader(
+            "https://account.blob.core.windows.net/mycontainer", "blob.json"
+        )
+        assert (
+            loader.container_url == "https://account.blob.core.windows.net/mycontainer"
+        )

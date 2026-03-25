@@ -76,7 +76,9 @@ class GCPAuth(VaultAuthMethod):
                 )
             elif self.auth_type == "iam":
                 if not self.jwt:
-                    raise VaultAuthenticationError("JWT token required for IAM auth type")
+                    raise VaultAuthenticationError(
+                        "JWT token required for IAM auth type"
+                    )
 
                 response = client.auth.gcp.login(
                     role=self.role,
@@ -85,7 +87,8 @@ class GCPAuth(VaultAuthMethod):
                 )
             else:
                 raise VaultAuthenticationError(
-                    f"Unknown GCP auth type: {self.auth_type}. " f"Must be 'gce' or 'iam'"
+                    f"Unknown GCP auth type: {self.auth_type}. "
+                    f"Must be 'gce' or 'iam'"
                 )
 
             return response["auth"]["client_token"]

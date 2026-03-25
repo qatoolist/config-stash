@@ -150,7 +150,9 @@ class SecretResolver:
 
                 # Extract nested value using json path if provided
                 if json_path_or_version and isinstance(secret_value, dict):
-                    secret_value = self._extract_json_path(secret_value, json_path_or_version)
+                    secret_value = self._extract_json_path(
+                        secret_value, json_path_or_version
+                    )
 
                 # Cache the result
                 if self.cache_enabled:
@@ -208,7 +210,8 @@ class SecretResolver:
                 from config_stash.secret_stores.base import SecretValidationError
 
                 raise SecretValidationError(
-                    f"JSON path '{path}' not found in secret data. " f"Failed at key: '{key}'"
+                    f"JSON path '{path}' not found in secret data. "
+                    f"Failed at key: '{key}'"
                 )
 
         return current

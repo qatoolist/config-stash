@@ -148,9 +148,7 @@ class Config(
                 self._advanced_merger.set_strategy(path, strategy)
 
         # Set up loaders
-        final_loaders = (
-            loaders if loaders is not None else self._load_default_files()
-        )
+        final_loaders = loaders if loaders is not None else self._load_default_files()
         if env_prefix:
             from config_stash.loaders.environment_loader import EnvironmentLoader
 
@@ -165,9 +163,7 @@ class Config(
         self.version_manager: Optional[ConfigVersionManager] = None
         self.observer: Optional[ConfigObserver] = None
         self.event_emitter: Optional[ConfigEventEmitter] = None
-        self.enhanced_source_tracker = EnhancedSourceTracker(
-            debug_mode=self.debug_mode
-        )
+        self.enhanced_source_tracker = EnhancedSourceTracker(debug_mode=self.debug_mode)
 
         # Load, merge, extract environment config
         self.configs = self._load_configs_with_tracking()
@@ -259,9 +255,7 @@ class Config(
             ext = file.split(".")[-1]
             if ext in loader_classes:
                 loaders.append(loader_classes[ext](file))
-        loaders.append(
-            loader_classes["env"](get_default_settings()["default_prefix"])
-        )
+        loaders.append(loader_classes["env"](get_default_settings()["default_prefix"]))
         return loaders
 
     def _register_default_hooks(self) -> None:

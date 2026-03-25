@@ -77,7 +77,9 @@ default:
     def test_disable_ide_support(self):
         """Test that IDE support can be disabled."""
         # Create config with IDE support disabled
-        config = Config(loaders=[YamlLoader(self.config_file)], enable_ide_support=False)
+        config = Config(
+            loaders=[YamlLoader(self.config_file)], enable_ide_support=False
+        )
 
         # Check that IDE support files were NOT created
         ide_dir = Path(".config_stash")
@@ -87,7 +89,9 @@ default:
         """Test custom path for IDE stub files."""
         custom_path = "my_custom_stubs.pyi"
 
-        config = Config(loaders=[YamlLoader(self.config_file)], ide_stub_path=custom_path)
+        config = Config(
+            loaders=[YamlLoader(self.config_file)], ide_stub_path=custom_path
+        )
 
         # Check that custom stub file was created
         assert Path(custom_path).exists()
@@ -182,7 +186,9 @@ default:
 
     def test_create_typed_wrapper(self):
         """Test creating a typed wrapper for runtime checking."""
-        config = Config(loaders=[YamlLoader(self.config_file)], enable_ide_support=False)
+        config = Config(
+            loaders=[YamlLoader(self.config_file)], enable_ide_support=False
+        )
 
         # Create typed wrapper
         typed_config = IDESupport.create_typed_wrapper(config)

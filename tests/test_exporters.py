@@ -15,10 +15,11 @@ from config_stash.exporters import ConfigExporter, add_export_methods
 
 class TestConfigExporter(unittest.TestCase):
     """Test ConfigExporter class."""
-# pyright: reportOptionalSubscript=false, reportOptionalMemberAccess=false
-# pyright: reportArgumentType=false, reportPossiblyUnboundVariable=false
-# pyright: reportAttributeAccessIssue=false, reportCallIssue=false
-# pyright: reportMissingImports=false
+
+    # pyright: reportOptionalSubscript=false, reportOptionalMemberAccess=false
+    # pyright: reportArgumentType=false, reportPossiblyUnboundVariable=false
+    # pyright: reportAttributeAccessIssue=false, reportCallIssue=false
+    # pyright: reportMissingImports=false
 
     def setUp(self):
         """Set up test fixtures."""
@@ -180,21 +181,27 @@ class TestConfigExporter(unittest.TestCase):
         """Test format auto-detection from file extension."""
         # JSON
         ConfigExporter.dump(self.mock_config, "/tmp/config.json")
-        written_content = "".join(call.args[0] for call in mock_file().write.call_args_list)
+        written_content = "".join(
+            call.args[0] for call in mock_file().write.call_args_list
+        )
         self.assertTrue(written_content.startswith("{"))  # JSON starts with {
 
         mock_file.reset_mock()
 
         # YAML
         ConfigExporter.dump(self.mock_config, "/tmp/config.yml")
-        written_content = "".join(call.args[0] for call in mock_file().write.call_args_list)
+        written_content = "".join(
+            call.args[0] for call in mock_file().write.call_args_list
+        )
         self.assertIn(":", written_content)  # YAML has colons
 
     @patch("builtins.open", new_callable=mock_open)
     def test_dump_explicit_format(self, mock_file):
         """Test explicit format specification overrides extension."""
         ConfigExporter.dump(self.mock_config, "/tmp/config.txt", format="json")
-        written_content = "".join(call.args[0] for call in mock_file().write.call_args_list)
+        written_content = "".join(
+            call.args[0] for call in mock_file().write.call_args_list
+        )
         parsed = json.loads(written_content)
         self.assertEqual(parsed, self.test_data)
 
@@ -265,7 +272,9 @@ class TestConfigExporter(unittest.TestCase):
         config1 = Mock()
         config1.env_config = {"database": {"host": "localhost", "port": 5432}}
         config2 = Mock()
-        config2.env_config = {"database": {"host": "remotehost", "port": 5432, "ssl": True}}
+        config2.env_config = {
+            "database": {"host": "remotehost", "port": 5432, "ssl": True}
+        }
 
         diff_str = ConfigExporter.diff(config1, config2)
         diff_dict = json.loads(diff_str)

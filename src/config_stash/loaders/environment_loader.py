@@ -74,7 +74,9 @@ class EnvironmentLoader(Loader):
                 original_error=e,
             ) from e
 
-    def _set_nested_value(self, config: Dict[str, Any], keys: List[str], value: str) -> None:
+    def _set_nested_value(
+        self, config: Dict[str, Any], keys: List[str], value: str
+    ) -> None:
         """Set a nested value in the configuration dictionary.
 
         Args:
