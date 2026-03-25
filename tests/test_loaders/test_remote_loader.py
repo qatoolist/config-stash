@@ -64,8 +64,11 @@ class TestHTTPLoader(unittest.TestCase):
     @patch("requests.get")
     def test_load_json(self, mock_get):
         """Test loading JSON configuration from HTTP."""
+        import json
+
         # Mock response
         mock_response = Mock()
+        mock_response.text = json.dumps(self.test_config)
         mock_response.json.return_value = self.test_config
         mock_response.headers = {"content-type": "application/json"}
         mock_response.raise_for_status = Mock()
@@ -129,8 +132,10 @@ version = "1.0.0"
     @patch("requests.get")
     def test_load_with_auth(self, mock_get):
         """Test loading with authentication."""
+        import json
+
         mock_response = Mock()
-        mock_response.json.return_value = self.test_config
+        mock_response.text = json.dumps(self.test_config)
         mock_response.headers = {}
         mock_response.raise_for_status = Mock()
         mock_get.return_value = mock_response
@@ -149,8 +154,10 @@ version = "1.0.0"
     @patch("requests.get")
     def test_load_with_headers(self, mock_get):
         """Test loading with custom headers."""
+        import json
+
         mock_response = Mock()
-        mock_response.json.return_value = self.test_config
+        mock_response.text = json.dumps(self.test_config)
         mock_response.headers = {}
         mock_response.raise_for_status = Mock()
         mock_get.return_value = mock_response
@@ -180,8 +187,10 @@ version = "1.0.0"
     @patch("requests.get")
     def test_detect_format_from_url(self, mock_get):
         """Test format detection from URL extension."""
+        import json
+
         mock_response = Mock()
-        mock_response.json.return_value = self.test_config
+        mock_response.text = json.dumps(self.test_config)
         mock_response.headers = {}  # No content-type
         mock_response.raise_for_status = Mock()
         mock_get.return_value = mock_response
