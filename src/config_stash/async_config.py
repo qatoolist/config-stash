@@ -22,7 +22,16 @@ class AsyncLoader:
     """Abstract base class for async configuration loaders.
 
     All async loaders must inherit from this class and implement
-    the `load()` method as an async function.
+    the ``load()`` method as a coroutine.  Use async loaders when your
+    configuration sources involve I/O that benefits from non-blocking
+    execution (remote APIs, cloud storage, etc.).
+
+    Example:
+        >>> class AsyncRedisLoader(AsyncLoader):
+        ...     async def load(self):
+        ...         import aioredis
+        ...         r = await aioredis.from_url(self.source)
+        ...         return await r.hgetall("config")
     """
 
     def __init__(self, source: str) -> None:
@@ -50,7 +59,17 @@ class AsyncLoader:
 
 
 class AsyncYamlLoader(AsyncLoader):
-    """Async YAML configuration loader."""
+    """Async YAML configuration loader.
+
+    Reads a YAML file using a thread-pool executor so the event loop is
+    never blocked by disk I/O.  Suitable for ``asyncio``-based applications
+    that load configuration at startup.
+
+    Example:
+        >>> loader = AsyncYamlLoader("config.yaml")
+        >>> config = await loader.load()
+        >>> print(config["database"]["host"])
+    """
 
     async def load(self) -> Optional[Dict[str, Any]]:
         """Load configuration from YAML file (async).
@@ -86,7 +105,18 @@ class AsyncYamlLoader(AsyncLoader):
 
 
 class AsyncHTTPLoader(AsyncLoader):
-    """Async HTTP configuration loader."""
+    """Async HTTP configuration loader.
+
+    Fetches configuration from a remote HTTP/HTTPS endpoint using
+    ``aiohttp``.  The response format (JSON or YAML) is auto-detected
+    from the ``Content-Type`` header or the URL file extension.
+
+    Requires the ``aiohttp`` package (``pip install aiohttp``).
+
+    Example:
+        >>> loader = AsyncHTTPLoader("https://cfg.example.com/app.json", timeout=10)
+        >>> config = await loader.load()
+    """
 
     def __init__(self, url: str, timeout: int = 30) -> None:
         """Initialize async HTTP loader.

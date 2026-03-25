@@ -21,7 +21,38 @@ except ImportError:
 
 
 class PydanticValidator(Generic[T]):
-    """Validates configuration using Pydantic models."""
+    """Validates configuration dictionaries using Pydantic models.
+
+    PydanticValidator wraps a Pydantic ``BaseModel`` subclass and uses it
+    to validate raw configuration dictionaries. It provides detailed,
+    structured error reporting by converting Pydantic ``ValidationError``
+    instances into ``ConfigValidationError`` with per-field error details.
+
+    This validator is useful when you want strict, type-safe validation
+    of your configuration with automatic coercion, default values, and
+    nested model support provided by Pydantic.
+
+    Attributes:
+        model_class: The Pydantic model class used for validation.
+
+    Example:
+        >>> from pydantic import BaseModel, Field
+        >>> from config_stash.validators import PydanticValidator
+        >>>
+        >>> class DBConfig(BaseModel):
+        ...     host: str = "localhost"
+        ...     port: int = Field(default=5432, ge=1, le=65535)
+        ...     database: str
+        >>>
+        >>> validator = PydanticValidator(DBConfig)
+        >>> model = validator.validate({"database": "mydb", "port": 3306})
+        >>> print(model.host)  # "localhost" (default applied)
+
+    Note:
+        Requires the ``pydantic`` package (v2+). Install it with::
+
+            pip install pydantic
+    """
 
     def __init__(self, model_class: Type[T]) -> None:
         """Initialize with a Pydantic model class.
@@ -80,11 +111,27 @@ class PydanticValidator(Generic[T]):
     def validate_to_dict(self, config: Dict[str, Any]) -> Dict[str, Any]:
         """Validate and return as dictionary with defaults applied.
 
+        This is a convenience method that validates the configuration and
+        immediately serializes the resulting model back to a dictionary.
+        The returned dictionary includes all default values defined in
+        the Pydantic model, making it suitable for merging back into the
+        configuration pipeline.
+
         Args:
-            config: Configuration dictionary
+            config: Configuration dictionary to validate.
 
         Returns:
-            Validated configuration as dictionary
+            Validated configuration as a plain dictionary with all model
+            defaults applied.
+
+        Raises:
+            ConfigValidationError: If validation fails.
+
+        Example:
+            >>> validator = PydanticValidator(DBConfig)
+            >>> result = validator.validate_to_dict({"database": "mydb"})
+            >>> print(result)
+            {'host': 'localhost', 'port': 5432, 'database': 'mydb', ...}
         """
         model: Any = self.validate(config)
         return model.model_dump()

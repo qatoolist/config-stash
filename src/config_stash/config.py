@@ -85,6 +85,30 @@ class Config:
             ide_stub_path: Custom path for IDE stub file (default: .config_stash/.stubs.pyi).
             debug_mode: Enable detailed source tracking and debugging (default: False).
             deep_merge: Enable deep merging of nested configuration (default: True).
+            merge_strategy: Default merge strategy for combining configuration layers.
+                Pass a ``MergeStrategy`` enum value (e.g., ``MergeStrategy.DEEP``,
+                ``MergeStrategy.REPLACE``) to control how overlapping keys are
+                reconciled across all sources.  When ``None`` (the default), the
+                behaviour is governed by the ``deep_merge`` flag.
+            merge_strategy_map: Per-path merge strategy overrides.  A dictionary
+                mapping dot-separated key paths to ``MergeStrategy`` values so that
+                specific subtrees can use a different strategy than the global one.
+
+                Example:
+                    >>> config = Config(
+                    ...     merge_strategy=MergeStrategy.DEEP,
+                    ...     merge_strategy_map={"feature_flags": MergeStrategy.REPLACE},
+                    ... )
+
+            env_prefix: Optional prefix used to namespace environment variables.
+                When set, only environment variables starting with this prefix are
+                considered, and the prefix is stripped from the resulting key names.
+                Useful for avoiding collisions in shared environments.
+
+                Example:
+                    >>> config = Config(env_prefix="MYAPP_")
+                    >>> # MYAPP_DATABASE_HOST -> database.host
+
             secret_resolver: Optional SecretResolver instance for resolving secrets from
                 external secret stores (AWS Secrets Manager, HashiCorp Vault, etc.).
 
@@ -512,7 +536,19 @@ class Config:
 
     @property
     def is_frozen(self) -> bool:
-        """Check if the configuration is frozen."""
+        """Whether this configuration instance is frozen (read-only).
+
+        Returns ``True`` after ``freeze()`` has been called.  Useful for
+        guard clauses or assertions that verify immutability before
+        entering critical sections.
+
+        Returns:
+            True if the configuration is frozen, False otherwise.
+
+        Example:
+            >>> config.freeze()
+            >>> assert config.is_frozen
+        """
         return self._frozen
 
     def _check_frozen(self) -> None:

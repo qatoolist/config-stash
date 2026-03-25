@@ -21,15 +21,37 @@ except ImportError:
 
 
 class RemoteLoader:
-    """Base class for remote configuration loading."""
+    """Base class for remote configuration loading.
+
+    RemoteLoader provides the shared interface and common attributes for
+    all remote configuration loaders. Subclasses implement the ``load()``
+    method to fetch configuration from specific remote backends (HTTP, S3,
+    Azure Blob Storage, GCP Storage, Git repositories, IBM COS).
+
+    The loaded content is automatically parsed into a Python dictionary
+    based on the file extension or content-type header using the
+    ``format_parser`` utility.
+
+    Attributes:
+        url: The remote URL or URI identifying the configuration source.
+        timeout: Request timeout in seconds.
+        headers: HTTP headers sent with the request (where applicable).
+        source: Alias for ``url``, used for source tracking.
+        config: The loaded configuration dictionary (populated after ``load()``).
+
+    Example:
+        >>> # RemoteLoader is abstract; use a concrete subclass:
+        >>> loader = HTTPLoader("https://example.com/config.json")
+        >>> config_dict = loader.load()
+    """
 
     def __init__(self, url: str, timeout: int = 30, headers: Optional[Dict] = None):
         """Initialize remote loader.
 
         Args:
-            url: URL to load configuration from
-            timeout: Request timeout in seconds
-            headers: Optional HTTP headers
+            url: URL or URI to load configuration from.
+            timeout: Request timeout in seconds. Defaults to 30.
+            headers: Optional HTTP headers to include in requests.
         """
         self.url = url
         self.timeout = timeout
@@ -38,12 +60,47 @@ class RemoteLoader:
         self.config: Dict[str, Any] = {}
 
     def load(self) -> Dict[str, Any]:
-        """Load configuration from remote source."""
+        """Load configuration from remote source.
+
+        Returns:
+            Dictionary containing the loaded configuration.
+
+        Raises:
+            NotImplementedError: Always; subclasses must override this method.
+        """
         raise NotImplementedError
 
 
 class HTTPLoader(RemoteLoader):
-    """Load configuration from HTTP/HTTPS endpoints."""
+    """Load configuration from HTTP/HTTPS endpoints.
+
+    HTTPLoader fetches configuration files from any HTTP or HTTPS URL. The
+    response content-type header is used to determine the configuration
+    format; if the content-type is ambiguous, the URL's file extension is
+    used as a fallback. Supports JSON, YAML, and TOML formats.
+
+    Attributes:
+        url: The HTTP/HTTPS URL of the configuration resource.
+        timeout: Request timeout in seconds.
+        headers: HTTP headers sent with the request.
+        auth: Optional basic-auth credentials as a ``(username, password)`` tuple.
+        config: The loaded configuration dictionary.
+
+    Example:
+        >>> from config_stash.loaders.remote_loader import HTTPLoader
+        >>> loader = HTTPLoader(
+        ...     "https://config-server.example.com/app/config.yaml",
+        ...     headers={"X-API-Key": "secret"},
+        ...     timeout=10,
+        ... )
+        >>> config_dict = loader.load()
+        >>> print(config_dict["database"]["host"])
+
+    Note:
+        Requires the ``requests`` package. Install it with::
+
+            pip install requests
+    """
 
     def __init__(
         self,
@@ -55,10 +112,13 @@ class HTTPLoader(RemoteLoader):
         """Initialize HTTP loader.
 
         Args:
-            url: HTTP/HTTPS URL
-            timeout: Request timeout
-            headers: Optional headers
-            auth: Optional (username, password) tuple for basic auth
+            url: HTTP/HTTPS URL to fetch configuration from.
+            timeout: Request timeout in seconds. Defaults to 30.
+            headers: Optional HTTP headers (e.g., API keys).
+            auth: Optional ``(username, password)`` tuple for HTTP Basic Auth.
+
+        Raises:
+            ImportError: If the ``requests`` package is not installed.
         """
         if not HAS_REQUESTS:
             raise ImportError(
@@ -69,7 +129,23 @@ class HTTPLoader(RemoteLoader):
         self.auth = auth
 
     def load(self) -> Dict[str, Any]:
-        """Load configuration from HTTP endpoint."""
+        """Load configuration from an HTTP/HTTPS endpoint.
+
+        Sends a GET request to the configured URL, detects the response
+        format from the content-type header or URL extension, and parses
+        the content into a dictionary.
+
+        Returns:
+            Dictionary containing the loaded configuration.
+
+        Raises:
+            ConfigLoadError: If the HTTP request fails or the response
+                content cannot be parsed.
+
+        Example:
+            >>> loader = HTTPLoader("https://example.com/config.json")
+            >>> config = loader.load()
+        """
         try:
             logger.info(f"Loading configuration from {self.url}")
             response = requests.get(
@@ -116,7 +192,33 @@ class HTTPLoader(RemoteLoader):
 
 
 class S3Loader(RemoteLoader):
-    """Load configuration from AWS S3."""
+    """Load configuration from AWS S3.
+
+    S3Loader fetches configuration files stored in Amazon S3 buckets.
+    Authentication can be provided explicitly via access keys, or
+    implicitly through IAM roles, environment variables
+    (``AWS_ACCESS_KEY_ID``, ``AWS_SECRET_ACCESS_KEY``), or the default
+    boto3 credential chain.
+
+    Attributes:
+        url: The original ``s3://`` URL.
+        bucket: The S3 bucket name (parsed from the URL).
+        key: The object key / path within the bucket.
+        aws_access_key: AWS access key ID (may be None for IAM).
+        aws_secret_key: AWS secret access key (may be None for IAM).
+        region: AWS region name.
+        config: The loaded configuration dictionary.
+
+    Example:
+        >>> from config_stash.loaders.remote_loader import S3Loader
+        >>> loader = S3Loader("s3://my-bucket/configs/app.yaml", region="eu-west-1")
+        >>> config_dict = loader.load()
+
+    Note:
+        Requires the ``boto3`` package. Install it with::
+
+            pip install boto3
+    """
 
     def __init__(
         self,
@@ -128,10 +230,15 @@ class S3Loader(RemoteLoader):
         """Initialize S3 loader.
 
         Args:
-            s3_url: S3 URL (s3://bucket/path/to/config.json)
-            aws_access_key: AWS access key (or use environment/IAM)
-            aws_secret_key: AWS secret key
-            region: AWS region
+            s3_url: S3 URL in the form ``s3://bucket/path/to/config.json``.
+            aws_access_key: AWS access key ID. Falls back to the
+                ``AWS_ACCESS_KEY_ID`` environment variable or IAM role.
+            aws_secret_key: AWS secret access key. Falls back to the
+                ``AWS_SECRET_ACCESS_KEY`` environment variable or IAM role.
+            region: AWS region name. Defaults to ``"us-east-1"``.
+
+        Raises:
+            ValueError: If the URL scheme is not ``s3``.
         """
         super().__init__(s3_url)
         self.aws_access_key = aws_access_key or os.environ.get("AWS_ACCESS_KEY_ID")
@@ -146,7 +253,23 @@ class S3Loader(RemoteLoader):
         self.key = parsed.path.lstrip("/")
 
     def load(self) -> Dict[str, Any]:
-        """Load configuration from S3."""
+        """Load configuration from an AWS S3 bucket.
+
+        Downloads the object specified by ``bucket`` and ``key``, then
+        parses the content based on the file extension of the key.
+
+        Returns:
+            Dictionary containing the loaded configuration.
+
+        Raises:
+            ImportError: If ``boto3`` is not installed.
+            ConfigLoadError: If the S3 request fails or the content
+                cannot be parsed.
+
+        Example:
+            >>> loader = S3Loader("s3://my-bucket/config.yaml")
+            >>> config = loader.load()
+        """
         try:
             import boto3
         except ImportError:
@@ -193,7 +316,33 @@ class S3Loader(RemoteLoader):
 
 
 class GitLoader(RemoteLoader):
-    """Load configuration from Git repository."""
+    """Load configuration from a Git repository hosted on GitHub or GitLab.
+
+    GitLoader constructs a raw-content URL for the specified file and branch,
+    then delegates to HTTPLoader to fetch and parse it. Private repositories
+    are supported via personal access tokens.
+
+    Attributes:
+        url: The Git repository URL (e.g., ``https://github.com/org/repo``).
+        file_path: Path to the configuration file within the repository.
+        branch: The Git branch to read from.
+        token: Access token for private repositories (may be None).
+        config: The loaded configuration dictionary.
+
+    Example:
+        >>> from config_stash.loaders.remote_loader import GitLoader
+        >>> loader = GitLoader(
+        ...     repo_url="https://github.com/myorg/myrepo",
+        ...     file_path="config/production.yaml",
+        ...     branch="main",
+        ...     token="ghp_xxxxxxxxxxxx",
+        ... )
+        >>> config_dict = loader.load()
+
+    Note:
+        Currently supports GitHub and GitLab. The ``GIT_TOKEN`` environment
+        variable is used as a fallback when ``token`` is not provided.
+    """
 
     def __init__(
         self, repo_url: str, file_path: str, branch: str = "main", token: Optional[str] = None
@@ -201,10 +350,11 @@ class GitLoader(RemoteLoader):
         """Initialize Git loader.
 
         Args:
-            repo_url: Git repository URL
-            file_path: Path to config file in repository
-            branch: Git branch
-            token: Optional access token for private repos
+            repo_url: Git repository URL (GitHub or GitLab).
+            file_path: Path to the configuration file within the repository.
+            branch: Git branch to read from. Defaults to ``"main"``.
+            token: Access token for private repositories. Falls back to
+                the ``GIT_TOKEN`` environment variable.
         """
         super().__init__(repo_url)
         self.file_path = file_path
@@ -212,7 +362,26 @@ class GitLoader(RemoteLoader):
         self.token = token or os.environ.get("GIT_TOKEN")
 
     def load(self) -> Dict[str, Any]:
-        """Load configuration from Git repository."""
+        """Load configuration from a Git repository.
+
+        Converts the repository URL to a raw-content URL based on the
+        hosting provider (GitHub or GitLab), then fetches the file via
+        HTTPLoader.
+
+        Returns:
+            Dictionary containing the loaded configuration.
+
+        Raises:
+            ValueError: If the Git provider is not supported (neither
+                GitHub nor GitLab).
+            ConfigLoadError: If the HTTP request or parsing fails.
+
+        Example:
+            >>> loader = GitLoader(
+            ...     "https://github.com/org/repo", "config.yaml"
+            ... )
+            >>> config = loader.load()
+        """
         # Convert to raw URL based on provider
         if "github.com" in self.url:
             # GitHub raw URL format
@@ -242,7 +411,42 @@ class GitLoader(RemoteLoader):
 
 
 class AzureBlobLoader(RemoteLoader):
-    """Load configuration from Azure Blob Storage."""
+    """Load configuration from Azure Blob Storage.
+
+    AzureBlobLoader downloads configuration files from Azure Blob Storage
+    containers. It supports multiple authentication methods: connection
+    strings, account key, SAS tokens, and Azure Managed Identity via
+    ``DefaultAzureCredential``.
+
+    Attributes:
+        url: Synthetic URI in the form ``azure://<container>/<blob>``.
+        container_url: The Azure container URL or container name.
+        blob_name: The blob (file) name within the container.
+        account_name: Azure Storage account name.
+        account_key: Azure Storage account key (may be None).
+        sas_token: Shared Access Signature token (may be None).
+        connection_string: Full Azure Storage connection string (may be None).
+        config: The loaded configuration dictionary.
+
+    Example:
+        >>> from config_stash.loaders.remote_loader import AzureBlobLoader
+        >>> loader = AzureBlobLoader(
+        ...     container_url="my-container",
+        ...     blob_name="config/app.yaml",
+        ...     account_name="mystorageaccount",
+        ...     account_key="base64key==",
+        ... )
+        >>> config_dict = loader.load()
+
+    Note:
+        Requires the ``azure-storage-blob`` package. Install it with::
+
+            pip install azure-storage-blob
+
+        Environment variable fallbacks: ``AZURE_STORAGE_ACCOUNT``,
+        ``AZURE_STORAGE_KEY``, ``AZURE_SAS_TOKEN``,
+        ``AZURE_STORAGE_CONNECTION_STRING``.
+    """
 
     def __init__(
         self,
@@ -256,12 +460,17 @@ class AzureBlobLoader(RemoteLoader):
         """Initialize Azure Blob loader.
 
         Args:
-            container_url: Azure container URL or container name
-            blob_name: Name of the blob (file) to load
-            account_name: Azure storage account name
-            account_key: Azure storage account key
-            sas_token: Shared Access Signature token for authentication
-            connection_string: Full connection string (alternative to account credentials)
+            container_url: Azure container URL or plain container name.
+            blob_name: Name of the blob (file) to load.
+            account_name: Azure storage account name. Falls back to
+                ``AZURE_STORAGE_ACCOUNT`` environment variable.
+            account_key: Azure storage account key. Falls back to
+                ``AZURE_STORAGE_KEY`` environment variable.
+            sas_token: Shared Access Signature token. Falls back to
+                ``AZURE_SAS_TOKEN`` environment variable.
+            connection_string: Full connection string (alternative to
+                individual credentials). Falls back to
+                ``AZURE_STORAGE_CONNECTION_STRING`` environment variable.
         """
         super().__init__(f"azure://{container_url}/{blob_name}")
         self.container_url = container_url
@@ -274,7 +483,25 @@ class AzureBlobLoader(RemoteLoader):
         )
 
     def load(self) -> Dict[str, Any]:
-        """Load configuration from Azure Blob Storage."""
+        """Load configuration from Azure Blob Storage.
+
+        Downloads the blob content and parses it based on the blob
+        name's file extension (e.g., ``.yaml``, ``.json``, ``.toml``).
+
+        Returns:
+            Dictionary containing the loaded configuration.
+
+        Raises:
+            ImportError: If ``azure-storage-blob`` is not installed.
+            ValueError: If ``account_name`` is required but not provided.
+            ConfigLoadError: If the Azure request fails or the content
+                cannot be parsed.
+
+        Example:
+            >>> loader = AzureBlobLoader("my-container", "config.yaml",
+            ...                          account_name="myaccount")
+            >>> config = loader.load()
+        """
         try:
             from azure.storage.blob import BlobServiceClient
         except ImportError:
@@ -348,7 +575,37 @@ class AzureBlobLoader(RemoteLoader):
 
 
 class GCPStorageLoader(RemoteLoader):
-    """Load configuration from Google Cloud Storage."""
+    """Load configuration from Google Cloud Storage.
+
+    GCPStorageLoader downloads configuration files from GCS buckets.
+    Authentication is handled via explicit service account credentials
+    or Application Default Credentials (ADC).
+
+    Attributes:
+        url: Synthetic URI in the form ``gs://<bucket>/<blob>``.
+        bucket_name: The GCS bucket name.
+        blob_name: The blob (file) name within the bucket.
+        project_id: GCP project ID.
+        credentials_path: Path to a service account JSON key file.
+        config: The loaded configuration dictionary.
+
+    Example:
+        >>> from config_stash.loaders.remote_loader import GCPStorageLoader
+        >>> loader = GCPStorageLoader(
+        ...     bucket_name="my-config-bucket",
+        ...     blob_name="services/app.yaml",
+        ...     project_id="my-gcp-project",
+        ... )
+        >>> config_dict = loader.load()
+
+    Note:
+        Requires the ``google-cloud-storage`` package. Install it with::
+
+            pip install google-cloud-storage
+
+        Environment variable fallbacks: ``GCP_PROJECT_ID``,
+        ``GOOGLE_APPLICATION_CREDENTIALS``.
+    """
 
     def __init__(
         self,
@@ -360,10 +617,13 @@ class GCPStorageLoader(RemoteLoader):
         """Initialize GCP Storage loader.
 
         Args:
-            bucket_name: GCS bucket name
-            blob_name: Name of the blob (file) to load
-            project_id: GCP project ID
-            credentials_path: Path to service account JSON file
+            bucket_name: GCS bucket name.
+            blob_name: Name of the blob (file) to load.
+            project_id: GCP project ID. Falls back to the
+                ``GCP_PROJECT_ID`` environment variable.
+            credentials_path: Path to a service account JSON key file.
+                Falls back to the ``GOOGLE_APPLICATION_CREDENTIALS``
+                environment variable.
         """
         super().__init__(f"gs://{bucket_name}/{blob_name}")
         self.bucket_name = bucket_name
@@ -372,7 +632,23 @@ class GCPStorageLoader(RemoteLoader):
         self.credentials_path = credentials_path or os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
 
     def load(self) -> Dict[str, Any]:
-        """Load configuration from Google Cloud Storage."""
+        """Load configuration from Google Cloud Storage.
+
+        Downloads the blob content as text and parses it based on the
+        blob name's file extension.
+
+        Returns:
+            Dictionary containing the loaded configuration.
+
+        Raises:
+            ImportError: If ``google-cloud-storage`` is not installed.
+            ConfigLoadError: If the GCS request fails or the content
+                cannot be parsed.
+
+        Example:
+            >>> loader = GCPStorageLoader("my-bucket", "config.yaml")
+            >>> config = loader.load()
+        """
         try:
             from google.cloud import storage
         except ImportError:
@@ -426,7 +702,41 @@ class GCPStorageLoader(RemoteLoader):
 
 
 class IBMCloudObjectStorageLoader(RemoteLoader):
-    """Load configuration from IBM Cloud Object Storage."""
+    """Load configuration from IBM Cloud Object Storage.
+
+    IBMCloudObjectStorageLoader fetches configuration files stored in IBM
+    Cloud Object Storage (COS) buckets using the S3-compatible API provided
+    by the ``ibm-cos-sdk`` package. Authentication uses IBM IAM OAuth via
+    an API key and service instance ID.
+
+    Attributes:
+        url: Synthetic URI in the form ``ibmcos://<bucket>/<key>``.
+        bucket_name: The IBM COS bucket name.
+        object_key: The object key (path) within the bucket.
+        api_key: IBM Cloud API key.
+        service_instance_id: IBM COS service instance ID.
+        region: IBM Cloud region (e.g., ``"us-south"``).
+        endpoint_url: The S3-compatible endpoint URL.
+        config: The loaded configuration dictionary.
+
+    Example:
+        >>> from config_stash.loaders.remote_loader import IBMCloudObjectStorageLoader
+        >>> loader = IBMCloudObjectStorageLoader(
+        ...     bucket_name="my-config-bucket",
+        ...     object_key="app/config.yaml",
+        ...     api_key="ibm-api-key",
+        ...     service_instance_id="crn:v1:...",
+        ... )
+        >>> config_dict = loader.load()
+
+    Note:
+        Requires the ``ibm-cos-sdk`` package. Install it with::
+
+            pip install ibm-cos-sdk
+
+        Environment variable fallbacks: ``IBM_API_KEY``,
+        ``IBM_SERVICE_INSTANCE_ID``.
+    """
 
     def __init__(
         self,
@@ -440,12 +750,15 @@ class IBMCloudObjectStorageLoader(RemoteLoader):
         """Initialize IBM Cloud Object Storage loader.
 
         Args:
-            bucket_name: IBM COS bucket name
-            object_key: Key (path) of the object to load
-            api_key: IBM Cloud API key
-            service_instance_id: IBM COS service instance ID
-            endpoint_url: Custom endpoint URL (defaults to public endpoint)
-            region: IBM Cloud region (default: us-south)
+            bucket_name: IBM COS bucket name.
+            object_key: Key (path) of the object to load.
+            api_key: IBM Cloud API key. Falls back to the
+                ``IBM_API_KEY`` environment variable.
+            service_instance_id: IBM COS service instance ID. Falls back
+                to the ``IBM_SERVICE_INSTANCE_ID`` environment variable.
+            endpoint_url: Custom S3-compatible endpoint URL. Defaults to
+                the public endpoint for the given region.
+            region: IBM Cloud region. Defaults to ``"us-south"``.
         """
         super().__init__(f"ibmcos://{bucket_name}/{object_key}")
         self.bucket_name = bucket_name
@@ -458,7 +771,25 @@ class IBMCloudObjectStorageLoader(RemoteLoader):
         )
 
     def load(self) -> Dict[str, Any]:
-        """Load configuration from IBM Cloud Object Storage."""
+        """Load configuration from IBM Cloud Object Storage.
+
+        Downloads the object content and parses it based on the object
+        key's file extension.
+
+        Returns:
+            Dictionary containing the loaded configuration.
+
+        Raises:
+            ImportError: If ``ibm-cos-sdk`` is not installed.
+            ConfigLoadError: If the IBM COS request fails or the content
+                cannot be parsed.
+
+        Example:
+            >>> loader = IBMCloudObjectStorageLoader(
+            ...     "my-bucket", "config.yaml"
+            ... )
+            >>> config = loader.load()
+        """
         try:
             import ibm_boto3
             from ibm_botocore.client import Config

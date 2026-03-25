@@ -9,7 +9,25 @@ logger = logging.getLogger(__name__)
 
 
 class IDESupport:
-    """Generate IDE autocomplete support for configurations."""
+    """Generate IDE autocomplete support for configurations.
+
+    Inspects a loaded ``Config`` instance and produces ``.pyi`` type-stub
+    files that give editors (PyCharm, VS Code / Pylance, mypy) full
+    autocomplete and type-checking for your configuration keys.
+
+    Typical workflow:
+      1. Load your ``Config`` as usual.
+      2. Call ``IDESupport.generate_stub(config)`` once (e.g., in a
+         build script or ``conftest.py``).
+      3. Import the generated ``ConfigType`` in your application code for
+         editor support.
+
+    Example:
+        >>> from config_stash import Config
+        >>> from config_stash.ide_support import IDESupport
+        >>> config = Config()
+        >>> IDESupport.generate_stub(config, output_path=".config_stubs.pyi")
+    """
 
     @staticmethod
     def generate_stub(
@@ -152,9 +170,20 @@ class IDESupport:
     def enable_auto_generation(config, output_path: str = ".config_stubs.pyi") -> None:
         """Automatically regenerate stubs when configuration changes.
 
+        Registers an ``on_change`` callback on the provided ``Config``
+        instance so that the ``.pyi`` stub file is regenerated whenever the
+        configuration structure changes (keys added or removed).  This
+        keeps IDE autocomplete in sync during development with
+        ``dynamic_reloading`` enabled.
+
         Args:
             config: Config instance with dynamic_reloading enabled
             output_path: Path to output .pyi file
+
+        Example:
+            >>> config = Config(dynamic_reloading=True)
+            >>> IDESupport.enable_auto_generation(config, ".config_stubs.pyi")
+            >>> # Stubs are now regenerated automatically on structural changes.
         """
         if not config.dynamic_reloading:
             logger.warning("Config doesn't have dynamic_reloading enabled")
@@ -174,13 +203,24 @@ class IDESupport:
 
     @staticmethod
     def create_typed_wrapper(config) -> Any:
-        """Create a typed wrapper class for runtime type checking.
+        """Create a typed wrapper object for runtime attribute access.
+
+        Converts the configuration dictionary into a nested object graph
+        so you can access values with ``wrapper.database.host`` instead of
+        ``config.get("database.host")``.  This is handy during development
+        for quick exploration without generating full stub files.
 
         Args:
-            config: Config instance
+            config: Config instance (must expose ``to_dict()``,
+                ``merged_config``, or ``env_config``).
 
         Returns:
-            A class with proper type annotations
+            An object whose attributes mirror the configuration structure.
+
+        Example:
+            >>> typed = IDESupport.create_typed_wrapper(config)
+            >>> print(typed.database.host)
+            'localhost'
         """
         # Get the actual configuration data
         if hasattr(config, "to_dict"):
@@ -215,7 +255,17 @@ class IDESupport:
 
 # Optional: VSCode specific support
 class VSCodeSupport:
-    """Generate VSCode-specific configuration."""
+    """Generate VS Code-specific editor configuration.
+
+    Creates or updates ``.vscode/settings.json`` with Python analysis
+    settings (extra paths, type-checking mode, mypy integration) so that
+    Config-Stash type stubs are picked up automatically by Pylance and
+    mypy within VS Code.
+
+    Example:
+        >>> VSCodeSupport.generate_settings()
+        >>> # .vscode/settings.json is now configured for type support.
+    """
 
     @staticmethod
     def generate_settings() -> None:

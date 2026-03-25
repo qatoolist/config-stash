@@ -17,6 +17,18 @@ def parse_scalar_value(
 
     Returns:
         Parsed value as bool, int, float, or str
+
+    Example:
+        >>> parse_scalar_value("42")
+        42
+        >>> parse_scalar_value("3.14")
+        3.14
+        >>> parse_scalar_value("true")
+        True
+        >>> parse_scalar_value("yes", extended_booleans=True)
+        True
+        >>> parse_scalar_value("hello")
+        'hello'
     """
     lower = value.lower()
 

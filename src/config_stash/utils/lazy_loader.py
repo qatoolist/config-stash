@@ -2,7 +2,24 @@ from typing import Any, Dict
 
 
 class LazyLoader:
-    """Lazy loader for configuration values with instance-level caching."""
+    """Lazy loader for configuration values with instance-level caching.
+
+    Wraps a flat or nested configuration dictionary and resolves
+    dot-separated key paths on first access, caching the result so
+    subsequent lookups are O(1).  Call ``clear_cache()`` after a
+    configuration reload to invalidate stale entries.
+
+    Attributes:
+        config: The underlying configuration dictionary.
+
+    Example:
+        >>> loader = LazyLoader({"database": {"host": "localhost", "port": 5432}})
+        >>> loader.get("database.host")
+        'localhost'
+        >>> loader.get("database.port")
+        5432
+        >>> loader.clear_cache()  # after a config reload
+    """
 
     def __init__(self, config: Dict[str, Any]) -> None:
         """Initialize the lazy loader with a configuration dictionary.

@@ -8,21 +8,70 @@ from config_stash.loaders.loader import Loader
 
 
 class EnvFileLoader(Loader):
-    """Loader for .env files with support for nested configurations."""
+    """Loader for .env files with support for nested configurations.
+
+    EnvFileLoader parses ``.env`` files in the standard ``KEY=VALUE`` format
+    used by tools such as Docker Compose, Heroku, and direnv. It supports
+    quoted values, inline comments, escape sequences in double-quoted
+    strings, and nested key structures via dot notation.
+
+    Attributes:
+        source: Path to the ``.env`` configuration file.
+        config: Loaded configuration dictionary.
+
+    Example:
+        >>> from config_stash.loaders import EnvFileLoader
+        >>> from config_stash import Config
+        >>>
+        >>> loader = EnvFileLoader(".env")
+        >>> config = Config(loaders=[loader])
+        >>> print(config.DATABASE_URL)
+
+    Note:
+        The ``.env`` format supports the following features:
+
+        - Comments: lines starting with ``#`` are ignored.
+        - Quoting: values wrapped in single or double quotes have the
+          quotes stripped. Single-quoted values are treated literally;
+          double-quoted values process ``\\n`` and ``\\t`` escapes.
+        - Inline comments: ``VALUE # comment`` is supported for unquoted
+          values (the ``# comment`` part is stripped).
+        - Nested keys: dot-separated keys like ``database.host=localhost``
+          are expanded into nested dictionaries.
+        - Type coercion: values are automatically converted to int, float,
+          bool, or None where appropriate.
+        - Missing files return None instead of raising an exception.
+    """
 
     def __init__(self, source: str = ".env"):
         """Initialize the .env file loader.
 
         Args:
-            source: Path to the .env file
+            source: Path to the .env file. Defaults to ``".env"`` in the
+                current working directory.
         """
         super().__init__(source)
 
     def load(self) -> Optional[Dict[str, Any]]:
-        """Load configuration from .env file.
+        """Load configuration from a .env file.
+
+        Parses each ``KEY=VALUE`` line, strips quotes, handles escape
+        sequences, expands dot-notation keys into nested dictionaries,
+        and coerces scalar values to appropriate Python types.
 
         Returns:
-            Dictionary containing the configuration from .env file
+            Dictionary containing the loaded configuration, or None if the
+            file does not exist.
+
+        Raises:
+            PermissionError: If the file exists but is not readable.
+            UnicodeDecodeError: If the file contains non-UTF-8 content.
+
+        Example:
+            >>> loader = EnvFileLoader(".env.production")
+            >>> config_dict = loader.load()
+            >>> if config_dict:
+            ...     print(config_dict["database"]["host"])
         """
         if not Path(self.source).exists():
             return None

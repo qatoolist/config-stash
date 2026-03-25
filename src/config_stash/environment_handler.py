@@ -5,7 +5,26 @@ logger = logging.getLogger(__name__)
 
 
 class EnvironmentHandler:
-    """Handles environment-specific configuration merging."""
+    """Handles environment-specific configuration merging.
+
+    Given a configuration dictionary that contains a ``default`` section and
+    optional environment-specific sections, this class merges the default
+    values with the values for the active environment.  Keys in the
+    environment section override those in ``default``; nested dictionaries
+    are deep-merged.
+
+    If the configuration is flat (no ``default`` or environment sections),
+    it is returned as-is.
+
+    Example:
+        >>> config = {
+        ...     "default": {"database": {"host": "localhost", "port": 5432}},
+        ...     "production": {"database": {"host": "db.prod.internal"}},
+        ... }
+        >>> handler = EnvironmentHandler(env="production", config=config)
+        >>> handler.get_env_config()
+        {'database': {'host': 'db.prod.internal', 'port': 5432}}
+    """
 
     def __init__(self, env: Optional[str], config: Dict[str, Any]) -> None:
         """Initialize the environment handler.

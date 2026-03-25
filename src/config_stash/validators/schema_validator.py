@@ -18,7 +18,41 @@ except ImportError:
 
 
 class SchemaValidator:
-    """Validates configuration against JSON Schema."""
+    """Validates configuration dictionaries against a JSON Schema.
+
+    SchemaValidator uses the ``jsonschema`` library to validate configuration
+    dictionaries against a JSON Schema (Draft 4 through Draft 7). It also
+    supports applying default values defined in the schema to produce a
+    complete configuration dictionary.
+
+    This validator is ideal when you need a language-agnostic schema
+    definition that can be shared across services written in different
+    languages, or when you want to validate configuration without
+    defining Python model classes.
+
+    Attributes:
+        schema: The JSON Schema dictionary used for validation.
+
+    Example:
+        >>> from config_stash.validators import SchemaValidator
+        >>>
+        >>> schema = {
+        ...     "type": "object",
+        ...     "properties": {
+        ...         "host": {"type": "string", "default": "localhost"},
+        ...         "port": {"type": "integer", "minimum": 1},
+        ...     },
+        ...     "required": ["port"],
+        ... }
+        >>> validator = SchemaValidator(schema)
+        >>> validator.validate({"port": 8080})  # Returns True
+        True
+
+    Note:
+        Requires the ``jsonschema`` package. Install it with::
+
+            pip install jsonschema
+    """
 
     def __init__(self, schema: Dict[str, Any]):
         """Initialize with a JSON Schema.
@@ -59,11 +93,37 @@ class SchemaValidator:
     def validate_with_defaults(self, config: Dict[str, Any]) -> Dict[str, Any]:
         """Validate and apply default values from schema.
 
+        First validates the configuration against the schema, then creates
+        a deep copy and fills in any missing properties that have ``default``
+        values defined in the schema. Nested object properties are handled
+        recursively.
+
         Args:
-            config: Configuration dictionary (not modified)
+            config: Configuration dictionary. This dictionary is **not**
+                modified; a deep copy is returned.
 
         Returns:
-            New configuration dict with defaults applied
+            New configuration dictionary with schema defaults applied for
+            any missing properties.
+
+        Raises:
+            ValidationError: If the configuration does not conform to the
+                schema.
+
+        Example:
+            >>> schema = {
+            ...     "type": "object",
+            ...     "properties": {
+            ...         "host": {"type": "string", "default": "localhost"},
+            ...         "port": {"type": "integer", "default": 5432},
+            ...         "database": {"type": "string"},
+            ...     },
+            ...     "required": ["database"],
+            ... }
+            >>> validator = SchemaValidator(schema)
+            >>> result = validator.validate_with_defaults({"database": "mydb"})
+            >>> print(result)
+            {'database': 'mydb', 'host': 'localhost', 'port': 5432}
         """
         import copy
 
@@ -97,13 +157,26 @@ class SchemaValidator:
 
     @classmethod
     def from_file(cls, schema_path: str) -> "SchemaValidator":
-        """Create validator from schema file.
+        """Create a SchemaValidator from a JSON schema file.
+
+        Reads a JSON file from disk and uses its contents as the
+        validation schema.
 
         Args:
-            schema_path: Path to JSON schema file
+            schema_path: Path to a JSON schema file.
 
         Returns:
-            SchemaValidator instance
+            A new SchemaValidator instance configured with the loaded schema.
+
+        Raises:
+            FileNotFoundError: If the schema file does not exist.
+            json.JSONDecodeError: If the file is not valid JSON.
+            ImportError: If ``jsonschema`` is not installed.
+
+        Example:
+            >>> validator = SchemaValidator.from_file("schemas/app.schema.json")
+            >>> validator.validate({"port": 8080})
+            True
         """
         with open(schema_path, "r") as f:
             schema = json.load(f)

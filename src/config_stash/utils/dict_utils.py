@@ -18,6 +18,12 @@ def deep_merge_dicts(
 
     Returns:
         New merged dictionary
+
+    Example:
+        >>> base = {"database": {"host": "localhost", "port": 5432}}
+        >>> overrides = {"database": {"host": "db.prod"}, "debug": True}
+        >>> deep_merge_dicts(base, overrides)
+        {'database': {'host': 'db.prod', 'port': 5432}, 'debug': True}
     """
     result = copy.copy(base)
     for key, value in new.items():
@@ -40,6 +46,13 @@ def get_nested(d: Dict[str, Any], key_path: str, default: Any = None) -> Any:
 
     Returns:
         Value at the key path, or default if not found
+
+    Example:
+        >>> d = {"database": {"host": "localhost", "port": 5432}}
+        >>> get_nested(d, "database.host")
+        'localhost'
+        >>> get_nested(d, "database.timeout", default=30)
+        30
     """
     if not key_path:
         return d
@@ -63,6 +76,12 @@ def set_nested(d: Dict[str, Any], key_path: str, value: Any) -> None:
         d: Dictionary to modify (mutated in-place)
         key_path: Dot-separated key path (e.g., "database.host")
         value: Value to set
+
+    Example:
+        >>> d = {}
+        >>> set_nested(d, "database.host", "localhost")
+        >>> d
+        {'database': {'host': 'localhost'}}
     """
     keys = key_path.split(".")
     current = d

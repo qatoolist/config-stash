@@ -17,7 +17,29 @@ logger = logging.getLogger(__name__)
 
 
 class ConfigVersion:
-    """Represents a version of a configuration."""
+    """Represents a single immutable snapshot of a configuration.
+
+    Each version captures the full configuration dictionary, a timestamp,
+    and optional metadata (author, commit message, etc.).  Instances are
+    created by ``ConfigVersionManager.save_version()`` and can be
+    serialised to / deserialised from JSON with ``to_dict()`` and
+    ``from_dict()``.
+
+    Attributes:
+        version_id: Unique identifier (SHA-256 prefix) for this version.
+        config_dict: The configuration dictionary captured in this snapshot.
+        timestamp: Unix timestamp when the version was created.
+        metadata: Arbitrary metadata dict (e.g., author, change description).
+
+    Example:
+        >>> version = ConfigVersion(
+        ...     version_id="abc123",
+        ...     config_dict={"database": {"host": "localhost"}},
+        ...     metadata={"author": "deploy-bot"},
+        ... )
+        >>> version.to_dict()["version_id"]
+        'abc123'
+    """
 
     def __init__(
         self,
@@ -72,7 +94,29 @@ class ConfigVersion:
 
 
 class ConfigVersionManager:
-    """Manages configuration versions and history."""
+    """Manages configuration versions and history.
+
+    Provides save, retrieve, list, rollback, and diff operations over a
+    series of ``ConfigVersion`` snapshots.  Versions are persisted as
+    individual JSON files under ``storage_path`` and are also held in an
+    in-memory cache for fast access.  Oldest versions are automatically
+    evicted when ``max_versions`` is exceeded.
+
+    Use this class when you need an audit trail of configuration changes
+    or the ability to roll back to a known-good configuration.
+
+    Attributes:
+        storage_path: ``pathlib.Path`` directory where version JSON files
+            are stored.
+        max_versions: Maximum number of versions retained before eviction.
+
+    Example:
+        >>> manager = ConfigVersionManager(storage_path="/tmp/cfg_versions")
+        >>> v1 = manager.save_version({"debug": False}, metadata={"author": "ci"})
+        >>> v2 = manager.save_version({"debug": True})
+        >>> manager.rollback(v1.version_id)
+        {'debug': False}
+    """
 
     DEFAULT_MAX_VERSIONS = 100
 

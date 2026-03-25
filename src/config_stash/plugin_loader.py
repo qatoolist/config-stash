@@ -2,7 +2,29 @@ from config_stash.loader_manager import LoaderManager
 
 
 def get_loader(name):
-    """Get a loader by name, trying plugins first, then built-in loaders."""
+    """Get a loader class by name, trying plugins first, then built-in loaders.
+
+    Use this function when you need to resolve a loader at runtime by its
+    short name (e.g., from a configuration file or CLI argument) rather than
+    importing the class directly.
+
+    Args:
+        name: Short name of the loader.  Built-in names are ``"yaml"``,
+            ``"json"``, ``"toml"``, ``"env"``, ``"envfile"``, and ``"ini"``.
+            Plugin-registered names are checked first.
+
+    Returns:
+        The loader **class** (not an instance).  You must instantiate it
+        yourself, passing the appropriate source path or arguments.
+
+    Raises:
+        ValueError: If no built-in or plugin loader matches ``name``.
+
+    Example:
+        >>> LoaderClass = get_loader("yaml")
+        >>> loader = LoaderClass("config.yaml")
+        >>> data = loader.load()
+    """
     # Try plugins first
     loaders = LoaderManager.load_plugins()
     if name in loaders:

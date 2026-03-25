@@ -1,3 +1,26 @@
+"""Configuration reader for loading config-stash defaults from pyproject.toml.
+
+This module reads the ``[tool.config_stash]`` section of ``pyproject.toml`` to
+discover project-level defaults such as custom loader classes, the default
+environment name, default configuration files, and feature flags like dynamic
+reloading.
+
+The lookup order for ``pyproject.toml`` is:
+
+1. Current working directory
+2. The config-stash package installation directory
+3. ``~/.config/config-stash/``
+
+Use ``get_default_loaders()`` to retrieve custom loader class mappings and
+``get_default_settings()`` to retrieve general application defaults.
+
+Example:
+    >>> from config_stash.config_reader import get_default_settings
+    >>> settings = get_default_settings()
+    >>> settings["default_environment"]
+    'development'
+"""
+
 import importlib
 import logging
 from pathlib import Path
@@ -42,6 +65,34 @@ def read_pyproject_config() -> Dict[str, Any]:
 
 
 def get_default_loaders():
+    """Load custom loader class mappings from pyproject.toml.
+
+    Reads the ``[tool.config_stash.loaders]`` table and dynamically imports
+    each loader class specified there.  Each entry should map a short name to
+    a fully qualified ``module_path:ClassName`` string.
+
+    Returns:
+        A dictionary mapping loader names (strings) to their imported Python
+        classes.  Returns an empty dictionary if no loaders are configured.
+
+    Raises:
+        ModuleNotFoundError: If a module referenced in the loader definition
+            cannot be imported.
+        AttributeError: If the class name does not exist in the specified
+            module.
+        ValueError: If a loader path string does not contain a ``:``
+            separator.
+
+    Example:
+        Given the following ``pyproject.toml`` snippet::
+
+            [tool.config_stash.loaders]
+            consul = "my_plugins.consul_loader:ConsulLoader"
+
+        >>> loaders = get_default_loaders()
+        >>> loaders
+        {'consul': <class 'my_plugins.consul_loader.ConsulLoader'>}
+    """
     config = read_pyproject_config()
     loader_definitions = config.get("loaders", {})
     loaders = {}
@@ -53,6 +104,31 @@ def get_default_loaders():
 
 
 def get_default_settings():
+    """Retrieve default application settings from pyproject.toml.
+
+    Reads the ``[tool.config_stash]`` section and extracts commonly used
+    settings, falling back to sensible defaults when a setting is absent.
+
+    The returned dictionary always contains the following keys:
+
+    * ``default_environment`` -- The environment name (default ``"development"``).
+    * ``default_files`` -- A list of configuration file paths to load by
+      default (default ``[]``).
+    * ``default_prefix`` -- The environment-variable prefix used by the
+      environment loader (default ``"PREFIX"``).
+    * ``dynamic_reloading`` -- Whether to watch for file changes and reload
+      automatically (default ``False``).
+
+    Returns:
+        A dictionary of setting names to their values.
+
+    Example:
+        >>> settings = get_default_settings()
+        >>> settings["default_environment"]
+        'development'
+        >>> settings["dynamic_reloading"]
+        False
+    """
     config = read_pyproject_config()
     settings = {
         "default_environment": config.get("default_environment", "development"),
