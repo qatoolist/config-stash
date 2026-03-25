@@ -454,23 +454,67 @@ config-stash load production \
 
 ## Examples
 
-We provide comprehensive examples for all major features:
+We provide comprehensive, runnable examples for every feature. Each file is self-contained — creates temp files, demonstrates the feature, and cleans up.
 
-| Example | Description | File |
-|---------|-------------|------|
-| **Basic Usage** | Getting started with Config-Stash | [examples/basic_usage.py](examples/basic_usage.py) |
-| **Introspection API** | Query and explore configuration | [examples/introspection_api.py](examples/introspection_api.py) |
-| **Validation** | Schema validation with Pydantic and JSON Schema | [examples/validation_example.py](examples/validation_example.py) |
-| **Async Support** | Async/await patterns | [examples/async_example.py](examples/async_example.py) |
-| **Secret Stores** | AWS, Azure, GCP, Vault integration | [examples/secret_store_example.py](examples/secret_store_example.py) |
-| **Advanced Features** | Versioning, diff, observability, composition | [examples/advanced_features.py](examples/advanced_features.py) |
-| **Working Demo** | Complete end-to-end example | [examples/working_demo.py](examples/working_demo.py) |
+### Quick Reference
 
-**Run an example:**
+| Feature | What You'll Learn | Example File |
+|---------|-------------------|-------------|
+| **YAML / JSON loading** | Load config from YAML and JSON files | [basic_usage.py](examples/basic_usage.py) |
+| **TOML loading** | Load config from TOML files with sections | [loaders_showcase.py](examples/loaders_showcase.py) |
+| **INI loading** | Load config from INI files, section→dict mapping | [loaders_showcase.py](examples/loaders_showcase.py) |
+| **.env file loading** | Comments, quotes, dot-notation, type coercion | [loaders_showcase.py](examples/loaders_showcase.py) |
+| **Environment variables** | `EnvironmentLoader` with prefix and nesting | [loaders_showcase.py](examples/loaders_showcase.py) |
+| **HTTP remote loading** | `HTTPLoader` with auth and headers | [loaders_showcase.py](examples/loaders_showcase.py) |
+| **Deep merge vs shallow** | How multi-source merge preserves/replaces keys | [loaders_showcase.py](examples/loaders_showcase.py) |
+| **Environment resolution** | `default` + `production` section merging | [basic_usage.py](examples/basic_usage.py) |
+| **`env_prefix` auto-override** | `Config(env_prefix="MYAPP")` env var overrides | [config_management.py](examples/config_management.py) |
+| **`merge_strategy`** | Per-path REPLACE/MERGE/APPEND strategies | [config_management.py](examples/config_management.py) |
+| **Config reload** | Manual `config.reload()`, incremental, dry_run | [config_management.py](examples/config_management.py) |
+| **`on_change` callbacks** | React to config changes during reload | [config_management.py](examples/config_management.py) |
+| **`freeze()`** | Make config immutable after loading | [config_management.py](examples/config_management.py) |
+| **Versioning** | Save, list, rollback config versions | [config_management.py](examples/config_management.py) |
+| **Config diff** | Compare two configs, see added/removed/modified | [config_management.py](examples/config_management.py) |
+| **Drift detection** | Detect actual vs intended config drift | [config_management.py](examples/config_management.py) |
+| **`config.layers`** | Inspect source precedence stack | [config_management.py](examples/config_management.py) |
+| **Custom hooks** | Global, key-specific, and condition hooks | [extensibility.py](examples/extensibility.py) |
+| **Custom loaders** | Extend `Loader` base class for custom sources | [extensibility.py](examples/extensibility.py) |
+| **Observability / metrics** | Access counts, reload stats, performance | [extensibility.py](examples/extensibility.py) |
+| **Event emission** | `@emitter.on("reload")` decorator pattern | [extensibility.py](examples/extensibility.py) |
+| **Composition** | `_include` and `_defaults` directives | [extensibility.py](examples/extensibility.py) |
+| **Export** | `config.export("json")`, YAML, TOML | [extensibility.py](examples/extensibility.py) |
+| **Standalone `validate()`** | Post-hoc validation with Pydantic models | [extensibility.py](examples/extensibility.py) |
+| **`cs` short alias** | `from cs import Config` — shorter imports | [extensibility.py](examples/extensibility.py) |
+| **Introspection API** | `keys()`, `has()`, `get()`, `schema()`, `explain()` | [introspection_api.py](examples/introspection_api.py) |
+| **Pydantic validation** | Model-based schema validation | [validation_example.py](examples/validation_example.py) |
+| **JSON Schema validation** | Dictionary schema with defaults | [validation_example.py](examples/validation_example.py) |
+| **Secret stores** | DictSecretStore, EnvSecretStore, MultiSecretStore | [secret_store_example.py](examples/secret_store_example.py) |
+| **Vault authentication** | OIDC, LDAP, Kerberos, K8s, AWS, JWT, AppRole | [vault_auth_examples.py](examples/vault_auth_examples.py) |
+| **Async config** | `AsyncConfig`, `AsyncYamlLoader`, async reload | [async_example.py](examples/async_example.py) |
+| **ConfigBuilder** | Fluent builder pattern | [basic_usage.py](examples/basic_usage.py) |
+| **End-to-end demo** | Complete working application | [working_demo.py](examples/working_demo.py) |
+
+### Example Files
+
+| File | Focus Area | Examples |
+|------|-----------|---------|
+| [loaders_showcase.py](examples/loaders_showcase.py) | **All loader types** | TOML, INI, .env, env vars, HTTP, deep/shallow merge |
+| [config_management.py](examples/config_management.py) | **Config lifecycle** | Reload, freeze, versioning, diff, drift, callbacks, layers |
+| [extensibility.py](examples/extensibility.py) | **Customization** | Hooks, custom loaders, observability, events, composition, export |
+| [basic_usage.py](examples/basic_usage.py) | **Getting started** | YAML/JSON, env resolution, ConfigBuilder |
+| [introspection_api.py](examples/introspection_api.py) | **Querying config** | keys, has, get, schema, explain, set |
+| [validation_example.py](examples/validation_example.py) | **Validation** | Pydantic models, JSON Schema, defaults |
+| [secret_store_example.py](examples/secret_store_example.py) | **Secrets** | Multiple providers, fallback chains, caching |
+| [vault_auth_examples.py](examples/vault_auth_examples.py) | **Vault auth** | 10+ authentication methods |
+| [async_example.py](examples/async_example.py) | **Async support** | Async loading, parallel sources, async validation |
+| [working_demo.py](examples/working_demo.py) | **End-to-end** | Complete real-world application |
+
+**Run any example:**
 ```bash
-python examples/basic_usage.py
-python examples/introspection_api.py
-python examples/async_example.py
+python examples/loaders_showcase.py      # All loader types
+python examples/config_management.py     # Reload, freeze, versioning, diff
+python examples/extensibility.py         # Hooks, custom loaders, events
+python examples/basic_usage.py           # Getting started
 ```
 
 ---
