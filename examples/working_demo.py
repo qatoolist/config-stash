@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# pyright: basic
 """Working demonstration of Config-Stash core features."""
 
 import json

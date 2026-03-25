@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# pyright: reportPossiblyUnboundVariable=false, reportCallIssue=false
+# pyright: basic
 """
 Basic Usage Examples for Config-Stash
 
@@ -192,8 +192,7 @@ database:
         config = (ConfigBuilder()
                   .with_env("production")
                   .add_loader(YamlLoader(config_file))
-                  .enable_deep_merge(True)
-                  .enable_debug_mode(False)
+                  .enable_deep_merge()
                   .build())
 
         print(f"Database host: {config.database.host}")

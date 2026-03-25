@@ -1,3 +1,4 @@
+# pyright: basic
 """Comprehensive example of secret store integration with Config-Stash.
 
 This example demonstrates how to integrate various secret stores (AWS Secrets Manager,
