@@ -4,13 +4,25 @@ Handles loading configs from sources, tracking sources, merging,
 incremental reload, file watching, extending, and hook registration.
 """
 
+from __future__ import annotations
+
 import logging
 import os
+import threading
 import time
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple
 
 if TYPE_CHECKING:
+    from config_stash.config_composition import ConfigComposer
+    from config_stash.config_extender import ConfigExtender
+    from config_stash.config_watcher import ConfigFileWatcher
+    from config_stash.enhanced_source_tracker import EnhancedSourceTracker
+    from config_stash.file_tracker import FileTracker
+    from config_stash.hook_processor import HookProcessor
+    from config_stash.loader_manager import LoaderManager
     from config_stash.loaders.loader import Loader
+    from config_stash.merge_strategies import AdvancedConfigMerger
+    from config_stash.observability import ConfigEventEmitter, ConfigObserver
 
 from config_stash.config_merger import ConfigMerger
 from config_stash.enhanced_source_tracker import SourceInfo
@@ -21,6 +33,31 @@ logger = logging.getLogger(__name__)
 
 class ConfigLoading:
     """Mixin providing config loading, merging, reloading, and hooks."""
+
+    # Declared by Config.__init__ — available via mixin composition
+    loader_manager: LoaderManager
+    file_tracker: FileTracker
+    _enable_composition: bool
+    config_composer: ConfigComposer
+    env: Optional[str]
+    enhanced_source_tracker: EnhancedSourceTracker
+    configs: List[Tuple[Dict[str, Any], str]]
+    merged_config: Dict[str, Any]
+    env_config: Dict[str, Any]
+    _advanced_merger: Optional[AdvancedConfigMerger]
+    deep_merge: bool
+    _lock: threading.RLock
+    _frozen: bool
+    observer: Optional[ConfigObserver]
+    event_emitter: Optional[ConfigEventEmitter]
+    dynamic_reloading: Optional[bool]
+    file_watcher: ConfigFileWatcher
+    config_extender: ConfigExtender
+    hook_processor: HookProcessor
+    validate_on_load: bool
+    _schema: Optional[Any]
+    _validated_model: Optional[Any]
+    ide_stub_path: Optional[str]
 
     def _get_changed_loaders(self) -> Optional[List["Loader"]]:
         """Get list of loaders for files that have changed.

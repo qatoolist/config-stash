@@ -3,14 +3,24 @@
 Provides schema validation using Pydantic models or JSON Schema dictionaries.
 """
 
+from __future__ import annotations
+
 import logging
-from typing import Any, Optional
+from typing import Any, Dict, Optional
 
 logger = logging.getLogger(__name__)
 
 
 class ConfigValidation:
     """Mixin providing schema validation capabilities for Config."""
+
+    # Declared by Config.__init__ — available via mixin composition
+    _schema: Optional[Any]
+    env_config: Dict[str, Any]
+    merged_config: Dict[str, Any]
+    _validated_model: Optional[Any]
+    strict_validation: bool
+    validate_on_load: bool
 
     def _validate_config(self) -> None:
         """Validate configuration against the provided schema.

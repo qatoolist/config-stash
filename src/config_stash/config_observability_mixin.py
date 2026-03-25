@@ -4,6 +4,8 @@ Provides metrics collection, event emission, and configuration versioning
 (save, list, rollback) capabilities.
 """
 
+from __future__ import annotations
+
 import logging
 from typing import Any, Dict, Optional
 
@@ -15,6 +17,13 @@ logger = logging.getLogger(__name__)
 
 class ConfigObservabilityMixin:
     """Mixin providing observability, events, and versioning for Config."""
+
+    # Declared by Config.__init__ — available via mixin composition
+    observer: Optional[ConfigObserver]
+    event_emitter: Optional[ConfigEventEmitter]
+    version_manager: Optional[ConfigVersionManager]
+    env_config: Dict[str, Any]
+    merged_config: Dict[str, Any]
 
     def enable_observability(self) -> ConfigObserver:
         """Enable observability and metrics collection.

@@ -5,13 +5,21 @@ viewing override history, exporting debug reports, and finding conflicts.
 All methods delegate to the EnhancedSourceTracker instance on ``self``.
 """
 
-from typing import Any, Dict, List, Optional
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from config_stash.enhanced_source_tracker import SourceInfo
+
+if TYPE_CHECKING:
+    from config_stash.enhanced_source_tracker import EnhancedSourceTracker
 
 
 class ConfigDebug:
     """Mixin providing debug and source-tracking capabilities for Config."""
+
+    # Declared by Config.__init__ — available via mixin composition
+    enhanced_source_tracker: EnhancedSourceTracker
 
     def get_source_info(self, key: str) -> Optional[SourceInfo]:
         """Get detailed source information for a configuration key.

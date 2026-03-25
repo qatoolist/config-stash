@@ -5,7 +5,10 @@ Provides methods for reading (get, keys, has), writing (set), querying
 callbacks (on_change).
 """
 
+from __future__ import annotations
+
 import logging
+import threading
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional
 
 from config_stash.config_diff import ConfigDiff, ConfigDiffer, ConfigDriftDetector
@@ -19,12 +22,28 @@ from config_stash.exceptions import ConfigNotFoundError
 
 if TYPE_CHECKING:
     from config_stash.config import Config
+    from config_stash.hook_processor import HookProcessor
+    from config_stash.loader_manager import LoaderManager
+    from config_stash.observability import ConfigEventEmitter, ConfigObserver
 
 logger = logging.getLogger(__name__)
 
 
 class ConfigAccess:
     """Mixin providing read, write, query, diff, and callback capabilities."""
+
+    # Declared by Config.__init__ — available via mixin composition
+    env_config: Dict[str, Any]
+    merged_config: Dict[str, Any]
+    hook_processor: HookProcessor
+    _validated_model: Optional[Any]
+    _lock: threading.RLock
+    _frozen: bool
+    observer: Optional[ConfigObserver]
+    event_emitter: Optional[ConfigEventEmitter]
+    configs: List[Any]
+    loader_manager: LoaderManager
+    _change_callbacks: List[Callable[..., Any]]
 
     def to_dict(self) -> Dict[str, Any]:
         """Export configuration as dictionary.

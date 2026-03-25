@@ -6,7 +6,7 @@ asynchronous Python applications.
 
 import asyncio
 import logging
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Sequence
 
 from config_stash.config import Config
 from config_stash.exceptions import ConfigLoadError
@@ -194,7 +194,7 @@ class AsyncConfig:
     def __init__(
         self,
         env: Optional[str] = None,
-        loaders: Optional[List[AsyncLoader]] = None,
+        loaders: Optional[Sequence[AsyncLoader]] = None,
         use_env_expander: bool = True,
         use_type_casting: bool = True,
         debug_mode: bool = False,
@@ -226,7 +226,7 @@ class AsyncConfig:
     async def create(
         cls,
         env: Optional[str] = None,
-        loaders: Optional[List[AsyncLoader]] = None,
+        loaders: Optional[Sequence[AsyncLoader]] = None,
         **kwargs: Any,
     ) -> "AsyncConfig":
         """Create and initialize AsyncConfig asynchronously.

@@ -14,7 +14,7 @@ Mixins:
 import logging
 import os
 import threading
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Sequence
 
 if TYPE_CHECKING:
     from config_stash.config_builder import ConfigBuilder
@@ -69,7 +69,7 @@ class Config(
     def __init__(
         self,
         env: Optional[str] = None,
-        loaders: Optional[List["Loader"]] = None,
+        loaders: Optional[Sequence["Loader"]] = None,
         dynamic_reloading: Optional[bool] = None,
         use_env_expander: bool = True,
         use_type_casting: bool = True,
