@@ -7,7 +7,10 @@ incremental reload, file watching, extending, and hook registration.
 import logging
 import os
 import time
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple
+
+if TYPE_CHECKING:
+    from config_stash.loaders.loader import Loader
 
 from config_stash.config_merger import ConfigMerger
 from config_stash.enhanced_source_tracker import SourceInfo
@@ -19,7 +22,7 @@ logger = logging.getLogger(__name__)
 class ConfigLoading:
     """Mixin providing config loading, merging, reloading, and hooks."""
 
-    def _get_changed_loaders(self) -> Optional[List]:
+    def _get_changed_loaders(self) -> Optional[List["Loader"]]:
         """Get list of loaders for files that have changed.
 
         Returns:
@@ -40,7 +43,7 @@ class ConfigLoading:
         return changed_loaders if changed_loaders else None
 
     def _load_configs_with_tracking(
-        self, changed_loaders: Optional[List] = None
+        self, changed_loaders: Optional[List["Loader"]] = None
     ) -> List[Tuple[Dict[str, Any], str]]:
         """Load configurations with source tracking.
 

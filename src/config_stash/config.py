@@ -14,7 +14,11 @@ Mixins:
 import logging
 import os
 import threading
-from typing import Any, Callable, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional
+
+if TYPE_CHECKING:
+    from config_stash.config_builder import ConfigBuilder
+    from config_stash.loaders.loader import Loader
 
 from config_stash.attribute_accessor import AttributeAccessor
 from config_stash.config_access import ConfigAccess
@@ -65,7 +69,7 @@ class Config(
     def __init__(
         self,
         env: Optional[str] = None,
-        loaders: Optional[List] = None,
+        loaders: Optional[List["Loader"]] = None,
         dynamic_reloading: Optional[bool] = None,
         use_env_expander: bool = True,
         use_type_casting: bool = True,
@@ -125,7 +129,7 @@ class Config(
         self._schema = schema
         self.validate_on_load = validate_on_load
         self.strict_validation = strict_validation
-        self._change_callbacks: List[Callable] = []
+        self._change_callbacks: List[Callable[..., Any]] = []
         self._validated_model: Optional[Any] = None
         self._enable_composition: bool = True
         self._lock = threading.RLock()
@@ -244,7 +248,7 @@ class Config(
                 "if you need to change configuration."
             )
 
-    def _load_default_files(self) -> List:
+    def _load_default_files(self) -> List["Loader"]:
         """Load default configuration files from pyproject.toml settings."""
         loaders = []
         default_files = get_default_settings()["default_files"]

@@ -19,6 +19,8 @@ Example:
     'hello'
 """
 
+from typing import Any
+
 from config_stash.utils.type_coercion import parse_scalar_value
 
 
@@ -40,7 +42,7 @@ class TypeCasting:
     """
 
     @staticmethod
-    def cast(value):
+    def cast(value: Any) -> Any:
         """Attempt to convert a string value to its native Python type.
 
         Delegates to ``parse_scalar_value`` for the actual parsing logic.
@@ -68,7 +70,7 @@ class TypeCasting:
         return value
 
     @staticmethod
-    def hook(value):
+    def hook(value: Any) -> Any:
         """Hook entry point for the config-stash hook processor.
 
         This method serves as the standard hook interface expected by the
