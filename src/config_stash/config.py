@@ -62,6 +62,9 @@ class Config:
         ide_stub_path: Optional[str] = None,
         debug_mode: bool = False,
         deep_merge: bool = True,
+        merge_strategy: Optional[Any] = None,
+        merge_strategy_map: Optional[Dict[str, Any]] = None,
+        env_prefix: Optional[str] = None,
         secret_resolver: Optional[Any] = None,
         schema: Optional[Any] = None,
         validate_on_load: bool = False,
@@ -143,9 +146,28 @@ class Config:
         self._validated_model: Optional[Any] = None
         self._enable_composition: bool = True  # Enable composition by default
         self._lock = threading.RLock()  # Thread safety for reload/set
+        self._frozen: bool = False
+
+        # Advanced merge strategy support
+        self._merge_strategy = merge_strategy
+        self._merge_strategy_map = merge_strategy_map or {}
+        self._advanced_merger = None
+        if merge_strategy is not None:
+            from config_stash.merge_strategies import AdvancedConfigMerger
+
+            self._advanced_merger = AdvancedConfigMerger(merge_strategy)
+            for path, strategy in self._merge_strategy_map.items():
+                self._advanced_merger.set_strategy(path, strategy)
 
         # Use default loaders only if loaders is None, not if it's an empty list
         final_loaders = loaders if loaders is not None else self._load_default_files()
+
+        # Auto-add EnvironmentLoader if env_prefix specified
+        if env_prefix:
+            from config_stash.loaders.environment_loader import EnvironmentLoader
+
+            final_loaders = list(final_loaders) + [EnvironmentLoader(env_prefix)]
+
         self.loader_manager = LoaderManager(final_loaders)
         self.config_loader = ConfigLoader(self.loader_manager.loaders)
         self.config_composer = ConfigComposer(
@@ -378,9 +400,14 @@ class Config:
             Merged configuration dictionary
         """
         # Tracking is already done in _load_configs_with_tracking
-        # No need to re-track here as it would increment override counts incorrectly
-        merged = ConfigMerger.merge_configs(configs, deep_merge=self.deep_merge)
-        return merged
+        if self._advanced_merger:
+            # Use advanced merger with strategy support
+            merged: Dict[str, Any] = {}
+            for config, source in configs:
+                merged = self._advanced_merger.merge(merged, config)
+            return merged
+        else:
+            return ConfigMerger.merge_configs(configs, deep_merge=self.deep_merge)
 
     def _generate_ide_support(self) -> None:
         """Automatically generate IDE type stubs for autocomplete."""
@@ -471,6 +498,31 @@ class Config:
         self.lazy_loader.clear_cache()
         self.attribute_accessor = AttributeAccessor(self.lazy_loader, self.hook_processor)
 
+    def freeze(self) -> None:
+        """Freeze the configuration, preventing further modifications.
+
+        After calling freeze(), set() and reload() will raise RuntimeError.
+        This is useful for ensuring configuration immutability in production.
+
+        Example:
+            >>> config.freeze()
+            >>> config.set("key", "value")  # Raises RuntimeError
+        """
+        self._frozen = True
+
+    @property
+    def is_frozen(self) -> bool:
+        """Check if the configuration is frozen."""
+        return self._frozen
+
+    def _check_frozen(self) -> None:
+        """Raise if config is frozen."""
+        if self._frozen:
+            raise RuntimeError(
+                "Configuration is frozen. Call freeze() was used to prevent modifications. "
+                "Create a new Config instance if you need to change configuration."
+            )
+
     def __getattr__(self, item: str) -> Any:
         """Get configuration value using attribute-style access.
 
@@ -545,6 +597,7 @@ class Config:
         incremental: bool = True,
     ) -> None:
         """Internal reload implementation (called under lock)."""
+        self._check_frozen()
         logger.info("Reloading configuration...")
         old_config = self.env_config.copy() if self.env_config else {}
 
@@ -913,6 +966,41 @@ class Config:
 
         return info
 
+    @property
+    def layers(self) -> List[Dict[str, Any]]:
+        """Get the configuration layer stack showing source precedence.
+
+        Returns a list of layers in order of precedence (first loaded to last),
+        showing what each source contributed. Later layers override earlier ones.
+
+        Returns:
+            List of dicts with 'source', 'loader_type', and 'keys' for each layer.
+
+        Example:
+            >>> for layer in config.layers:
+            ...     print(f"{layer['source']} ({layer['loader_type']}): {len(layer['keys'])} keys")
+        """
+        result = []
+        for config_dict, source in self.configs:
+            loader_type = "unknown"
+            for loader in self.loader_manager.loaders:
+                if getattr(loader, "source", None) == source:
+                    loader_type = loader.__class__.__name__
+                    break
+
+            # Flatten keys for visibility
+            from config_stash.config_introspection import get_all_keys
+
+            flat_keys = get_all_keys(config_dict)
+
+            result.append({
+                "source": source,
+                "loader_type": loader_type,
+                "keys": flat_keys,
+                "key_count": len(flat_keys),
+            })
+        return result
+
     def diff(self, other: "Config") -> List[ConfigDiff]:
         """Compare this configuration with another configuration.
 
@@ -980,6 +1068,7 @@ class Config:
 
     def _set_internal(self, key_path: str, value: Any, override: bool = True) -> None:
         """Internal set implementation (called under lock)."""
+        self._check_frozen()
         config_dict = self.to_dict()
         keys = key_path.split(".")
         current = config_dict
