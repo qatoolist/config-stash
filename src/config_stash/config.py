@@ -250,7 +250,7 @@ class Config(
 
     def _load_default_files(self) -> List["Loader"]:
         """Load default configuration files from pyproject.toml settings."""
-        loaders = []
+        loaders: List["Loader"] = []
         default_files = get_default_settings()["default_files"]
         loader_classes = get_default_loaders()
 
