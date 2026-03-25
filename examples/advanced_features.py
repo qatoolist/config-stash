@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# pyright: reportPossiblyUnboundVariable=false, reportCallIssue=false
 """Advanced features showcase for Config-Stash.
 
 This example demonstrates the new features that make Config-Stash

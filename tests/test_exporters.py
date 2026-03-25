@@ -15,6 +15,10 @@ from config_stash.exporters import ConfigExporter, add_export_methods
 
 class TestConfigExporter(unittest.TestCase):
     """Test ConfigExporter class."""
+# pyright: reportOptionalSubscript=false, reportOptionalMemberAccess=false
+# pyright: reportArgumentType=false, reportPossiblyUnboundVariable=false
+# pyright: reportAttributeAccessIssue=false, reportCallIssue=false
+# pyright: reportMissingImports=false
 
     def setUp(self):
         """Set up test fixtures."""

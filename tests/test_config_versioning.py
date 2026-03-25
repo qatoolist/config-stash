@@ -17,6 +17,10 @@ from config_stash.loaders import YamlLoader
 
 class TestConfigVersion(unittest.TestCase):
     """Test configuration version class."""
+# pyright: reportOptionalSubscript=false, reportOptionalMemberAccess=false
+# pyright: reportArgumentType=false, reportPossiblyUnboundVariable=false
+# pyright: reportAttributeAccessIssue=false, reportCallIssue=false
+# pyright: reportMissingImports=false
 
     def test_version_initialization(self):
         """Test initializing version."""

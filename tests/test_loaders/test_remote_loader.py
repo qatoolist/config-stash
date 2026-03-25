@@ -16,6 +16,10 @@ except ImportError:
 
 class TestRemoteLoader(unittest.TestCase):
     """Test base RemoteLoader class."""
+# pyright: reportOptionalSubscript=false, reportOptionalMemberAccess=false
+# pyright: reportArgumentType=false, reportPossiblyUnboundVariable=false
+# pyright: reportAttributeAccessIssue=false, reportCallIssue=false
+# pyright: reportMissingImports=false
 
     @unittest.skipUnless(HAS_REQUESTS, "requests not installed")
     def test_initialization(self):

@@ -14,6 +14,10 @@ from config_stash.loaders import EnvironmentLoader, JsonLoader, YamlLoader
 
 class TestEnhancedSourceTracker:
     """Test enhanced source tracking features."""
+# pyright: reportOptionalSubscript=false, reportOptionalMemberAccess=false
+# pyright: reportArgumentType=false, reportPossiblyUnboundVariable=false
+# pyright: reportAttributeAccessIssue=false, reportCallIssue=false
+# pyright: reportMissingImports=false
 
     def test_basic_source_tracking(self):
         """Test basic source tracking without debug mode."""

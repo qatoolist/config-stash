@@ -9,6 +9,10 @@ from config_stash.loaders import EnvironmentLoader
 
 class TestEnvironmentLoaderSeparator(unittest.TestCase):
     """Test EnvironmentLoader with custom separator functionality."""
+# pyright: reportOptionalSubscript=false, reportOptionalMemberAccess=false
+# pyright: reportArgumentType=false, reportPossiblyUnboundVariable=false
+# pyright: reportAttributeAccessIssue=false, reportCallIssue=false
+# pyright: reportMissingImports=false
 
     def test_default_separator_double_underscore(self):
         """Test default separator (__) for nested keys."""

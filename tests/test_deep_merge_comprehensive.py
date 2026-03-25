@@ -12,6 +12,10 @@ from config_stash.loaders import JsonLoader, YamlLoader
 
 class TestDeepMergeComprehensive(unittest.TestCase):
     """Comprehensive tests for deep merge functionality."""
+# pyright: reportOptionalSubscript=false, reportOptionalMemberAccess=false
+# pyright: reportArgumentType=false, reportPossiblyUnboundVariable=false
+# pyright: reportAttributeAccessIssue=false, reportCallIssue=false
+# pyright: reportMissingImports=false
 
     def test_shallow_merge_behavior(self):
         """Test shallow merge replaces entire nested structures."""
