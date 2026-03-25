@@ -216,6 +216,8 @@ class OIDCAuth(VaultAuthMethod):
         """
         try:
             # Get credentials from provider
+            if self.credential_provider is None:
+                raise VaultAuthenticationError("No credential provider configured")
             username, password = self.credential_provider()
 
             if not username or not password:

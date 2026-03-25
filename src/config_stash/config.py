@@ -1,3 +1,4 @@
+# pyright: reportIncompatibleMethodOverride=false
 """Main Config class — assembles all mixin capabilities.
 
 This module defines the ``Config`` class which inherits from focused mixin
@@ -155,7 +156,7 @@ class Config(
 
             final_loaders = list(final_loaders) + [EnvironmentLoader(env_prefix)]
 
-        self.loader_manager = LoaderManager(final_loaders)
+        self.loader_manager = LoaderManager(list(final_loaders))
         self.config_loader = ConfigLoader(self.loader_manager.loaders)
         self.config_composer = ConfigComposer(
             base_path=os.getcwd(), loaders=self.loader_manager.loaders

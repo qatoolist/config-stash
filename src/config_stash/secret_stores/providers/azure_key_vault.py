@@ -1,4 +1,6 @@
 """Azure Key Vault secret store provider."""
+# pyright: reportPossiblyUnboundVariable=false
+# pyright: reportMissingImports=false
 
 from typing import Any, Dict, List, Optional
 

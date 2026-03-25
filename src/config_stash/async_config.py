@@ -138,7 +138,7 @@ class AsyncHTTPLoader(AsyncLoader):
             ConfigLoadError: If loading fails
         """
         try:
-            import aiohttp
+            import aiohttp  # type: ignore[import-untyped]
         except ImportError:
             raise ImportError(
                 "aiohttp is required for async HTTP loading. Install with: pip install aiohttp"
@@ -268,9 +268,10 @@ class AsyncConfig:
 
         errors = []
         for result in results:
-            if isinstance(result, Exception):
+            if isinstance(result, BaseException):
                 logger.warning(f"Failed to load configuration: {result}")
-                errors.append(result)
+                if isinstance(result, Exception):
+                    errors.append(result)
                 continue
             if result is not None:
                 configs.append(result)

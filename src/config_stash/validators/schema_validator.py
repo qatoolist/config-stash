@@ -1,4 +1,5 @@
 """JSON Schema validation for configurations."""
+# pyright: reportPossiblyUnboundVariable=false
 
 import json
 import logging

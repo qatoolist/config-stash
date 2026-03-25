@@ -7,7 +7,7 @@ Provides metrics collection, event emission, and configuration versioning
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, Optional
+from typing import Any, Callable, Dict, Optional
 
 from config_stash.config_versioning import ConfigVersion, ConfigVersionManager
 from config_stash.observability import ConfigEventEmitter, ConfigObserver
@@ -24,6 +24,10 @@ class ConfigObservabilityMixin:
     version_manager: Optional[ConfigVersionManager]
     env_config: Dict[str, Any]
     merged_config: Dict[str, Any]
+
+    # Methods from other mixins — declared for type-checker visibility
+    to_dict: Callable[[], Dict[str, Any]]
+    _rebuild_state: Callable[[], None]
 
     def enable_observability(self) -> ConfigObserver:
         """Enable observability and metrics collection.

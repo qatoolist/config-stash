@@ -1,4 +1,5 @@
 """HashiCorp Vault secret store provider."""
+# pyright: reportPossiblyUnboundVariable=false
 
 from typing import Any, Dict, List, Optional
 
@@ -201,7 +202,7 @@ class HashiCorpVault(SecretStore):
         try:
             if self.kv_version == 2:
                 # KV v2 API
-                read_params = {"path": path, "mount_point": self.mount_point}
+                read_params: Dict[str, Any] = {"path": path, "mount_point": self.mount_point}
                 if version:
                     read_params["version"] = int(version)
                 read_params.update(kwargs)

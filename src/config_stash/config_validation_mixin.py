@@ -73,9 +73,9 @@ class ConfigValidation:
 
                 validation_errors = []
                 if hasattr(e, "errors"):
-                    validation_errors = list(e.errors())
+                    validation_errors = list(getattr(e, "errors")())
                 elif hasattr(e, "message"):
-                    validation_errors = [{"message": str(e.message)}]
+                    validation_errors = [{"message": str(getattr(e, "message"))}]
 
                 raise ConfigValidationError(
                     error_msg,

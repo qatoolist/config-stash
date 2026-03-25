@@ -294,7 +294,7 @@ class ConfigEventEmitter:
         """
         self._listeners: Dict[str, List[Callable]] = defaultdict(list)
 
-    def on(self, event: str, callback: Callable = None) -> Callable:
+    def on(self, event: str, callback: Optional[Callable] = None) -> Callable:
         """Register an event listener.
 
         Can be used as a decorator or called directly:

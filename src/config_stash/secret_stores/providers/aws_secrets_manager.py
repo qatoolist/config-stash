@@ -1,4 +1,6 @@
 """AWS Secrets Manager secret store provider."""
+# pyright: reportPossiblyUnboundVariable=false
+# pyright: reportMissingImports=false
 
 import json
 from typing import Any, Dict, List, Optional

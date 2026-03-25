@@ -59,6 +59,13 @@ class ConfigLoading:
     _validated_model: Optional[Any]
     ide_stub_path: Optional[str]
 
+    # Methods from other mixins — declared for type-checker visibility
+    _check_frozen: Callable[[], None]
+    _rebuild_state: Callable[[], None]
+    _validate_config: Callable[[], None]
+    _trigger_change_callbacks: Callable[..., None]
+    on_change: Callable[..., Any]
+
     def _get_changed_loaders(self) -> Optional[List["Loader"]]:
         """Get list of loaders for files that have changed.
 
@@ -305,8 +312,8 @@ class ConfigLoading:
         should_validate = (
             validate if validate is not None else self.validate_on_load
         )
+        temp_env_config = self.env_config
         if should_validate and self._schema:
-            temp_env_config = self.env_config
             self.env_config = new_env_config
             try:
                 self._validate_config()

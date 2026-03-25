@@ -81,7 +81,7 @@ class ConfigDiff:
         Returns:
             Dictionary representation of the diff
         """
-        result = {
+        result: Dict[str, Any] = {
             "key": self.key,
             "path": self.path,
             "type": self.diff_type.value,

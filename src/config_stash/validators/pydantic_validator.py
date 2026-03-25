@@ -1,4 +1,7 @@
 """Pydantic model validation for configurations."""
+# pyright: reportPossiblyUnboundVariable=false
+# pyright: reportInvalidTypeForm=false
+# pyright: reportGeneralTypeIssues=false
 
 import logging
 from typing import Any, Dict, Generic, Optional, Type, TypeVar

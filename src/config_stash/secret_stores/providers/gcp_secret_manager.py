@@ -1,4 +1,7 @@
 """Google Cloud Secret Manager secret store provider."""
+# pyright: reportPossiblyUnboundVariable=false
+# pyright: reportMissingImports=false
+# pyright: reportAttributeAccessIssue=false
 
 from typing import Any, Dict, List, Optional
 

@@ -1,4 +1,5 @@
 """Remote configuration loaders for Config-Stash."""
+# pyright: reportPossiblyUnboundVariable=false
 
 import logging
 import os

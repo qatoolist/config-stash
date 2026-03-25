@@ -45,6 +45,12 @@ class ConfigAccess:
     loader_manager: LoaderManager
     _change_callbacks: List[Callable[..., Any]]
 
+    # Methods from other mixins — declared for type-checker visibility
+    _check_frozen: Callable[[], None]
+    _rebuild_state: Callable[[], None]
+    get_source_info: Callable[..., Any]
+    get_override_history: Callable[..., Any]
+
     def to_dict(self) -> Dict[str, Any]:
         """Export configuration as dictionary.
 

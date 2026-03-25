@@ -146,7 +146,7 @@ class LoaderManager:
             eps = importlib.metadata.entry_points(group="config_stash.loaders")
         except TypeError:
             # Python < 3.10
-            eps = importlib.metadata.entry_points().get("config_stash.loaders", [])
+            eps = importlib.metadata.entry_points().get("config_stash.loaders", [])  # type: ignore[reportAttributeAccessIssue]
 
         for entry_point in eps:
             loaders[entry_point.name] = entry_point.load()
