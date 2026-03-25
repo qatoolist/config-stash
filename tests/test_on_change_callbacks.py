@@ -152,7 +152,7 @@ default:
             f.write(self.updated_config)
 
         # Reload should not raise despite callback error
-        with patch("config_stash.config.logger") as mock_logger:
+        with patch("config_stash.config_access.logger") as mock_logger:
             config.reload()
 
             # Check that error was logged
