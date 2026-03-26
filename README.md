@@ -91,6 +91,40 @@ config = Config(
 )
 ```
 
+### Type-Safe Config (North Star Feature)
+
+```python
+from pydantic import BaseModel
+from cs import Config
+from cs.loaders import YamlLoader
+
+class DatabaseConfig(BaseModel):
+    host: str
+    port: int = 5432
+    ssl: bool = False
+
+class AppConfig(BaseModel):
+    database: DatabaseConfig
+    debug: bool = False
+
+# Config[AppConfig] gives you full type safety
+config = Config[AppConfig](
+    loaders=[YamlLoader("config.yaml")],
+    schema=AppConfig,
+    validate_on_load=True,
+)
+
+# Full IDE autocomplete and mypy/pyright type checking:
+config.typed.database.host   # IDE knows: str
+config.typed.database.port   # IDE knows: int
+config.typed.database.ssl    # IDE knows: bool
+config.typed.nonexistent     # mypy error at dev time!
+```
+
+Load from any source (YAML, JSON, env vars, SSM, Vault) — access with full type safety.
+
+📖 **See [examples/typed_config.py](examples/typed_config.py)**
+
 ### With Secret Stores
 
 ```python
@@ -512,6 +546,7 @@ We provide comprehensive, runnable examples for every feature. Each file is self
 | **Vault authentication** | OIDC, LDAP, Kerberos, K8s, AWS, JWT, AppRole | [vault_auth_examples.py](examples/vault_auth_examples.py) |
 | **Async config** | `AsyncConfig`, `AsyncYamlLoader`, async reload | [async_example.py](examples/async_example.py) |
 | **ConfigBuilder** | Fluent builder pattern | [basic_usage.py](examples/basic_usage.py) |
+| **Config[T] typed access** | Full IDE autocomplete via Pydantic models | [typed_config.py](examples/typed_config.py) |
 | **End-to-end demo** | Complete working application | [working_demo.py](examples/working_demo.py) |
 
 ### Example Files
@@ -527,6 +562,7 @@ We provide comprehensive, runnable examples for every feature. Each file is self
 | [secret_store_example.py](examples/secret_store_example.py) | **Secrets** | Multiple providers, fallback chains, caching |
 | [vault_auth_examples.py](examples/vault_auth_examples.py) | **Vault auth** | 10+ authentication methods |
 | [async_example.py](examples/async_example.py) | **Async support** | Async loading, parallel sources, async validation |
+| [typed_config.py](examples/typed_config.py) | **Type safety** | Config[T], nested models, multi-source typed |
 | [working_demo.py](examples/working_demo.py) | **End-to-end** | Complete real-world application |
 
 Run any example:

@@ -15,7 +15,21 @@ Mixins:
 import logging
 import os
 import threading
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Sequence
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Dict,
+    Generic,
+    List,
+    Optional,
+    Sequence,
+    Type,
+    TypeVar,
+    overload,
+)
+
+T = TypeVar("T")
 
 if TYPE_CHECKING:
     from config_stash.config_builder import ConfigBuilder
@@ -47,6 +61,7 @@ logger = logging.getLogger(__name__)
 
 
 class Config(
+    Generic[T],
     ConfigLoading,
     ConfigAccess,
     ConfigDebug,
@@ -55,10 +70,22 @@ class Config(
 ):
     """Main configuration management class for Config-Stash.
 
-    Provides a unified interface for loading, merging, validating, and
-    accessing configuration from multiple sources with support for
-    environment-specific configs, dynamic reloading, secret resolution,
-    observability, versioning, and hook-based transformations.
+    Supports generic typing for full IDE autocomplete and mypy support
+    when used with a Pydantic model schema:
+
+        config = Config[AppConfig](
+            loaders=[YamlLoader("config.yaml")],
+            schema=AppConfig,
+            validate_on_load=True,
+        )
+        config.typed.database.host   # IDE knows this is str
+        config.typed.database.port   # IDE knows this is int
+
+    Without a type parameter, Config works as an untyped config object
+    with dynamic attribute access (backward compatible):
+
+        config = Config(loaders=[YamlLoader("config.yaml")])
+        config.database.host   # type: Any
 
     Attributes:
         env: Current environment name
@@ -215,6 +242,51 @@ class Config(
                 self.event_emitter.emit("access", item, result)
 
         return result
+
+    @property
+    def typed(self) -> T:
+        """Access configuration as a validated, fully-typed Pydantic model.
+
+        Returns the validated Pydantic model instance, giving you full IDE
+        autocomplete and mypy/pyright type checking on every attribute access.
+
+        Requires ``schema`` to be a Pydantic model class and
+        ``validate_on_load=True`` (or a prior call to ``validate()``).
+
+        Returns:
+            The validated Pydantic model instance of type ``T``.
+
+        Raises:
+            ValueError: If no schema was provided or validation hasn't run.
+
+        Example:
+            >>> from pydantic import BaseModel
+            >>> class AppConfig(BaseModel):
+            ...     database_host: str
+            ...     database_port: int = 5432
+            ...
+            >>> config = Config[AppConfig](
+            ...     loaders=[YamlLoader("config.yaml")],
+            ...     schema=AppConfig,
+            ...     validate_on_load=True,
+            ... )
+            >>> config.typed.database_host   # IDE knows: str
+            >>> config.typed.database_port   # IDE knows: int
+        """
+        if self._validated_model is None:
+            if self._schema is None:
+                raise ValueError(
+                    "No schema provided. Use Config[MyModel](schema=MyModel, "
+                    "validate_on_load=True) for typed access."
+                )
+            # Auto-validate if schema exists but validation hasn't run yet
+            self._validate_config()
+            if self._validated_model is None:
+                raise ValueError(
+                    "Validation did not produce a typed model. "
+                    "Ensure the schema is a Pydantic BaseModel class."
+                )
+        return self._validated_model
 
     def get_source(self, key: str) -> Optional[str]:
         """Get the source file for a configuration key."""
