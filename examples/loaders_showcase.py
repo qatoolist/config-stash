@@ -273,12 +273,47 @@ def example_http_remote_loading() -> None:
 
 
 # ---------------------------------------------------------------------------
-# 6. Multi-source merge (deep merge)
+# 6. AWS SSM Parameter Store loading (conceptual)
+# ---------------------------------------------------------------------------
+
+def example_ssm_loader() -> None:
+    """Show SSMLoader usage pattern. Not executed — requires AWS credentials."""
+    _header("6. AWS SSM Parameter Store Loading (conceptual)")
+
+    print(
+        "SSMLoader fetches hierarchical parameters from AWS Systems Manager\n"
+        "Parameter Store and converts paths to nested dicts.\n"
+        "It requires the 'boto3' package.\n"
+    )
+
+    print("Usage pattern:\n")
+    print("    from cs.loaders import SSMLoader\n")
+    print("    loader = SSMLoader(")
+    print('        path_prefix="/myapp/production/",')
+    print("        decrypt=True,")
+    print('        aws_region="us-west-2",')
+    print("    )")
+    print("    config = Config(")
+    print("        loaders=[loader],")
+    print("        enable_ide_support=False,")
+    print("    )")
+    print("    print(config.database.host)\n")
+    print(
+        "SSM parameters like /myapp/production/database/host are converted\n"
+        "to nested dicts: {'database': {'host': 'value'}}.\n"
+        "SecureString parameters are decrypted automatically when\n"
+        "decrypt=True (the default). String values are coerced to\n"
+        "native Python types (int, float, bool) where possible."
+    )
+
+
+# ---------------------------------------------------------------------------
+# 7. Multi-source merge (deep merge)
 # ---------------------------------------------------------------------------
 
 def example_multi_source_merge() -> None:
     """Load YAML + JSON + env vars and show deep merge preserving nested keys."""
-    _header("6. Multi-Source Merge (deep_merge=True)")
+    _header("7. Multi-Source Merge (deep_merge=True)")
 
     yaml_content = """\
 database:
@@ -354,12 +389,12 @@ app:
 
 
 # ---------------------------------------------------------------------------
-# 7. Shallow vs deep merge
+# 8. Shallow vs deep merge
 # ---------------------------------------------------------------------------
 
 def example_shallow_vs_deep_merge() -> None:
     """Show how shallow merge replaces entire sections instead of merging."""
-    _header("7. Shallow vs Deep Merge")
+    _header("8. Shallow vs Deep Merge")
 
     yaml_content = """\
 database:
@@ -433,6 +468,7 @@ def main() -> None:
         (".env file loading", example_env_file_loading),
         ("Environment variable loading", example_environment_variable_loading),
         ("HTTP remote loading (conceptual)", example_http_remote_loading),
+        ("SSM Parameter Store loading (conceptual)", example_ssm_loader),
         ("Multi-source deep merge", example_multi_source_merge),
         ("Shallow vs deep merge", example_shallow_vs_deep_merge),
     ]

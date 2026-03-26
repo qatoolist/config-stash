@@ -19,6 +19,7 @@ Environment Loaders:
 Remote Loaders:
     - HTTPLoader: Load from HTTP/HTTPS URLs
     - S3Loader: Load from AWS S3
+    - SSMLoader: Load from AWS SSM Parameter Store
     - AzureBlobLoader: Load from Azure Blob Storage
     - GCPStorageLoader: Load from Google Cloud Storage
     - IBMCloudObjectStorageLoader: Load from IBM Cloud Object Storage
@@ -48,6 +49,7 @@ from config_stash.loaders.remote_loader import (
     RemoteLoader,
     S3Loader,
 )
+from config_stash.loaders.ssm_loader import SSMLoader
 from config_stash.loaders.toml_loader import TomlLoader
 from config_stash.loaders.yaml_loader import YamlLoader
 
@@ -66,4 +68,5 @@ __all__ = [
     "GCPStorageLoader",
     "IBMCloudObjectStorageLoader",
     "GitLoader",
+    "SSMLoader",
 ]
