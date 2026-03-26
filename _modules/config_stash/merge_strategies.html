@@ -1,0 +1,370 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>config_stash.merge_strategies &mdash; Config-Stash 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=d45e8c67"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Config-Stash
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/index.html">User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/index.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contributing.html">Contributing</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Config-Stash</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">config_stash.merge_strategies</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for config_stash.merge_strategies</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Advanced merging strategies for Config-Stash.</span>
+
+<span class="sd">This module provides different merge strategies for combining configurations,</span>
+<span class="sd">allowing fine-grained control over how values are merged.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">enum</span><span class="w"> </span><span class="kn">import</span> <span class="n">Enum</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="MergeStrategy">
+<a class="viewcode-back" href="../../api/merge_strategies.html#config_stash.merge_strategies.MergeStrategy">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">MergeStrategy</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Merge strategies for configuration values.</span>
+
+<span class="sd">    This enum defines the available strategies for merging configuration</span>
+<span class="sd">    values when combining configurations from multiple sources.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        REPLACE: Replace the base value entirely with the new value.</span>
+<span class="sd">            Use this when you want new values to completely override existing ones.</span>
+<span class="sd">        MERGE: Deep merge nested dictionaries while preserving existing values.</span>
+<span class="sd">            Use this for nested configurations where you want to combine values.</span>
+<span class="sd">        APPEND: Append new list items to the end of existing lists.</span>
+<span class="sd">            Use this when you want to combine list values.</span>
+<span class="sd">        PREPEND: Prepend new list items to the beginning of existing lists.</span>
+<span class="sd">            Use this when new list items should have priority.</span>
+<span class="sd">        INTERSECTION: Keep only keys that exist in both configurations.</span>
+<span class="sd">            Use this to create a configuration with only common settings.</span>
+<span class="sd">        UNION: Keep all keys from both configurations, merging values for common keys.</span>
+<span class="sd">            Use this to combine all available configuration options.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; from config_stash.merge_strategies import MergeStrategy, AdvancedConfigMerger</span>
+<span class="sd">        &gt;&gt;&gt; merger = AdvancedConfigMerger(MergeStrategy.MERGE)</span>
+<span class="sd">        &gt;&gt;&gt; merger.set_strategy(&quot;database&quot;, MergeStrategy.REPLACE)</span>
+<span class="sd">        &gt;&gt;&gt; result = merger.merge(base_config, override_config)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">REPLACE</span> <span class="o">=</span> <span class="s2">&quot;replace&quot;</span>  <span class="c1"># Replace base value with new value</span>
+    <span class="n">MERGE</span> <span class="o">=</span> <span class="s2">&quot;merge&quot;</span>  <span class="c1"># Deep merge nested dictionaries</span>
+    <span class="n">APPEND</span> <span class="o">=</span> <span class="s2">&quot;append&quot;</span>  <span class="c1"># Append to lists</span>
+    <span class="n">PREPEND</span> <span class="o">=</span> <span class="s2">&quot;prepend&quot;</span>  <span class="c1"># Prepend to lists</span>
+    <span class="n">INTERSECTION</span> <span class="o">=</span> <span class="s2">&quot;intersection&quot;</span>  <span class="c1"># Keep only common keys</span>
+    <span class="n">UNION</span> <span class="o">=</span> <span class="s2">&quot;union&quot;</span>  <span class="c1"># Keep all keys from both configs</span></div>
+
+
+
+<div class="viewcode-block" id="AdvancedConfigMerger">
+<a class="viewcode-back" href="../../api/merge_strategies.html#config_stash.merge_strategies.AdvancedConfigMerger">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">AdvancedConfigMerger</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Advanced configuration merger with strategy support.</span>
+
+<span class="sd">    This class provides configurable merge strategies for combining</span>
+<span class="sd">    configurations with fine-grained control over merge behavior.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="AdvancedConfigMerger.__init__">
+<a class="viewcode-back" href="../../api/merge_strategies.html#config_stash.merge_strategies.AdvancedConfigMerger.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">default_strategy</span><span class="p">:</span> <span class="n">MergeStrategy</span> <span class="o">=</span> <span class="n">MergeStrategy</span><span class="o">.</span><span class="n">MERGE</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the advanced config merger.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            default_strategy: Default merge strategy to use</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">default_strategy</span> <span class="o">=</span> <span class="n">default_strategy</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">strategy_map</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">MergeStrategy</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span></div>
+
+
+<div class="viewcode-block" id="AdvancedConfigMerger.set_strategy">
+<a class="viewcode-back" href="../../api/merge_strategies.html#config_stash.merge_strategies.AdvancedConfigMerger.set_strategy">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_strategy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">strategy</span><span class="p">:</span> <span class="n">MergeStrategy</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set merge strategy for a specific key path.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            key_path: Dot-separated key path (e.g., &quot;database&quot;, &quot;app.debug&quot;)</span>
+<span class="sd">            strategy: Merge strategy to use for this key</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; merger = AdvancedConfigMerger()</span>
+<span class="sd">            &gt;&gt;&gt; merger.set_strategy(&quot;database&quot;, MergeStrategy.REPLACE)</span>
+<span class="sd">            &gt;&gt;&gt; merger.set_strategy(&quot;app.debug&quot;, MergeStrategy.REPLACE)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">strategy_map</span><span class="p">[</span><span class="n">key_path</span><span class="p">]</span> <span class="o">=</span> <span class="n">strategy</span></div>
+
+
+<div class="viewcode-block" id="AdvancedConfigMerger.merge">
+<a class="viewcode-back" href="../../api/merge_strategies.html#config_stash.merge_strategies.AdvancedConfigMerger.merge">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">merge</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">base</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+        <span class="n">new</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+        <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Merge two configurations using configured strategies.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            base: Base configuration dictionary</span>
+<span class="sd">            new: New configuration dictionary to merge in</span>
+<span class="sd">            path: Current path prefix (for strategy lookup)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Merged configuration dictionary</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; merger = AdvancedConfigMerger()</span>
+<span class="sd">            &gt;&gt;&gt; base = {&quot;database&quot;: {&quot;host&quot;: &quot;localhost&quot;}, &quot;app&quot;: {&quot;debug&quot;: True}}</span>
+<span class="sd">            &gt;&gt;&gt; new = {&quot;database&quot;: {&quot;port&quot;: 5432}}</span>
+<span class="sd">            &gt;&gt;&gt; result = merger.merge(base, new)</span>
+<span class="sd">            &gt;&gt;&gt; # Result: {&quot;database&quot;: {&quot;host&quot;: &quot;localhost&quot;, &quot;port&quot;: 5432}, &quot;app&quot;: {&quot;debug&quot;: True}}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Handle INTERSECTION strategy at top level - only keep common keys</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_strategy</span> <span class="o">==</span> <span class="n">MergeStrategy</span><span class="o">.</span><span class="n">INTERSECTION</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">base</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">new</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="n">common_keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">&amp;</span> <span class="nb">set</span><span class="p">(</span><span class="n">new</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+                <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">common_keys</span><span class="p">:</span>
+                    <span class="n">full_path</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">path</span> <span class="k">else</span> <span class="n">key</span>
+                    <span class="n">strategy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_strategy</span><span class="p">(</span><span class="n">full_path</span><span class="p">)</span>
+                    <span class="n">result</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apply_strategy</span><span class="p">(</span>
+                        <span class="n">base</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">new</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">strategy</span><span class="p">,</span> <span class="n">full_path</span>
+                    <span class="p">)</span>
+                <span class="k">return</span> <span class="n">result</span>
+            <span class="c1"># For non-dicts, return intersection logic</span>
+            <span class="k">return</span> <span class="n">new</span> <span class="k">if</span> <span class="n">base</span> <span class="o">==</span> <span class="n">new</span> <span class="k">else</span> <span class="p">{}</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="n">base</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">new</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">full_path</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">path</span> <span class="k">else</span> <span class="n">key</span>
+            <span class="n">strategy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_strategy</span><span class="p">(</span><span class="n">full_path</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span>
+                <span class="n">result</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apply_strategy</span><span class="p">(</span>
+                    <span class="n">result</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">value</span><span class="p">,</span> <span class="n">strategy</span><span class="p">,</span> <span class="n">full_path</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">result</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+        <span class="k">return</span> <span class="n">result</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_strategy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MergeStrategy</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get merge strategy for a key path.</span>
+
+<span class="sd">        Checks for exact match first, then checks parent paths.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            path: Dot-separated key path</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Merge strategy to use</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Check for exact match</span>
+        <span class="k">if</span> <span class="n">path</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy_map</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy_map</span><span class="p">[</span><span class="n">path</span><span class="p">]</span>
+
+        <span class="c1"># Check parent paths (most specific match)</span>
+        <span class="n">parts</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+            <span class="n">parent_path</span> <span class="o">=</span> <span class="s2">&quot;.&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">[:</span><span class="n">i</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">parent_path</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy_map</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy_map</span><span class="p">[</span><span class="n">parent_path</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_strategy</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_apply_strategy</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">base_value</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+        <span class="n">new_value</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+        <span class="n">strategy</span><span class="p">:</span> <span class="n">MergeStrategy</span><span class="p">,</span>
+        <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Apply merge strategy to two values.</span>
+
+<span class="sd">        This is an internal method that applies the specified merge strategy</span>
+<span class="sd">        to combine base_value and new_value. The strategy determines how the</span>
+<span class="sd">        values are merged (replace, deep merge, append, etc.).</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            base_value: Base value from the existing configuration</span>
+<span class="sd">            new_value: New value from the configuration being merged in</span>
+<span class="sd">            strategy: Merge strategy to apply (from MergeStrategy enum)</span>
+<span class="sd">            path: Full dot-separated key path (for nested strategy lookup and logging)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Merged value according to the specified strategy</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            - For REPLACE: Returns new_value</span>
+<span class="sd">            - For MERGE: Recursively merges dictionaries</span>
+<span class="sd">            - For APPEND/PREPEND: Combines lists</span>
+<span class="sd">            - For INTERSECTION/UNION: Applies set operations on dictionary keys</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">strategy</span> <span class="o">==</span> <span class="n">MergeStrategy</span><span class="o">.</span><span class="n">REPLACE</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">new_value</span>
+
+        <span class="k">elif</span> <span class="n">strategy</span> <span class="o">==</span> <span class="n">MergeStrategy</span><span class="o">.</span><span class="n">MERGE</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">base_value</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">new_value</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">base_value</span><span class="p">,</span> <span class="n">new_value</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Type mismatch - replace</span>
+                <span class="k">return</span> <span class="n">new_value</span>
+
+        <span class="k">elif</span> <span class="n">strategy</span> <span class="o">==</span> <span class="n">MergeStrategy</span><span class="o">.</span><span class="n">APPEND</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">base_value</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">new_value</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">base_value</span> <span class="o">+</span> <span class="n">new_value</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">base_value</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">base_value</span> <span class="o">+</span> <span class="p">[</span><span class="n">new_value</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Not a list - convert and append</span>
+                <span class="k">return</span> <span class="p">[</span><span class="n">base_value</span><span class="p">,</span> <span class="n">new_value</span><span class="p">]</span>
+
+        <span class="k">elif</span> <span class="n">strategy</span> <span class="o">==</span> <span class="n">MergeStrategy</span><span class="o">.</span><span class="n">PREPEND</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">base_value</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">new_value</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">new_value</span> <span class="o">+</span> <span class="n">base_value</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">base_value</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="k">return</span> <span class="p">[</span><span class="n">new_value</span><span class="p">]</span> <span class="o">+</span> <span class="n">base_value</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Not a list - convert and prepend</span>
+                <span class="k">return</span> <span class="p">[</span><span class="n">new_value</span><span class="p">,</span> <span class="n">base_value</span><span class="p">]</span>
+
+        <span class="k">elif</span> <span class="n">strategy</span> <span class="o">==</span> <span class="n">MergeStrategy</span><span class="o">.</span><span class="n">INTERSECTION</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">base_value</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">new_value</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="n">common_keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">base_value</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">&amp;</span> <span class="nb">set</span><span class="p">(</span><span class="n">new_value</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+                <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">common_keys</span><span class="p">:</span>
+                    <span class="n">full_path</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="n">result</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apply_strategy</span><span class="p">(</span>
+                        <span class="n">base_value</span><span class="p">[</span><span class="n">key</span><span class="p">],</span>
+                        <span class="n">new_value</span><span class="p">[</span><span class="n">key</span><span class="p">],</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_get_strategy</span><span class="p">(</span><span class="n">full_path</span><span class="p">),</span>
+                        <span class="n">full_path</span><span class="p">,</span>
+                    <span class="p">)</span>
+                <span class="k">return</span> <span class="n">result</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Not dicts - use base if values match, otherwise replace</span>
+                <span class="k">return</span> <span class="n">new_value</span> <span class="k">if</span> <span class="n">base_value</span> <span class="o">==</span> <span class="n">new_value</span> <span class="k">else</span> <span class="n">base_value</span>
+
+        <span class="k">elif</span> <span class="n">strategy</span> <span class="o">==</span> <span class="n">MergeStrategy</span><span class="o">.</span><span class="n">UNION</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">base_value</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">new_value</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="c1"># Union all keys</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="n">base_value</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+                <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">new_value</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span>
+                        <span class="n">full_path</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&quot;</span>
+                        <span class="n">result</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apply_strategy</span><span class="p">(</span>
+                            <span class="n">result</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">val</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_strategy</span><span class="p">(</span><span class="n">full_path</span><span class="p">),</span> <span class="n">full_path</span>
+                        <span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">result</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+                <span class="k">return</span> <span class="n">result</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Not dicts - use new value</span>
+                <span class="k">return</span> <span class="n">new_value</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Default: replace</span>
+            <span class="k">return</span> <span class="n">new_value</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, QAToolist.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

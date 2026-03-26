@@ -1,0 +1,177 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Overview &mdash; Config-Stash 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=d45e8c67"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Installation" href="installation.html" />
+    <link rel="prev" title="Config-Stash Documentation" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Config-Stash
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Overview</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#what-is-config-stash">What is Config-Stash?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#why-config-stash">Why Config-Stash?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#use-cases">Use Cases</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#key-concepts">Key Concepts</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/index.html">User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/index.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Config-Stash</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Overview</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/overview.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="overview">
+<h1>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h1>
+<section id="what-is-config-stash">
+<h2>What is Config-Stash?<a class="headerlink" href="#what-is-config-stash" title="Link to this heading"></a></h2>
+<p>Config-Stash is a modern, feature-rich configuration management library designed for Python applications.
+It simplifies the complexity of managing application settings across different environments while providing
+enterprise-grade capabilities for validation, security, and observability.</p>
+</section>
+<section id="why-config-stash">
+<h2>Why Config-Stash?<a class="headerlink" href="#why-config-stash" title="Link to this heading"></a></h2>
+<p>Traditional configuration management in Python often involves:
+- Manual loading from multiple sources
+- Custom validation logic
+- No type safety or IDE support
+- Difficult debugging of configuration sources
+- No built-in secret management</p>
+<p>Config-Stash solves these problems by providing:</p>
+<ul class="simple">
+<li><p><strong>Unified Interface</strong> - Single API for all configuration sources</p></li>
+<li><p><strong>Type Safety</strong> - Full type hints and validation with Pydantic/JSON Schema</p></li>
+<li><p><strong>Secret Management</strong> - Built-in integration with major secret stores</p></li>
+<li><p><strong>Developer Experience</strong> - IDE autocomplete, source tracking, debugging tools</p></li>
+<li><p><strong>Production Ready</strong> - Observability, versioning, drift detection</p></li>
+<li><p><strong>Async Support</strong> - First-class async/await support</p></li>
+</ul>
+</section>
+<section id="use-cases">
+<h2>Use Cases<a class="headerlink" href="#use-cases" title="Link to this heading"></a></h2>
+<p>Config-Stash is ideal for:</p>
+<ul class="simple">
+<li><p><strong>Web Applications</strong> - Manage environment-specific configurations</p></li>
+<li><p><strong>Microservices</strong> - Centralized configuration with multiple sources</p></li>
+<li><p><strong>Cloud Applications</strong> - Integration with AWS, Azure, GCP secret stores</p></li>
+<li><p><strong>Enterprise Applications</strong> - Complex configurations with validation</p></li>
+<li><p><strong>DevOps Tools</strong> - Configuration management for infrastructure code</p></li>
+<li><p><strong>CLI Tools</strong> - Simple yet powerful configuration loading</p></li>
+</ul>
+</section>
+<section id="key-concepts">
+<h2>Key Concepts<a class="headerlink" href="#key-concepts" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt><strong>Configuration Sources</strong></dt><dd><p>Load from files, environment variables, cloud storage, or custom loaders.</p>
+</dd>
+<dt><strong>Environment-Specific Configs</strong></dt><dd><p>Manage different configurations for development, staging, and production.</p>
+</dd>
+<dt><strong>Schema Validation</strong></dt><dd><p>Validate configurations against Pydantic models or JSON Schema.</p>
+</dd>
+<dt><strong>Secret Resolution</strong></dt><dd><p>Automatically resolve secrets from external stores using placeholders.</p>
+</dd>
+<dt><strong>Dynamic Reloading</strong></dt><dd><p>Automatically reload configurations when files change.</p>
+</dd>
+<dt><strong>Configuration Composition</strong></dt><dd><p>Include and merge configurations from multiple files.</p>
+</dd>
+<dt><strong>Observability</strong></dt><dd><p>Track configuration access patterns and changes with metrics.</p>
+</dd>
+</dl>
+<p>For more details, see the <a class="reference internal" href="user_guide/index.html"><span class="doc">User Guide</span></a> section.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Config-Stash Documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="installation.html" class="btn btn-neutral float-right" title="Installation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, QAToolist.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

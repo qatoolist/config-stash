@@ -1,0 +1,638 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>config_stash.config &mdash; Config-Stash 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=d45e8c67"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Config-Stash
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/index.html">User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/index.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contributing.html">Contributing</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Config-Stash</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">config_stash.config</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for config_stash.config</h1><div class="highlight"><pre>
+<span></span><span class="c1"># pyright: reportIncompatibleMethodOverride=false</span>
+<span class="sd">&quot;&quot;&quot;Main Config class — assembles all mixin capabilities.</span>
+
+<span class="sd">This module defines the ``Config`` class which inherits from focused mixin</span>
+<span class="sd">classes to keep the codebase modular while presenting a single public API.</span>
+
+<span class="sd">Mixins:</span>
+<span class="sd">    - ConfigLoading: load, reload, merge, file watch, hooks</span>
+<span class="sd">    - ConfigAccess: get, set, keys, has, schema, explain, diff, layers</span>
+<span class="sd">    - ConfigDebug: source tracking, debug reports, conflict detection</span>
+<span class="sd">    - ConfigObservabilityMixin: metrics, events, versioning</span>
+<span class="sd">    - ConfigValidation: Pydantic and JSON Schema validation</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">threading</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">TYPE_CHECKING</span><span class="p">,</span>
+    <span class="n">Any</span><span class="p">,</span>
+    <span class="n">Callable</span><span class="p">,</span>
+    <span class="n">Dict</span><span class="p">,</span>
+    <span class="n">Generic</span><span class="p">,</span>
+    <span class="n">List</span><span class="p">,</span>
+    <span class="n">Optional</span><span class="p">,</span>
+    <span class="n">Sequence</span><span class="p">,</span>
+    <span class="n">Type</span><span class="p">,</span>
+    <span class="n">TypeVar</span><span class="p">,</span>
+    <span class="n">overload</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">T</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;T&quot;</span><span class="p">)</span>
+
+<span class="c1"># Sentinel object to distinguish &quot;not provided&quot; from explicit False/None</span>
+<span class="n">_UNSET</span> <span class="o">=</span> <span class="nb">object</span><span class="p">()</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">config_stash.config_builder</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConfigBuilder</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">config_stash.loaders.loader</span><span class="w"> </span><span class="kn">import</span> <span class="n">Loader</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">config_stash.attribute_accessor</span><span class="w"> </span><span class="kn">import</span> <span class="n">AttributeAccessor</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">config_stash.config_access</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConfigAccess</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">config_stash.config_composition</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConfigComposer</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">config_stash.config_debug</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConfigDebug</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">config_stash.config_extender</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConfigExtender</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">config_stash.config_loader</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConfigLoader</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">config_stash.config_loading</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConfigLoading</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">config_stash.config_observability_mixin</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConfigObservabilityMixin</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">config_stash.config_reader</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_default_loaders</span><span class="p">,</span> <span class="n">get_default_settings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">config_stash.config_validation_mixin</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConfigValidation</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">config_stash.config_versioning</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConfigVersionManager</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">config_stash.config_watcher</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConfigFileWatcher</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">config_stash.enhanced_source_tracker</span><span class="w"> </span><span class="kn">import</span> <span class="n">EnhancedSourceTracker</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">config_stash.environment_handler</span><span class="w"> </span><span class="kn">import</span> <span class="n">EnvironmentHandler</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">config_stash.file_tracker</span><span class="w"> </span><span class="kn">import</span> <span class="n">FileTracker</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">config_stash.hook_processor</span><span class="w"> </span><span class="kn">import</span> <span class="n">HookProcessor</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">config_stash.hooks.env_var_expander</span><span class="w"> </span><span class="kn">import</span> <span class="n">EnvVarExpander</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">config_stash.hooks.type_casting</span><span class="w"> </span><span class="kn">import</span> <span class="n">TypeCasting</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">config_stash.loader_manager</span><span class="w"> </span><span class="kn">import</span> <span class="n">LoaderManager</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">config_stash.observability</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConfigEventEmitter</span><span class="p">,</span> <span class="n">ConfigObserver</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">config_stash.utils.lazy_loader</span><span class="w"> </span><span class="kn">import</span> <span class="n">LazyLoader</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Config">
+<a class="viewcode-back" href="../../api/config.html#config_stash.config.Config">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Config</span><span class="p">(</span>
+    <span class="n">Generic</span><span class="p">[</span><span class="n">T</span><span class="p">],</span>
+    <span class="n">ConfigLoading</span><span class="p">,</span>
+    <span class="n">ConfigAccess</span><span class="p">,</span>
+    <span class="n">ConfigDebug</span><span class="p">,</span>
+    <span class="n">ConfigObservabilityMixin</span><span class="p">,</span>
+    <span class="n">ConfigValidation</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Main configuration management class for Config-Stash.</span>
+
+<span class="sd">    Supports generic typing for full IDE autocomplete and mypy support</span>
+<span class="sd">    when used with a Pydantic model schema:</span>
+
+<span class="sd">        config = Config[AppConfig](</span>
+<span class="sd">            loaders=[YamlLoader(&quot;config.yaml&quot;)],</span>
+<span class="sd">            schema=AppConfig,</span>
+<span class="sd">            validate_on_load=True,</span>
+<span class="sd">        )</span>
+<span class="sd">        config.typed.database.host   # IDE knows this is str</span>
+<span class="sd">        config.typed.database.port   # IDE knows this is int</span>
+
+<span class="sd">    Without a type parameter, Config works as an untyped config object</span>
+<span class="sd">    with dynamic attribute access (backward compatible):</span>
+
+<span class="sd">        config = Config(loaders=[YamlLoader(&quot;config.yaml&quot;)])</span>
+<span class="sd">        config.database.host   # type: Any</span>
+
+<span class="sd">    Thread Safety:</span>
+<span class="sd">        - ``reload()`` and ``set()`` are protected by an ``RLock``, ensuring</span>
+<span class="sd">          that concurrent mutations do not corrupt internal state.</span>
+<span class="sd">        - ``__getattr__`` (read access) is safe to call concurrently from</span>
+<span class="sd">          multiple threads without external synchronisation.</span>
+<span class="sd">        - ``freeze()`` makes the config fully thread-safe by preventing all</span>
+<span class="sd">          further writes.</span>
+<span class="sd">        - File watcher callbacks run in a separate thread and are</span>
+<span class="sd">          lock-protected, so reloads triggered by file changes are serialised.</span>
+<span class="sd">        - ``HookProcessor`` uses its own ``RLock`` for thread-safe hook</span>
+<span class="sd">          registration and execution.</span>
+
+<span class="sd">    Versioning:</span>
+<span class="sd">        This library follows Semantic Versioning. Pre-1.0 releases may include</span>
+<span class="sd">        breaking changes in minor versions. Post-1.0, breaking changes will</span>
+<span class="sd">        only occur in major versions with deprecation warnings in the prior</span>
+<span class="sd">        minor release.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        env: Current environment name</span>
+<span class="sd">        dynamic_reloading: Whether file watching is enabled</span>
+<span class="sd">        merged_config: The complete merged configuration dictionary</span>
+<span class="sd">        env_config: Environment-specific configuration</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Config.__init__">
+<a class="viewcode-back" href="../../api/config.html#config_stash.config.Config.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">env</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">env_switcher</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">_UNSET</span><span class="p">,</span>
+        <span class="n">loaders</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Sequence</span><span class="p">[</span><span class="s2">&quot;Loader&quot;</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">dynamic_reloading</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">use_env_expander</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="n">_UNSET</span><span class="p">,</span>
+        <span class="n">use_type_casting</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="n">_UNSET</span><span class="p">,</span>
+        <span class="n">enable_ide_support</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="n">_UNSET</span><span class="p">,</span>
+        <span class="n">ide_stub_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">_UNSET</span><span class="p">,</span>
+        <span class="n">debug_mode</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="n">_UNSET</span><span class="p">,</span>
+        <span class="n">deep_merge</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="n">_UNSET</span><span class="p">,</span>
+        <span class="n">merge_strategy</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="n">_UNSET</span><span class="p">,</span>
+        <span class="n">merge_strategy_map</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="n">_UNSET</span><span class="p">,</span>
+        <span class="n">env_prefix</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">_UNSET</span><span class="p">,</span>
+        <span class="n">sysenv_fallback</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="n">_UNSET</span><span class="p">,</span>
+        <span class="n">secret_resolver</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">schema</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">schema_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">_UNSET</span><span class="p">,</span>
+        <span class="n">validate_on_load</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="n">_UNSET</span><span class="p">,</span>
+        <span class="n">strict_validation</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="n">_UNSET</span><span class="p">,</span>
+        <span class="n">freeze_on_load</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="n">_UNSET</span><span class="p">,</span>
+        <span class="n">on_error</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="n">_UNSET</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the Config instance.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            env: Environment name (e.g., &#39;development&#39;, &#39;production&#39;).</span>
+<span class="sd">            env_switcher: Name of an environment variable that controls the</span>
+<span class="sd">                active environment. If set, the value of that env var overrides</span>
+<span class="sd">                the ``env`` parameter. For example,</span>
+<span class="sd">                ``Config(env_switcher=&quot;APP_ENV&quot;)`` reads ``os.environ[&quot;APP_ENV&quot;]``</span>
+<span class="sd">                to determine which environment section to use.</span>
+<span class="sd">            loaders: List of configuration loaders.</span>
+<span class="sd">            dynamic_reloading: Enable file watching for config changes.</span>
+<span class="sd">            use_env_expander: Enable ``${VAR}`` expansion in values.</span>
+<span class="sd">            use_type_casting: Enable automatic type casting.</span>
+<span class="sd">            enable_ide_support: Generate IDE type stubs (default: True).</span>
+<span class="sd">            ide_stub_path: Custom path for IDE stub file.</span>
+<span class="sd">            debug_mode: Enable detailed source tracking.</span>
+<span class="sd">            deep_merge: Enable deep merging of nested config (default: True).</span>
+<span class="sd">            merge_strategy: Default ``MergeStrategy`` for combining layers.</span>
+<span class="sd">            merge_strategy_map: Per-path merge strategy overrides.</span>
+<span class="sd">            env_prefix: Auto-add ``EnvironmentLoader`` with this prefix.</span>
+<span class="sd">            sysenv_fallback: If True, keys not found in file-based config</span>
+<span class="sd">                will automatically fall back to environment variables. Uses</span>
+<span class="sd">                ``env_prefix`` if set, otherwise matches the raw key name</span>
+<span class="sd">                uppercased with dots replaced by underscores</span>
+<span class="sd">                (e.g., ``database.host`` → ``DATABASE_HOST``).</span>
+<span class="sd">            secret_resolver: ``SecretResolver`` for ``${secret:key}`` placeholders.</span>
+<span class="sd">            schema: Pydantic model or JSON Schema dict for validation.</span>
+<span class="sd">            validate_on_load: Validate immediately after loading.</span>
+<span class="sd">            strict_validation: Raise on validation failure (vs. warn).</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; from cs import Config</span>
+<span class="sd">            &gt;&gt;&gt; from cs.loaders import YamlLoader</span>
+<span class="sd">            &gt;&gt;&gt; config = Config(</span>
+<span class="sd">            ...     env=&#39;production&#39;,</span>
+<span class="sd">            ...     loaders=[YamlLoader(&#39;config.yaml&#39;)],</span>
+<span class="sd">            ... )</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">defaults</span> <span class="o">=</span> <span class="n">get_default_settings</span><span class="p">()</span>
+
+        <span class="c1"># Helper to resolve _UNSET values: explicit param wins, else config file</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">_resolve</span><span class="p">(</span><span class="n">param</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">defaults</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="k">if</span> <span class="n">param</span> <span class="ow">is</span> <span class="n">_UNSET</span> <span class="k">else</span> <span class="n">param</span>
+
+        <span class="c1"># Resolve env_switcher from config file when not explicitly provided</span>
+        <span class="n">resolved_env_switcher</span> <span class="o">=</span> <span class="n">_resolve</span><span class="p">(</span><span class="n">env_switcher</span><span class="p">,</span> <span class="s2">&quot;env_switcher&quot;</span><span class="p">)</span>
+
+        <span class="c1"># env_switcher: read environment name from an env var</span>
+        <span class="k">if</span> <span class="n">resolved_env_switcher</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">env</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                <span class="n">resolved_env_switcher</span><span class="p">,</span> <span class="n">env</span> <span class="ow">or</span> <span class="n">defaults</span><span class="p">[</span><span class="s2">&quot;default_environment&quot;</span><span class="p">]</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">env</span> <span class="o">=</span> <span class="n">env</span> <span class="ow">or</span> <span class="n">defaults</span><span class="p">[</span><span class="s2">&quot;default_environment&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dynamic_reloading</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">dynamic_reloading</span>
+            <span class="k">if</span> <span class="n">dynamic_reloading</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="k">else</span> <span class="n">defaults</span><span class="p">[</span><span class="s2">&quot;dynamic_reloading&quot;</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">use_env_expander</span> <span class="o">=</span> <span class="n">_resolve</span><span class="p">(</span><span class="n">use_env_expander</span><span class="p">,</span> <span class="s2">&quot;use_env_expander&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">use_type_casting</span> <span class="o">=</span> <span class="n">_resolve</span><span class="p">(</span><span class="n">use_type_casting</span><span class="p">,</span> <span class="s2">&quot;use_type_casting&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">debug_mode</span> <span class="o">=</span> <span class="n">_resolve</span><span class="p">(</span><span class="n">debug_mode</span><span class="p">,</span> <span class="s2">&quot;debug_mode&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">deep_merge</span> <span class="o">=</span> <span class="n">_resolve</span><span class="p">(</span><span class="n">deep_merge</span><span class="p">,</span> <span class="s2">&quot;deep_merge&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">secret_resolver</span> <span class="o">=</span> <span class="n">secret_resolver</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_schema</span> <span class="o">=</span> <span class="n">schema</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">validate_on_load</span> <span class="o">=</span> <span class="n">_resolve</span><span class="p">(</span><span class="n">validate_on_load</span><span class="p">,</span> <span class="s2">&quot;validate_on_load&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">strict_validation</span> <span class="o">=</span> <span class="n">_resolve</span><span class="p">(</span><span class="n">strict_validation</span><span class="p">,</span> <span class="s2">&quot;strict_validation&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_change_callbacks</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_validated_model</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_enable_composition</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">RLock</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_frozen</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sysenv_fallback</span> <span class="o">=</span> <span class="n">_resolve</span><span class="p">(</span><span class="n">sysenv_fallback</span><span class="p">,</span> <span class="s2">&quot;sysenv_fallback&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_env_prefix</span> <span class="o">=</span> <span class="n">_resolve</span><span class="p">(</span><span class="n">env_prefix</span><span class="p">,</span> <span class="s2">&quot;env_prefix&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Advanced merge strategy support</span>
+        <span class="n">resolved_merge_strategy</span> <span class="o">=</span> <span class="n">_resolve</span><span class="p">(</span><span class="n">merge_strategy</span><span class="p">,</span> <span class="s2">&quot;merge_strategy&quot;</span><span class="p">)</span>
+        <span class="n">resolved_merge_strategy_map</span> <span class="o">=</span> <span class="n">_resolve</span><span class="p">(</span><span class="n">merge_strategy_map</span><span class="p">,</span> <span class="s2">&quot;merge_strategy_map&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_merge_strategy</span> <span class="o">=</span> <span class="n">resolved_merge_strategy</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_merge_strategy_map</span> <span class="o">=</span> <span class="n">resolved_merge_strategy_map</span> <span class="ow">or</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_advanced_merger</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">resolved_merge_strategy</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">config_stash.merge_strategies</span><span class="w"> </span><span class="kn">import</span> <span class="n">AdvancedConfigMerger</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_advanced_merger</span> <span class="o">=</span> <span class="n">AdvancedConfigMerger</span><span class="p">(</span><span class="n">resolved_merge_strategy</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">path</span><span class="p">,</span> <span class="n">strategy</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_merge_strategy_map</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_advanced_merger</span><span class="o">.</span><span class="n">set_strategy</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">strategy</span><span class="p">)</span>
+
+        <span class="c1"># Set up loaders — priority: explicit param &gt; declarative sources &gt; default_files</span>
+        <span class="k">if</span> <span class="n">loaders</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">final_loaders</span> <span class="o">=</span> <span class="n">loaders</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">declarative_sources</span> <span class="o">=</span> <span class="n">defaults</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;sources&quot;</span><span class="p">,</span> <span class="p">[])</span>
+            <span class="k">if</span> <span class="n">declarative_sources</span><span class="p">:</span>
+                <span class="kn">from</span><span class="w"> </span><span class="nn">config_stash.source_factory</span><span class="w"> </span><span class="kn">import</span> <span class="n">create_loaders_from_config</span>
+
+                <span class="n">final_loaders</span> <span class="o">=</span> <span class="n">create_loaders_from_config</span><span class="p">(</span><span class="n">declarative_sources</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">final_loaders</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_default_files</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_env_prefix</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">config_stash.loaders.environment_loader</span><span class="w"> </span><span class="kn">import</span> <span class="n">EnvironmentLoader</span>
+
+            <span class="n">final_loaders</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">final_loaders</span><span class="p">)</span> <span class="o">+</span> <span class="p">[</span><span class="n">EnvironmentLoader</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_env_prefix</span><span class="p">)]</span>
+
+        <span class="c1"># Set up secret resolver — priority: explicit param &gt; declarative secrets</span>
+        <span class="k">if</span> <span class="n">secret_resolver</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">declarative_secrets</span> <span class="o">=</span> <span class="n">defaults</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;secrets&quot;</span><span class="p">,</span> <span class="p">{})</span>
+            <span class="k">if</span> <span class="n">declarative_secrets</span> <span class="ow">and</span> <span class="n">declarative_secrets</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;provider&quot;</span><span class="p">):</span>
+                <span class="kn">from</span><span class="w"> </span><span class="nn">config_stash.secret_factory</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+                    <span class="n">create_secret_resolver_from_config</span><span class="p">,</span>
+                <span class="p">)</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">secret_resolver</span> <span class="o">=</span> <span class="n">create_secret_resolver_from_config</span><span class="p">(</span>
+                    <span class="n">declarative_secrets</span>
+                <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">loader_manager</span> <span class="o">=</span> <span class="n">LoaderManager</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">final_loaders</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config_loader</span> <span class="o">=</span> <span class="n">ConfigLoader</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">loader_manager</span><span class="o">.</span><span class="n">loaders</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config_composer</span> <span class="o">=</span> <span class="n">ConfigComposer</span><span class="p">(</span>
+            <span class="n">base_path</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="n">loaders</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">loader_manager</span><span class="o">.</span><span class="n">loaders</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">file_tracker</span> <span class="o">=</span> <span class="n">FileTracker</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">version_manager</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ConfigVersionManager</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">observer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ConfigObserver</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">event_emitter</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ConfigEventEmitter</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">enhanced_source_tracker</span> <span class="o">=</span> <span class="n">EnhancedSourceTracker</span><span class="p">(</span><span class="n">debug_mode</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">debug_mode</span><span class="p">)</span>
+
+        <span class="c1"># Load, merge, extract environment config</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">configs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_configs_with_tracking</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">configs</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="s2">&quot;No configuration was loaded. Pass loaders=[...] to Config() &quot;</span>
+                <span class="s2">&quot;or configure &#39;sources&#39; in config-stash.yaml.&quot;</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">merged_config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_merge_with_tracking</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">configs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">env_config</span> <span class="o">=</span> <span class="n">EnvironmentHandler</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">merged_config</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">get_env_config</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_track_env_config</span><span class="p">()</span>
+
+        <span class="c1"># Hooks and derived state</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hook_processor</span> <span class="o">=</span> <span class="n">HookProcessor</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_register_default_hooks</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rebuild_state</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">observer</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">observer</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">total_keys</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+
+        <span class="c1"># File watching</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dynamic_reloading</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">file_watcher</span> <span class="o">=</span> <span class="n">ConfigFileWatcher</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">file_watcher</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">config_extender</span> <span class="o">=</span> <span class="n">ConfigExtender</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+        <span class="c1"># Schema from file (if no explicit schema provided)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_schema</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">resolved_schema_path</span> <span class="o">=</span> <span class="n">_resolve</span><span class="p">(</span><span class="n">schema_path</span><span class="p">,</span> <span class="s2">&quot;schema_path&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">resolved_schema_path</span><span class="p">:</span>
+                <span class="kn">import</span><span class="w"> </span><span class="nn">json</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">_json</span>
+                <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span> <span class="k">as</span> <span class="n">_Path</span>
+
+                <span class="n">sp</span> <span class="o">=</span> <span class="n">_Path</span><span class="p">(</span><span class="n">resolved_schema_path</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">sp</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">sp</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_schema</span> <span class="o">=</span> <span class="n">_json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+        <span class="c1"># Error handling policy</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_on_error</span> <span class="o">=</span> <span class="n">_resolve</span><span class="p">(</span><span class="n">on_error</span><span class="p">,</span> <span class="s2">&quot;on_error&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Validation</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_schema</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">validate_on_load</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_validate_config</span><span class="p">()</span>
+
+        <span class="c1"># IDE support</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">enable_ide_support</span> <span class="o">=</span> <span class="n">_resolve</span><span class="p">(</span><span class="n">enable_ide_support</span><span class="p">,</span> <span class="s2">&quot;enable_ide_support&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ide_stub_path</span> <span class="o">=</span> <span class="n">_resolve</span><span class="p">(</span><span class="n">ide_stub_path</span><span class="p">,</span> <span class="s2">&quot;ide_stub_path&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">enable_ide_support</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_generate_ide_support</span><span class="p">()</span>
+
+        <span class="c1"># Freeze after load (for production immutability)</span>
+        <span class="k">if</span> <span class="n">_resolve</span><span class="p">(</span><span class="n">freeze_on_load</span><span class="p">,</span> <span class="s2">&quot;freeze_on_load&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">freeze</span><span class="p">()</span></div>
+
+
+    <span class="c1"># -- Core methods that stay on Config directly --</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_sysenv_lookup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Look up a config key in environment variables (fallback).</span>
+
+<span class="sd">        Converts dot-separated key paths to environment variable names:</span>
+<span class="sd">        - With env_prefix: ``database.host`` → ``MYAPP_DATABASE_HOST``</span>
+<span class="sd">        - Without prefix: ``database.host`` → ``DATABASE_HOST``</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The env var value as a string, or None if not found.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">env_key</span> <span class="o">=</span> <span class="n">key_path</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="s2">&quot;_&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_env_prefix</span><span class="p">:</span>
+            <span class="n">env_key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_env_prefix</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">env_key</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">env_key</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Config.__getattr__">
+<a class="viewcode-back" href="../../api/config.html#config_stash.config.Config.__getattr__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get configuration value using attribute-style access.&quot;&quot;&quot;</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">time</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">_time</span>
+
+        <span class="n">start_time</span> <span class="o">=</span> <span class="n">_time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">observer</span> <span class="k">else</span> <span class="mf">0.0</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">attribute_accessor</span><span class="p">,</span> <span class="n">item</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">observer</span><span class="p">:</span>
+            <span class="n">access_time</span> <span class="o">=</span> <span class="n">_time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">observer</span><span class="o">.</span><span class="n">record_key_access</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">access_time</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_emitter</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">event_emitter</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="s2">&quot;access&quot;</span><span class="p">,</span> <span class="n">item</span><span class="p">,</span> <span class="n">result</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">result</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">key_count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">env_config</span> <span class="k">else</span> <span class="mi">0</span>
+        <span class="n">sources</span> <span class="o">=</span> <span class="p">[</span><span class="nb">getattr</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="s2">&quot;source&quot;</span><span class="p">,</span> <span class="n">l</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">loader_manager</span><span class="o">.</span><span class="n">loaders</span><span class="p">]</span>
+        <span class="n">frozen</span> <span class="o">=</span> <span class="s2">&quot;, frozen&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_frozen</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Config(env=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="si">!r}</span><span class="s2">, keys=</span><span class="si">{</span><span class="n">key_count</span><span class="si">}</span><span class="s2">, sources=</span><span class="si">{</span><span class="n">sources</span><span class="si">!r}{</span><span class="n">frozen</span><span class="si">}</span><span class="s2">)&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">typed</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Access configuration as a validated, fully-typed Pydantic model.</span>
+
+<span class="sd">        Returns the validated Pydantic model instance, giving you full IDE</span>
+<span class="sd">        autocomplete and mypy/pyright type checking on every attribute access.</span>
+
+<span class="sd">        Requires ``schema`` to be a Pydantic model class and</span>
+<span class="sd">        ``validate_on_load=True`` (or a prior call to ``validate()``).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The validated Pydantic model instance of type ``T``.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If no schema was provided or validation hasn&#39;t run.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; from pydantic import BaseModel</span>
+<span class="sd">            &gt;&gt;&gt; class AppConfig(BaseModel):</span>
+<span class="sd">            ...     database_host: str</span>
+<span class="sd">            ...     database_port: int = 5432</span>
+<span class="sd">            ...</span>
+<span class="sd">            &gt;&gt;&gt; config = Config[AppConfig](</span>
+<span class="sd">            ...     loaders=[YamlLoader(&quot;config.yaml&quot;)],</span>
+<span class="sd">            ...     schema=AppConfig,</span>
+<span class="sd">            ...     validate_on_load=True,</span>
+<span class="sd">            ... )</span>
+<span class="sd">            &gt;&gt;&gt; config.typed.database_host   # IDE knows: str</span>
+<span class="sd">            &gt;&gt;&gt; config.typed.database_port   # IDE knows: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_validated_model</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_schema</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;No schema provided. Use Config[MyModel](schema=MyModel, &quot;</span>
+                    <span class="s2">&quot;validate_on_load=True) for typed access.&quot;</span>
+                <span class="p">)</span>
+            <span class="c1"># Auto-validate if schema exists but validation hasn&#39;t run yet</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_validate_config</span><span class="p">()</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_validated_model</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;Validation did not produce a typed model. &quot;</span>
+                    <span class="s2">&quot;Ensure the schema is a Pydantic BaseModel class.&quot;</span>
+                <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_validated_model</span>
+
+<div class="viewcode-block" id="Config.get_source">
+<a class="viewcode-back" href="../../api/config.html#config_stash.config.Config.get_source">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_source</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the source file for a configuration key.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">enhanced_source_tracker</span><span class="o">.</span><span class="n">get_source</span><span class="p">(</span><span class="n">key</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_rebuild_state</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Rebuild lazy_loader and attribute_accessor from env_config.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lazy_loader</span> <span class="o">=</span> <span class="n">LazyLoader</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">env_config</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lazy_loader</span><span class="o">.</span><span class="n">clear_cache</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">attribute_accessor</span> <span class="o">=</span> <span class="n">AttributeAccessor</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lazy_loader</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">hook_processor</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="Config.freeze">
+<a class="viewcode-back" href="../../api/config.html#config_stash.config.Config.freeze">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">freeze</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Freeze configuration — ``set()`` and ``reload()`` will raise.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_frozen</span> <span class="o">=</span> <span class="kc">True</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_frozen</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Whether this configuration is frozen (read-only).&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_frozen</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_check_frozen</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Raise if config is frozen.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_frozen</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="s2">&quot;Configuration is frozen. Create a new Config instance &quot;</span>
+                <span class="s2">&quot;if you need to change configuration.&quot;</span>
+            <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_load_default_files</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="s2">&quot;Loader&quot;</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load default configuration files from pyproject.toml settings.&quot;&quot;&quot;</span>
+        <span class="n">loaders</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="s2">&quot;Loader&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">default_files</span> <span class="o">=</span> <span class="n">get_default_settings</span><span class="p">()[</span><span class="s2">&quot;default_files&quot;</span><span class="p">]</span>
+        <span class="n">loader_classes</span> <span class="o">=</span> <span class="n">get_default_loaders</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">default_files</span><span class="p">:</span>
+            <span class="n">ext</span> <span class="o">=</span> <span class="n">file</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">ext</span> <span class="ow">in</span> <span class="n">loader_classes</span><span class="p">:</span>
+                <span class="n">loaders</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">loader_classes</span><span class="p">[</span><span class="n">ext</span><span class="p">](</span><span class="n">file</span><span class="p">))</span>
+        <span class="n">loaders</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">loader_classes</span><span class="p">[</span><span class="s2">&quot;env&quot;</span><span class="p">](</span><span class="n">get_default_settings</span><span class="p">()[</span><span class="s2">&quot;default_prefix&quot;</span><span class="p">]))</span>
+        <span class="k">return</span> <span class="n">loaders</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_register_default_hooks</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Register default hooks (secrets, env expansion, type casting).&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">secret_resolver</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">hook_processor</span><span class="o">.</span><span class="n">register_global_hook</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">secret_resolver</span><span class="o">.</span><span class="n">hook</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_env_expander</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">hook_processor</span><span class="o">.</span><span class="n">register_global_hook</span><span class="p">(</span><span class="n">EnvVarExpander</span><span class="o">.</span><span class="n">hook</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_type_casting</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">hook_processor</span><span class="o">.</span><span class="n">register_global_hook</span><span class="p">(</span><span class="n">TypeCasting</span><span class="o">.</span><span class="n">hook</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Config.export">
+<a class="viewcode-back" href="../../api/config.html#config_stash.config.Config.export">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">export</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">format</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;json&quot;</span><span class="p">,</span> <span class="n">output_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Export configuration in specified format.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            format: Export format (&#39;json&#39;, &#39;yaml&#39;, &#39;toml&#39;)</span>
+<span class="sd">            output_path: Optional path to save exported config</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Exported configuration as string</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">config_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="nb">format</span> <span class="o">==</span> <span class="s2">&quot;json&quot;</span><span class="p">:</span>
+            <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+
+            <span class="n">output</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">config_dict</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">format</span> <span class="o">==</span> <span class="s2">&quot;yaml&quot;</span><span class="p">:</span>
+            <span class="kn">import</span><span class="w"> </span><span class="nn">yaml</span>
+
+            <span class="n">output</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">config_dict</span><span class="p">,</span> <span class="n">default_flow_style</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">format</span> <span class="o">==</span> <span class="s2">&quot;toml&quot;</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">config_stash.utils.toml_compat</span><span class="w"> </span><span class="kn">import</span> <span class="n">dumps</span> <span class="k">as</span> <span class="n">toml_dumps</span>
+
+            <span class="n">output</span> <span class="o">=</span> <span class="n">toml_dumps</span><span class="p">(</span><span class="n">config_dict</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported export format: </span><span class="si">{</span><span class="nb">format</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">output_path</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">output</span></div>
+
+
+<div class="viewcode-block" id="Config.builder">
+<a class="viewcode-back" href="../../api/config.html#config_stash.config.Config.builder">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">builder</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="s2">&quot;ConfigBuilder&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a new ConfigBuilder instance.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            New ConfigBuilder instance</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; config = Config.builder() \\</span>
+<span class="sd">            ...     .with_env(&quot;production&quot;) \\</span>
+<span class="sd">            ...     .add_loader(YamlLoader(&quot;config.yaml&quot;)) \\</span>
+<span class="sd">            ...     .build()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">config_stash.config_builder</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConfigBuilder</span>
+
+        <span class="k">return</span> <span class="n">ConfigBuilder</span><span class="p">()</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, QAToolist.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

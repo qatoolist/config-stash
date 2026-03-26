@@ -1,0 +1,435 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>config_stash.config_diff &mdash; Config-Stash 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=d45e8c67"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Config-Stash
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/index.html">User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/index.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contributing.html">Contributing</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Config-Stash</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">config_stash.config_diff</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for config_stash.config_diff</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Advanced configuration diff and drift detection for Config-Stash.</span>
+
+<span class="sd">This module provides comprehensive diff functionality and drift detection</span>
+<span class="sd">to compare configurations and detect discrepancies.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">enum</span><span class="w"> </span><span class="kn">import</span> <span class="n">Enum</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Set</span><span class="p">,</span> <span class="n">Tuple</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="DiffType">
+<a class="viewcode-back" href="../../api/config_diff.html#config_stash.config_diff.DiffType">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">DiffType</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Types of configuration differences.&quot;&quot;&quot;</span>
+
+    <span class="n">ADDED</span> <span class="o">=</span> <span class="s2">&quot;added&quot;</span>
+    <span class="n">REMOVED</span> <span class="o">=</span> <span class="s2">&quot;removed&quot;</span>
+    <span class="n">MODIFIED</span> <span class="o">=</span> <span class="s2">&quot;modified&quot;</span>
+    <span class="n">UNCHANGED</span> <span class="o">=</span> <span class="s2">&quot;unchanged&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="ConfigDiff">
+<a class="viewcode-back" href="../../api/config_diff.html#config_stash.config_diff.ConfigDiff">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ConfigDiff</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents a difference between two configurations.</span>
+
+<span class="sd">    This class encapsulates a single difference between two configuration</span>
+<span class="sd">    dictionaries, including the key, type of change, and both old and new values.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        key: The configuration key that differs (e.g., &quot;host&quot;)</span>
+<span class="sd">        diff_type: Type of difference (ADDED, REMOVED, MODIFIED, UNCHANGED)</span>
+<span class="sd">        old_value: Original value in the first configuration</span>
+<span class="sd">        new_value: New value in the second configuration</span>
+<span class="sd">        path: Full dot-separated path to the key (e.g., &quot;database.host&quot;)</span>
+<span class="sd">        nested_diffs: List of nested ConfigDiff objects for complex nested changes</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; diff = ConfigDiff(</span>
+<span class="sd">        ...     key=&quot;host&quot;,</span>
+<span class="sd">        ...     diff_type=DiffType.MODIFIED,</span>
+<span class="sd">        ...     old_value=&quot;localhost&quot;,</span>
+<span class="sd">        ...     new_value=&quot;remote&quot;,</span>
+<span class="sd">        ...     path=&quot;database.host&quot;</span>
+<span class="sd">        ... )</span>
+<span class="sd">        &gt;&gt;&gt; print(f&quot;{diff.path}: {diff.diff_type.value}&quot;)</span>
+<span class="sd">        database.host: modified</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ConfigDiff.__init__">
+<a class="viewcode-back" href="../../api/config_diff.html#config_stash.config_diff.ConfigDiff.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">diff_type</span><span class="p">:</span> <span class="n">DiffType</span><span class="p">,</span>
+        <span class="n">old_value</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">new_value</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize a configuration diff.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            key: Configuration key that differs</span>
+<span class="sd">            diff_type: Type of difference (ADDED, REMOVED, MODIFIED, UNCHANGED)</span>
+<span class="sd">            old_value: Original value in the first configuration</span>
+<span class="sd">            new_value: New value in the second configuration</span>
+<span class="sd">            path: Full dot-separated path to the key (for nested configurations)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">key</span> <span class="o">=</span> <span class="n">key</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">diff_type</span> <span class="o">=</span> <span class="n">diff_type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">old_value</span> <span class="o">=</span> <span class="n">old_value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">new_value</span> <span class="o">=</span> <span class="n">new_value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nested_diffs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="s2">&quot;ConfigDiff&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span></div>
+
+
+<div class="viewcode-block" id="ConfigDiff.__repr__">
+<a class="viewcode-back" href="../../api/config_diff.html#config_stash.config_diff.ConfigDiff.__repr__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;String representation of the diff.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;ConfigDiff(key=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">key</span><span class="si">}</span><span class="s2">, type=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">diff_type</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;path=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="si">}</span><span class="s2">)&quot;</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ConfigDiff.to_dict">
+<a class="viewcode-back" href="../../api/config_diff.html#config_stash.config_diff.ConfigDiff.to_dict">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert diff to dictionary representation.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Dictionary representation of the diff</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">result</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">key</span><span class="p">,</span>
+            <span class="s2">&quot;path&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">,</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">diff_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">diff_type</span> <span class="ow">in</span> <span class="p">(</span><span class="n">DiffType</span><span class="o">.</span><span class="n">MODIFIED</span><span class="p">,</span> <span class="n">DiffType</span><span class="o">.</span><span class="n">REMOVED</span><span class="p">):</span>
+            <span class="n">result</span><span class="p">[</span><span class="s2">&quot;old_value&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">old_value</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">diff_type</span> <span class="ow">in</span> <span class="p">(</span><span class="n">DiffType</span><span class="o">.</span><span class="n">MODIFIED</span><span class="p">,</span> <span class="n">DiffType</span><span class="o">.</span><span class="n">ADDED</span><span class="p">):</span>
+            <span class="n">result</span><span class="p">[</span><span class="s2">&quot;new_value&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">new_value</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">nested_diffs</span><span class="p">:</span>
+            <span class="n">result</span><span class="p">[</span><span class="s2">&quot;nested&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">d</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">nested_diffs</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="ConfigDiffer">
+<a class="viewcode-back" href="../../api/config_diff.html#config_stash.config_diff.ConfigDiffer">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ConfigDiffer</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Advanced configuration differ with structured diff output.</span>
+
+<span class="sd">    This class provides utilities for comparing two configurations and</span>
+<span class="sd">    generating structured diff results. It supports nested configurations</span>
+<span class="sd">    and provides detailed information about all differences.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; config1 = {&quot;database&quot;: {&quot;host&quot;: &quot;localhost&quot;, &quot;port&quot;: 5432}}</span>
+<span class="sd">        &gt;&gt;&gt; config2 = {&quot;database&quot;: {&quot;host&quot;: &quot;remote&quot;, &quot;port&quot;: 5432, &quot;ssl&quot;: True}}</span>
+<span class="sd">        &gt;&gt;&gt; diffs = ConfigDiffer.diff(config1, config2)</span>
+<span class="sd">        &gt;&gt;&gt; summary = ConfigDiffer.diff_summary(diffs)</span>
+<span class="sd">        &gt;&gt;&gt; print(f&quot;Found {summary[&#39;total&#39;]} differences&quot;)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ConfigDiffer.diff">
+<a class="viewcode-back" href="../../api/config_diff.html#config_stash.config_diff.ConfigDiffer.diff">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">diff</span><span class="p">(</span>
+        <span class="n">config1</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+        <span class="n">config2</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+        <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">ConfigDiff</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate structured diff between two configurations.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            config1: First configuration dictionary</span>
+<span class="sd">            config2: Second configuration dictionary</span>
+<span class="sd">            path: Current path prefix (for nested keys)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List of ConfigDiff objects representing all differences</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; config1 = {&quot;database&quot;: {&quot;host&quot;: &quot;localhost&quot;}}</span>
+<span class="sd">            &gt;&gt;&gt; config2 = {&quot;database&quot;: {&quot;host&quot;: &quot;remote&quot;}}</span>
+<span class="sd">            &gt;&gt;&gt; diffs = ConfigDiffer.diff(config1, config2)</span>
+<span class="sd">            &gt;&gt;&gt; diffs[0].key  # &#39;host&#39;</span>
+<span class="sd">            &gt;&gt;&gt; diffs[0].diff_type  # DiffType.MODIFIED</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">diffs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">ConfigDiff</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">all_keys</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">config1</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">|</span> <span class="nb">set</span><span class="p">(</span><span class="n">config2</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">all_keys</span><span class="p">):</span>
+            <span class="n">full_path</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">path</span> <span class="k">else</span> <span class="n">key</span>
+            <span class="n">val1</span> <span class="o">=</span> <span class="n">config1</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+            <span class="n">val2</span> <span class="o">=</span> <span class="n">config2</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">config1</span><span class="p">:</span>
+                <span class="c1"># Key added in config2</span>
+                <span class="n">diffs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="n">ConfigDiff</span><span class="p">(</span>
+                        <span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">,</span>
+                        <span class="n">diff_type</span><span class="o">=</span><span class="n">DiffType</span><span class="o">.</span><span class="n">ADDED</span><span class="p">,</span>
+                        <span class="n">new_value</span><span class="o">=</span><span class="n">val2</span><span class="p">,</span>
+                        <span class="n">path</span><span class="o">=</span><span class="n">full_path</span><span class="p">,</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+            <span class="k">elif</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">config2</span><span class="p">:</span>
+                <span class="c1"># Key removed in config2</span>
+                <span class="n">diffs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="n">ConfigDiff</span><span class="p">(</span>
+                        <span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">,</span>
+                        <span class="n">diff_type</span><span class="o">=</span><span class="n">DiffType</span><span class="o">.</span><span class="n">REMOVED</span><span class="p">,</span>
+                        <span class="n">old_value</span><span class="o">=</span><span class="n">val1</span><span class="p">,</span>
+                        <span class="n">path</span><span class="o">=</span><span class="n">full_path</span><span class="p">,</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val1</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val2</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="c1"># Both are dicts - recurse</span>
+                <span class="n">nested_diffs</span> <span class="o">=</span> <span class="n">ConfigDiffer</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">val1</span><span class="p">,</span> <span class="n">val2</span><span class="p">,</span> <span class="n">full_path</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">nested_diffs</span><span class="p">:</span>
+                    <span class="n">diff</span> <span class="o">=</span> <span class="n">ConfigDiff</span><span class="p">(</span>
+                        <span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">,</span> <span class="n">diff_type</span><span class="o">=</span><span class="n">DiffType</span><span class="o">.</span><span class="n">MODIFIED</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="n">full_path</span>
+                    <span class="p">)</span>
+                    <span class="n">diff</span><span class="o">.</span><span class="n">nested_diffs</span> <span class="o">=</span> <span class="n">nested_diffs</span>
+                    <span class="n">diffs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">diff</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">val1</span> <span class="o">!=</span> <span class="n">val2</span><span class="p">:</span>
+                <span class="c1"># Values differ</span>
+                <span class="n">diffs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="n">ConfigDiff</span><span class="p">(</span>
+                        <span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">,</span>
+                        <span class="n">diff_type</span><span class="o">=</span><span class="n">DiffType</span><span class="o">.</span><span class="n">MODIFIED</span><span class="p">,</span>
+                        <span class="n">old_value</span><span class="o">=</span><span class="n">val1</span><span class="p">,</span>
+                        <span class="n">new_value</span><span class="o">=</span><span class="n">val2</span><span class="p">,</span>
+                        <span class="n">path</span><span class="o">=</span><span class="n">full_path</span><span class="p">,</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">diffs</span></div>
+
+
+<div class="viewcode-block" id="ConfigDiffer.diff_summary">
+<a class="viewcode-back" href="../../api/config_diff.html#config_stash.config_diff.ConfigDiffer.diff_summary">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">diff_summary</span><span class="p">(</span><span class="n">diffs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">ConfigDiff</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate summary of differences.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            diffs: List of ConfigDiff objects</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Dictionary with summary statistics</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">summary</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;total&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s2">&quot;added&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s2">&quot;removed&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s2">&quot;modified&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="p">}</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">count_diffs</span><span class="p">(</span><span class="n">diff_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">ConfigDiff</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">diff</span> <span class="ow">in</span> <span class="n">diff_list</span><span class="p">:</span>
+                <span class="n">summary</span><span class="p">[</span><span class="s2">&quot;total&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">summary</span><span class="p">[</span><span class="n">diff</span><span class="o">.</span><span class="n">diff_type</span><span class="o">.</span><span class="n">value</span><span class="p">]</span> <span class="o">=</span> <span class="n">summary</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">diff</span><span class="o">.</span><span class="n">diff_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="k">if</span> <span class="n">diff</span><span class="o">.</span><span class="n">nested_diffs</span><span class="p">:</span>
+                    <span class="n">count_diffs</span><span class="p">(</span><span class="n">diff</span><span class="o">.</span><span class="n">nested_diffs</span><span class="p">)</span>
+
+        <span class="n">count_diffs</span><span class="p">(</span><span class="n">diffs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">summary</span></div>
+
+
+<div class="viewcode-block" id="ConfigDiffer.diff_to_json">
+<a class="viewcode-back" href="../../api/config_diff.html#config_stash.config_diff.ConfigDiffer.diff_to_json">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">diff_to_json</span><span class="p">(</span><span class="n">diffs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">ConfigDiff</span><span class="p">],</span> <span class="n">indent</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert diff list to JSON string.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            diffs: List of ConfigDiff objects</span>
+<span class="sd">            indent: JSON indentation level</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            JSON string representation</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">([</span><span class="n">d</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">diffs</span><span class="p">],</span> <span class="n">indent</span><span class="o">=</span><span class="n">indent</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="ConfigDriftDetector">
+<a class="viewcode-back" href="../../api/config_diff.html#config_stash.config_diff.ConfigDriftDetector">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ConfigDriftDetector</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Detects configuration drift (intended vs. actual state).</span>
+
+<span class="sd">    Configuration drift occurs when the actual configuration differs from</span>
+<span class="sd">    the intended or target configuration. This class helps identify such</span>
+<span class="sd">    discrepancies, which is useful for compliance, auditing, and troubleshooting.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        intended_config: The intended/target configuration state</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; intended = {&quot;database&quot;: {&quot;host&quot;: &quot;prod-db.example.com&quot;}}</span>
+<span class="sd">        &gt;&gt;&gt; actual = {&quot;database&quot;: {&quot;host&quot;: &quot;dev-db.example.com&quot;}}</span>
+<span class="sd">        &gt;&gt;&gt; detector = ConfigDriftDetector(intended)</span>
+<span class="sd">        &gt;&gt;&gt; drift = detector.detect_drift(actual)</span>
+<span class="sd">        &gt;&gt;&gt; if drift:</span>
+<span class="sd">        ...     print(f&quot;Configuration drift detected: {len(drift)} differences&quot;)</span>
+<span class="sd">        ...     for diff in drift:</span>
+<span class="sd">        ...         print(f&quot;  {diff.path}: expected {diff.old_value}, got {diff.new_value}&quot;)</span>
+
+<span class="sd">    See Also:</span>
+<span class="sd">        ConfigDiffer: For comparing two arbitrary configurations</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ConfigDriftDetector.__init__">
+<a class="viewcode-back" href="../../api/config_diff.html#config_stash.config_diff.ConfigDriftDetector.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">intended_config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize drift detector.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            intended_config: The intended/target configuration state</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">intended_config</span> <span class="o">=</span> <span class="n">intended_config</span></div>
+
+
+<div class="viewcode-block" id="ConfigDriftDetector.detect_drift">
+<a class="viewcode-back" href="../../api/config_diff.html#config_stash.config_diff.ConfigDriftDetector.detect_drift">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">detect_drift</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">actual_config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">ConfigDiff</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Detect drift between intended and actual configuration.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            actual_config: The actual current configuration</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List of ConfigDiff objects representing drift</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; detector = ConfigDriftDetector(intended_config)</span>
+<span class="sd">            &gt;&gt;&gt; drift = detector.detect_drift(actual_config)</span>
+<span class="sd">            &gt;&gt;&gt; if drift:</span>
+<span class="sd">            ...     print(f&quot;Configuration drift detected: {len(drift)} differences&quot;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">ConfigDiffer</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">intended_config</span><span class="p">,</span> <span class="n">actual_config</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ConfigDriftDetector.has_drift">
+<a class="viewcode-back" href="../../api/config_diff.html#config_stash.config_diff.ConfigDriftDetector.has_drift">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">has_drift</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">actual_config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if drift exists without generating full diff.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            actual_config: The actual current configuration</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            True if drift detected, False otherwise</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">detect_drift</span><span class="p">(</span><span class="n">actual_config</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">0</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, QAToolist.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

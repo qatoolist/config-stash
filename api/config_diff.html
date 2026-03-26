@@ -1,0 +1,412 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Configuration Diff &mdash; Config-Stash 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=d45e8c67"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Configuration Versioning" href="config_versioning.html" />
+    <link rel="prev" title="Async Configuration" href="async_config.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Config-Stash
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user_guide/index.html">User Guide</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="index.html#core-classes">Core Classes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#loaders">Loaders</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#secret-stores">Secret Stores</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#validators">Validators</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html#advanced-features">Advanced Features</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="async_config.html">Async Configuration</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Configuration Diff</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#config_stash.config_diff.ConfigDiff"><code class="docutils literal notranslate"><span class="pre">ConfigDiff</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#config_stash.config_diff.ConfigDiffer"><code class="docutils literal notranslate"><span class="pre">ConfigDiffer</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#config_stash.config_diff.ConfigDriftDetector"><code class="docutils literal notranslate"><span class="pre">ConfigDriftDetector</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#config_stash.config_diff.DiffType"><code class="docutils literal notranslate"><span class="pre">DiffType</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="config_versioning.html">Configuration Versioning</a></li>
+<li class="toctree-l3"><a class="reference internal" href="observability.html">Observability</a></li>
+<li class="toctree-l3"><a class="reference internal" href="merge_strategies.html">Merge Strategies</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#utilities">Utilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#cli">CLI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#exceptions">Exceptions</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Config-Stash</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">API Reference</a></li>
+      <li class="breadcrumb-item active">Configuration Diff</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/config_diff.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-config_stash.config_diff">
+<span id="configuration-diff"></span><h1>Configuration Diff<a class="headerlink" href="#module-config_stash.config_diff" title="Link to this heading"></a></h1>
+<p>Advanced configuration diff and drift detection for Config-Stash.</p>
+<p>This module provides comprehensive diff functionality and drift detection
+to compare configurations and detect discrepancies.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="config_stash.config_diff.ConfigDiff">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">config_stash.config_diff.</span></span><span class="sig-name descname"><span class="pre">ConfigDiff</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">diff_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#config_stash.config_diff.DiffType" title="config_stash.config_diff.DiffType"><span class="pre">DiffType</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">old_value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/config_stash/config_diff.html#ConfigDiff"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#config_stash.config_diff.ConfigDiff" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Represents a difference between two configurations.</p>
+<p>This class encapsulates a single difference between two configuration
+dictionaries, including the key, type of change, and both old and new values.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="config_stash.config_diff.ConfigDiff.key">
+<span class="sig-name descname"><span class="pre">key</span></span><a class="headerlink" href="#config_stash.config_diff.ConfigDiff.key" title="Link to this definition"></a></dt>
+<dd><p>The configuration key that differs (e.g., “host”)</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="config_stash.config_diff.ConfigDiff.diff_type">
+<span class="sig-name descname"><span class="pre">diff_type</span></span><a class="headerlink" href="#config_stash.config_diff.ConfigDiff.diff_type" title="Link to this definition"></a></dt>
+<dd><p>Type of difference (ADDED, REMOVED, MODIFIED, UNCHANGED)</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="config_stash.config_diff.ConfigDiff.old_value">
+<span class="sig-name descname"><span class="pre">old_value</span></span><a class="headerlink" href="#config_stash.config_diff.ConfigDiff.old_value" title="Link to this definition"></a></dt>
+<dd><p>Original value in the first configuration</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="config_stash.config_diff.ConfigDiff.new_value">
+<span class="sig-name descname"><span class="pre">new_value</span></span><a class="headerlink" href="#config_stash.config_diff.ConfigDiff.new_value" title="Link to this definition"></a></dt>
+<dd><p>New value in the second configuration</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="config_stash.config_diff.ConfigDiff.path">
+<span class="sig-name descname"><span class="pre">path</span></span><a class="headerlink" href="#config_stash.config_diff.ConfigDiff.path" title="Link to this definition"></a></dt>
+<dd><p>Full dot-separated path to the key (e.g., “database.host”)</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="config_stash.config_diff.ConfigDiff.nested_diffs">
+<span class="sig-name descname"><span class="pre">nested_diffs</span></span><a class="headerlink" href="#config_stash.config_diff.ConfigDiff.nested_diffs" title="Link to this definition"></a></dt>
+<dd><p>List of nested ConfigDiff objects for complex nested changes</p>
+</dd></dl>
+
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">diff</span> <span class="o">=</span> <span class="n">ConfigDiff</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">key</span><span class="o">=</span><span class="s2">&quot;host&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">diff_type</span><span class="o">=</span><span class="n">DiffType</span><span class="o">.</span><span class="n">MODIFIED</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">old_value</span><span class="o">=</span><span class="s2">&quot;localhost&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">new_value</span><span class="o">=</span><span class="s2">&quot;remote&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">path</span><span class="o">=</span><span class="s2">&quot;database.host&quot;</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">diff</span><span class="o">.</span><span class="n">path</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">diff</span><span class="o">.</span><span class="n">diff_type</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="go">database.host: modified</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="config_stash.config_diff.ConfigDiff.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">diff_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#config_stash.config_diff.DiffType" title="config_stash.config_diff.DiffType"><span class="pre">DiffType</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">old_value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/config_stash/config_diff.html#ConfigDiff.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#config_stash.config_diff.ConfigDiff.__init__" title="Link to this definition"></a></dt>
+<dd><p>Initialize a configuration diff.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>key</strong> – Configuration key that differs</p></li>
+<li><p><strong>diff_type</strong> – Type of difference (ADDED, REMOVED, MODIFIED, UNCHANGED)</p></li>
+<li><p><strong>old_value</strong> – Original value in the first configuration</p></li>
+<li><p><strong>new_value</strong> – New value in the second configuration</p></li>
+<li><p><strong>path</strong> – Full dot-separated path to the key (for nested configurations)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="config_stash.config_diff.ConfigDiff.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../_modules/config_stash/config_diff.html#ConfigDiff.__repr__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#config_stash.config_diff.ConfigDiff.__repr__" title="Link to this definition"></a></dt>
+<dd><p>String representation of the diff.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="config_stash.config_diff.ConfigDiff.to_dict">
+<span class="sig-name descname"><span class="pre">to_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/config_stash/config_diff.html#ConfigDiff.to_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#config_stash.config_diff.ConfigDiff.to_dict" title="Link to this definition"></a></dt>
+<dd><p>Convert diff to dictionary representation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dictionary representation of the diff</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="config_stash.config_diff.ConfigDiffer">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">config_stash.config_diff.</span></span><span class="sig-name descname"><span class="pre">ConfigDiffer</span></span><a class="reference internal" href="../_modules/config_stash/config_diff.html#ConfigDiffer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#config_stash.config_diff.ConfigDiffer" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Advanced configuration differ with structured diff output.</p>
+<p>This class provides utilities for comparing two configurations and
+generating structured diff results. It supports nested configurations
+and provides detailed information about all differences.</p>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">config1</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;database&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;host&quot;</span><span class="p">:</span> <span class="s2">&quot;localhost&quot;</span><span class="p">,</span> <span class="s2">&quot;port&quot;</span><span class="p">:</span> <span class="mi">5432</span><span class="p">}}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">config2</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;database&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;host&quot;</span><span class="p">:</span> <span class="s2">&quot;remote&quot;</span><span class="p">,</span> <span class="s2">&quot;port&quot;</span><span class="p">:</span> <span class="mi">5432</span><span class="p">,</span> <span class="s2">&quot;ssl&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">diffs</span> <span class="o">=</span> <span class="n">ConfigDiffer</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">config1</span><span class="p">,</span> <span class="n">config2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">summary</span> <span class="o">=</span> <span class="n">ConfigDiffer</span><span class="o">.</span><span class="n">diff_summary</span><span class="p">(</span><span class="n">diffs</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found </span><span class="si">{</span><span class="n">summary</span><span class="p">[</span><span class="s1">&#39;total&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> differences&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="config_stash.config_diff.ConfigDiffer.diff">
+<span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">diff</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#config_stash.config_diff.ConfigDiff" title="config_stash.config_diff.ConfigDiff"><span class="pre">ConfigDiff</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/config_stash/config_diff.html#ConfigDiffer.diff"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#config_stash.config_diff.ConfigDiffer.diff" title="Link to this definition"></a></dt>
+<dd><p>Generate structured diff between two configurations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config1</strong> – First configuration dictionary</p></li>
+<li><p><strong>config2</strong> – Second configuration dictionary</p></li>
+<li><p><strong>path</strong> – Current path prefix (for nested keys)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of ConfigDiff objects representing all differences</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">config1</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;database&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;host&quot;</span><span class="p">:</span> <span class="s2">&quot;localhost&quot;</span><span class="p">}}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">config2</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;database&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;host&quot;</span><span class="p">:</span> <span class="s2">&quot;remote&quot;</span><span class="p">}}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">diffs</span> <span class="o">=</span> <span class="n">ConfigDiffer</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">config1</span><span class="p">,</span> <span class="n">config2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">diffs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">key</span>  <span class="c1"># &#39;host&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">diffs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">diff_type</span>  <span class="c1"># DiffType.MODIFIED</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="config_stash.config_diff.ConfigDiffer.diff_summary">
+<span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">diff_summary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">diffs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#config_stash.config_diff.ConfigDiff" title="config_stash.config_diff.ConfigDiff"><span class="pre">ConfigDiff</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/config_stash/config_diff.html#ConfigDiffer.diff_summary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#config_stash.config_diff.ConfigDiffer.diff_summary" title="Link to this definition"></a></dt>
+<dd><p>Generate summary of differences.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>diffs</strong> – List of ConfigDiff objects</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary with summary statistics</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="config_stash.config_diff.ConfigDiffer.diff_to_json">
+<span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">diff_to_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">diffs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#config_stash.config_diff.ConfigDiff" title="config_stash.config_diff.ConfigDiff"><span class="pre">ConfigDiff</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../_modules/config_stash/config_diff.html#ConfigDiffer.diff_to_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#config_stash.config_diff.ConfigDiffer.diff_to_json" title="Link to this definition"></a></dt>
+<dd><p>Convert diff list to JSON string.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>diffs</strong> – List of ConfigDiff objects</p></li>
+<li><p><strong>indent</strong> – JSON indentation level</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>JSON string representation</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="config_stash.config_diff.ConfigDriftDetector">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">config_stash.config_diff.</span></span><span class="sig-name descname"><span class="pre">ConfigDriftDetector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">intended_config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/config_stash/config_diff.html#ConfigDriftDetector"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#config_stash.config_diff.ConfigDriftDetector" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Detects configuration drift (intended vs. actual state).</p>
+<p>Configuration drift occurs when the actual configuration differs from
+the intended or target configuration. This class helps identify such
+discrepancies, which is useful for compliance, auditing, and troubleshooting.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="config_stash.config_diff.ConfigDriftDetector.intended_config">
+<span class="sig-name descname"><span class="pre">intended_config</span></span><a class="headerlink" href="#config_stash.config_diff.ConfigDriftDetector.intended_config" title="Link to this definition"></a></dt>
+<dd><p>The intended/target configuration state</p>
+</dd></dl>
+
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">intended</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;database&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;host&quot;</span><span class="p">:</span> <span class="s2">&quot;prod-db.example.com&quot;</span><span class="p">}}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">actual</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;database&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;host&quot;</span><span class="p">:</span> <span class="s2">&quot;dev-db.example.com&quot;</span><span class="p">}}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">detector</span> <span class="o">=</span> <span class="n">ConfigDriftDetector</span><span class="p">(</span><span class="n">intended</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">drift</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect_drift</span><span class="p">(</span><span class="n">actual</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">if</span> <span class="n">drift</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Configuration drift detected: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">drift</span><span class="p">)</span><span class="si">}</span><span class="s2"> differences&quot;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="k">for</span> <span class="n">diff</span> <span class="ow">in</span> <span class="n">drift</span><span class="p">:</span>
+<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">diff</span><span class="o">.</span><span class="n">path</span><span class="si">}</span><span class="s2">: expected </span><span class="si">{</span><span class="n">diff</span><span class="o">.</span><span class="n">old_value</span><span class="si">}</span><span class="s2">, got </span><span class="si">{</span><span class="n">diff</span><span class="o">.</span><span class="n">new_value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p>ConfigDiffer: For comparing two arbitrary configurations</p>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="config_stash.config_diff.ConfigDriftDetector.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">intended_config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/config_stash/config_diff.html#ConfigDriftDetector.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#config_stash.config_diff.ConfigDriftDetector.__init__" title="Link to this definition"></a></dt>
+<dd><p>Initialize drift detector.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>intended_config</strong> – The intended/target configuration state</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="config_stash.config_diff.ConfigDriftDetector.detect_drift">
+<span class="sig-name descname"><span class="pre">detect_drift</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">actual_config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#config_stash.config_diff.ConfigDiff" title="config_stash.config_diff.ConfigDiff"><span class="pre">ConfigDiff</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/config_stash/config_diff.html#ConfigDriftDetector.detect_drift"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#config_stash.config_diff.ConfigDriftDetector.detect_drift" title="Link to this definition"></a></dt>
+<dd><p>Detect drift between intended and actual configuration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>actual_config</strong> – The actual current configuration</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of ConfigDiff objects representing drift</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">detector</span> <span class="o">=</span> <span class="n">ConfigDriftDetector</span><span class="p">(</span><span class="n">intended_config</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">drift</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">detect_drift</span><span class="p">(</span><span class="n">actual_config</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">if</span> <span class="n">drift</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Configuration drift detected: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">drift</span><span class="p">)</span><span class="si">}</span><span class="s2"> differences&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="config_stash.config_diff.ConfigDriftDetector.has_drift">
+<span class="sig-name descname"><span class="pre">has_drift</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">actual_config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="../_modules/config_stash/config_diff.html#ConfigDriftDetector.has_drift"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#config_stash.config_diff.ConfigDriftDetector.has_drift" title="Link to this definition"></a></dt>
+<dd><p>Check if drift exists without generating full diff.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>actual_config</strong> – The actual current configuration</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if drift detected, False otherwise</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="config_stash.config_diff.DiffType">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">config_stash.config_diff.</span></span><span class="sig-name descname"><span class="pre">DiffType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/config_stash/config_diff.html#DiffType"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#config_stash.config_diff.DiffType" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/enum.html#enum.Enum" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></a></p>
+<p>Types of configuration differences.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="config_stash.config_diff.DiffType.ADDED">
+<span class="sig-name descname"><span class="pre">ADDED</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'added'</span></span><a class="headerlink" href="#config_stash.config_diff.DiffType.ADDED" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="config_stash.config_diff.DiffType.MODIFIED">
+<span class="sig-name descname"><span class="pre">MODIFIED</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'modified'</span></span><a class="headerlink" href="#config_stash.config_diff.DiffType.MODIFIED" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="config_stash.config_diff.DiffType.REMOVED">
+<span class="sig-name descname"><span class="pre">REMOVED</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'removed'</span></span><a class="headerlink" href="#config_stash.config_diff.DiffType.REMOVED" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="config_stash.config_diff.DiffType.UNCHANGED">
+<span class="sig-name descname"><span class="pre">UNCHANGED</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'unchanged'</span></span><a class="headerlink" href="#config_stash.config_diff.DiffType.UNCHANGED" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="async_config.html" class="btn btn-neutral float-left" title="Async Configuration" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="config_versioning.html" class="btn btn-neutral float-right" title="Configuration Versioning" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, QAToolist.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

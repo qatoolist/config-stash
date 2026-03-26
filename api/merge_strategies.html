@@ -1,0 +1,264 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Merge Strategies &mdash; Config-Stash 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=d45e8c67"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Configuration Introspection" href="introspection.html" />
+    <link rel="prev" title="Observability" href="observability.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Config-Stash
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user_guide/index.html">User Guide</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="index.html#core-classes">Core Classes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#loaders">Loaders</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#secret-stores">Secret Stores</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#validators">Validators</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html#advanced-features">Advanced Features</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="async_config.html">Async Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="config_diff.html">Configuration Diff</a></li>
+<li class="toctree-l3"><a class="reference internal" href="config_versioning.html">Configuration Versioning</a></li>
+<li class="toctree-l3"><a class="reference internal" href="observability.html">Observability</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Merge Strategies</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#config_stash.merge_strategies.AdvancedConfigMerger"><code class="docutils literal notranslate"><span class="pre">AdvancedConfigMerger</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#config_stash.merge_strategies.MergeStrategy"><code class="docutils literal notranslate"><span class="pre">MergeStrategy</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#utilities">Utilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#cli">CLI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#exceptions">Exceptions</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Config-Stash</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">API Reference</a></li>
+      <li class="breadcrumb-item active">Merge Strategies</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/merge_strategies.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-config_stash.merge_strategies">
+<span id="merge-strategies"></span><h1>Merge Strategies<a class="headerlink" href="#module-config_stash.merge_strategies" title="Link to this heading"></a></h1>
+<p>Advanced merging strategies for Config-Stash.</p>
+<p>This module provides different merge strategies for combining configurations,
+allowing fine-grained control over how values are merged.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="config_stash.merge_strategies.AdvancedConfigMerger">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">config_stash.merge_strategies.</span></span><span class="sig-name descname"><span class="pre">AdvancedConfigMerger</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">default_strategy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#config_stash.merge_strategies.MergeStrategy" title="config_stash.merge_strategies.MergeStrategy"><span class="pre">MergeStrategy</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">MergeStrategy.MERGE</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/config_stash/merge_strategies.html#AdvancedConfigMerger"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#config_stash.merge_strategies.AdvancedConfigMerger" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Advanced configuration merger with strategy support.</p>
+<p>This class provides configurable merge strategies for combining
+configurations with fine-grained control over merge behavior.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="config_stash.merge_strategies.AdvancedConfigMerger.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">default_strategy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#config_stash.merge_strategies.MergeStrategy" title="config_stash.merge_strategies.MergeStrategy"><span class="pre">MergeStrategy</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">MergeStrategy.MERGE</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/config_stash/merge_strategies.html#AdvancedConfigMerger.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#config_stash.merge_strategies.AdvancedConfigMerger.__init__" title="Link to this definition"></a></dt>
+<dd><p>Initialize the advanced config merger.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>default_strategy</strong> – Default merge strategy to use</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="config_stash.merge_strategies.AdvancedConfigMerger.merge">
+<span class="sig-name descname"><span class="pre">merge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">base</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/config_stash/merge_strategies.html#AdvancedConfigMerger.merge"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#config_stash.merge_strategies.AdvancedConfigMerger.merge" title="Link to this definition"></a></dt>
+<dd><p>Merge two configurations using configured strategies.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>base</strong> – Base configuration dictionary</p></li>
+<li><p><strong>new</strong> – New configuration dictionary to merge in</p></li>
+<li><p><strong>path</strong> – Current path prefix (for strategy lookup)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Merged configuration dictionary</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">merger</span> <span class="o">=</span> <span class="n">AdvancedConfigMerger</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">base</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;database&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;host&quot;</span><span class="p">:</span> <span class="s2">&quot;localhost&quot;</span><span class="p">},</span> <span class="s2">&quot;app&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;debug&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">new</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;database&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;port&quot;</span><span class="p">:</span> <span class="mi">5432</span><span class="p">}}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">merger</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">base</span><span class="p">,</span> <span class="n">new</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Result: {&quot;database&quot;: {&quot;host&quot;: &quot;localhost&quot;, &quot;port&quot;: 5432}, &quot;app&quot;: {&quot;debug&quot;: True}}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="config_stash.merge_strategies.AdvancedConfigMerger.set_strategy">
+<span class="sig-name descname"><span class="pre">set_strategy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">strategy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#config_stash.merge_strategies.MergeStrategy" title="config_stash.merge_strategies.MergeStrategy"><span class="pre">MergeStrategy</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/config_stash/merge_strategies.html#AdvancedConfigMerger.set_strategy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#config_stash.merge_strategies.AdvancedConfigMerger.set_strategy" title="Link to this definition"></a></dt>
+<dd><p>Set merge strategy for a specific key path.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>key_path</strong> – Dot-separated key path (e.g., “database”, “app.debug”)</p></li>
+<li><p><strong>strategy</strong> – Merge strategy to use for this key</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">merger</span> <span class="o">=</span> <span class="n">AdvancedConfigMerger</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">merger</span><span class="o">.</span><span class="n">set_strategy</span><span class="p">(</span><span class="s2">&quot;database&quot;</span><span class="p">,</span> <span class="n">MergeStrategy</span><span class="o">.</span><span class="n">REPLACE</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">merger</span><span class="o">.</span><span class="n">set_strategy</span><span class="p">(</span><span class="s2">&quot;app.debug&quot;</span><span class="p">,</span> <span class="n">MergeStrategy</span><span class="o">.</span><span class="n">REPLACE</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="config_stash.merge_strategies.MergeStrategy">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">config_stash.merge_strategies.</span></span><span class="sig-name descname"><span class="pre">MergeStrategy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/config_stash/merge_strategies.html#MergeStrategy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#config_stash.merge_strategies.MergeStrategy" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/enum.html#enum.Enum" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></a></p>
+<p>Merge strategies for configuration values.</p>
+<p>This enum defines the available strategies for merging configuration
+values when combining configurations from multiple sources.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="config_stash.merge_strategies.MergeStrategy.REPLACE">
+<span class="sig-name descname"><span class="pre">REPLACE</span></span><a class="headerlink" href="#config_stash.merge_strategies.MergeStrategy.REPLACE" title="Link to this definition"></a></dt>
+<dd><p>Replace the base value entirely with the new value.
+Use this when you want new values to completely override existing ones.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="config_stash.merge_strategies.MergeStrategy.MERGE">
+<span class="sig-name descname"><span class="pre">MERGE</span></span><a class="headerlink" href="#config_stash.merge_strategies.MergeStrategy.MERGE" title="Link to this definition"></a></dt>
+<dd><p>Deep merge nested dictionaries while preserving existing values.
+Use this for nested configurations where you want to combine values.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="config_stash.merge_strategies.MergeStrategy.APPEND">
+<span class="sig-name descname"><span class="pre">APPEND</span></span><a class="headerlink" href="#config_stash.merge_strategies.MergeStrategy.APPEND" title="Link to this definition"></a></dt>
+<dd><p>Append new list items to the end of existing lists.
+Use this when you want to combine list values.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="config_stash.merge_strategies.MergeStrategy.PREPEND">
+<span class="sig-name descname"><span class="pre">PREPEND</span></span><a class="headerlink" href="#config_stash.merge_strategies.MergeStrategy.PREPEND" title="Link to this definition"></a></dt>
+<dd><p>Prepend new list items to the beginning of existing lists.
+Use this when new list items should have priority.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="config_stash.merge_strategies.MergeStrategy.INTERSECTION">
+<span class="sig-name descname"><span class="pre">INTERSECTION</span></span><a class="headerlink" href="#config_stash.merge_strategies.MergeStrategy.INTERSECTION" title="Link to this definition"></a></dt>
+<dd><p>Keep only keys that exist in both configurations.
+Use this to create a configuration with only common settings.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="config_stash.merge_strategies.MergeStrategy.UNION">
+<span class="sig-name descname"><span class="pre">UNION</span></span><a class="headerlink" href="#config_stash.merge_strategies.MergeStrategy.UNION" title="Link to this definition"></a></dt>
+<dd><p>Keep all keys from both configurations, merging values for common keys.
+Use this to combine all available configuration options.</p>
+</dd></dl>
+
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">config_stash.merge_strategies</span><span class="w"> </span><span class="kn">import</span> <span class="n">MergeStrategy</span><span class="p">,</span> <span class="n">AdvancedConfigMerger</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">merger</span> <span class="o">=</span> <span class="n">AdvancedConfigMerger</span><span class="p">(</span><span class="n">MergeStrategy</span><span class="o">.</span><span class="n">MERGE</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">merger</span><span class="o">.</span><span class="n">set_strategy</span><span class="p">(</span><span class="s2">&quot;database&quot;</span><span class="p">,</span> <span class="n">MergeStrategy</span><span class="o">.</span><span class="n">REPLACE</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">merger</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">base_config</span><span class="p">,</span> <span class="n">override_config</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="observability.html" class="btn btn-neutral float-left" title="Observability" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="introspection.html" class="btn btn-neutral float-right" title="Configuration Introspection" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, QAToolist.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

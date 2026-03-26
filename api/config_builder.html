@@ -1,0 +1,528 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ConfigBuilder &mdash; Config-Stash 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=d45e8c67"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Loaders" href="loaders.html" />
+    <link rel="prev" title="Config Class" href="config.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Config-Stash
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user_guide/index.html">User Guide</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="index.html#core-classes">Core Classes</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="config.html">Config Class</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">ConfigBuilder</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#config_stash.config_builder.ConfigBuilder"><code class="docutils literal notranslate"><span class="pre">ConfigBuilder</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#config_stash.config_builder.builder"><code class="docutils literal notranslate"><span class="pre">builder()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#loaders">Loaders</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#secret-stores">Secret Stores</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#validators">Validators</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#advanced-features">Advanced Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#utilities">Utilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#cli">CLI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#exceptions">Exceptions</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Config-Stash</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">API Reference</a></li>
+      <li class="breadcrumb-item active">ConfigBuilder</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/config_builder.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-config_stash.config_builder">
+<span id="configbuilder"></span><h1>ConfigBuilder<a class="headerlink" href="#module-config_stash.config_builder" title="Link to this heading"></a></h1>
+<p>Configuration builder pattern for Config-Stash.</p>
+<p>This module provides a fluent builder interface for creating Config instances,
+making it easier to configure complex setup scenarios with better readability.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="config_stash.config_builder.ConfigBuilder">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">config_stash.config_builder.</span></span><span class="sig-name descname"><span class="pre">ConfigBuilder</span></span><a class="reference internal" href="../_modules/config_stash/config_builder.html#ConfigBuilder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#config_stash.config_builder.ConfigBuilder" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Fluent builder for creating Config instances.</p>
+<p>This class provides a builder pattern for constructing Config instances
+with better readability and easier configuration management.</p>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">builder</span> <span class="o">=</span> <span class="n">ConfigBuilder</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">config</span> <span class="o">=</span> <span class="n">builder</span>         <span class="o">...</span>     <span class="o">.</span><span class="n">with_env</span><span class="p">(</span><span class="s2">&quot;production&quot;</span><span class="p">)</span>         <span class="o">...</span>     <span class="o">.</span><span class="n">add_loader</span><span class="p">(</span><span class="n">YamlLoader</span><span class="p">(</span><span class="s2">&quot;base.yaml&quot;</span><span class="p">))</span>         <span class="o">...</span>     <span class="o">.</span><span class="n">add_loader</span><span class="p">(</span><span class="n">YamlLoader</span><span class="p">(</span><span class="s2">&quot;production.yaml&quot;</span><span class="p">))</span>         <span class="o">...</span>     <span class="o">.</span><span class="n">with_secrets</span><span class="p">(</span><span class="n">secret_resolver</span><span class="p">)</span>         <span class="o">...</span>     <span class="o">.</span><span class="n">enable_debug</span><span class="p">()</span>         <span class="o">...</span>     <span class="o">.</span><span class="n">enable_dynamic_reloading</span><span class="p">()</span>         <span class="o">...</span>     <span class="o">.</span><span class="n">build</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="config_stash.config_builder.ConfigBuilder.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/config_stash/config_builder.html#ConfigBuilder.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#config_stash.config_builder.ConfigBuilder.__init__" title="Link to this definition"></a></dt>
+<dd><p>Initialize a new ConfigBuilder with default values.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="config_stash.config_builder.ConfigBuilder.add_loader">
+<span class="sig-name descname"><span class="pre">add_loader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loader</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="loaders.html#config_stash.loaders.Loader" title="config_stash.loaders.Loader"><span class="pre">Loader</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#config_stash.config_builder.ConfigBuilder" title="config_stash.config_builder.ConfigBuilder"><span class="pre">ConfigBuilder</span></a></span></span><a class="reference internal" href="../_modules/config_stash/config_builder.html#ConfigBuilder.add_loader"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#config_stash.config_builder.ConfigBuilder.add_loader" title="Link to this definition"></a></dt>
+<dd><p>Add a configuration loader.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>loader</strong> – Configuration loader instance to add (e.g., YamlLoader, JsonLoader)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Self for method chaining</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">builder</span><span class="o">.</span><span class="n">add_loader</span><span class="p">(</span><span class="n">YamlLoader</span><span class="p">(</span><span class="s2">&quot;config.yaml&quot;</span><span class="p">))</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="config_stash.config_builder.ConfigBuilder.add_loaders">
+<span class="sig-name descname"><span class="pre">add_loaders</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loaders</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="loaders.html#config_stash.loaders.Loader" title="config_stash.loaders.Loader"><span class="pre">Loader</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#config_stash.config_builder.ConfigBuilder" title="config_stash.config_builder.ConfigBuilder"><span class="pre">ConfigBuilder</span></a></span></span><a class="reference internal" href="../_modules/config_stash/config_builder.html#ConfigBuilder.add_loaders"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#config_stash.config_builder.ConfigBuilder.add_loaders" title="Link to this definition"></a></dt>
+<dd><p>Add multiple configuration loaders at once.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>loaders</strong> – List of Loader instances to add</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Self for method chaining</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">builder</span><span class="o">.</span><span class="n">add_loaders</span><span class="p">([</span>
+<span class="gp">... </span>    <span class="n">YamlLoader</span><span class="p">(</span><span class="s2">&quot;base.yaml&quot;</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">JsonLoader</span><span class="p">(</span><span class="s2">&quot;overrides.json&quot;</span><span class="p">),</span>
+<span class="gp">... </span><span class="p">])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="config_stash.config_builder.ConfigBuilder.build">
+<span class="sig-name descname"><span class="pre">build</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="config.html#config_stash.config.Config" title="config_stash.config.Config"><span class="pre">Config</span></a></span></span><a class="reference internal" href="../_modules/config_stash/config_builder.html#ConfigBuilder.build"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#config_stash.config_builder.ConfigBuilder.build" title="Link to this definition"></a></dt>
+<dd><p>Build and return the Config instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Configured Config instance</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="exceptions.html#config_stash.exceptions.ConfigStashError" title="config_stash.exceptions.ConfigStashError"><strong>ConfigStashError</strong></a> – If configuration is invalid</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">config</span> <span class="o">=</span> <span class="n">builder</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="config_stash.config_builder.ConfigBuilder.create">
+<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">create</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#config_stash.config_builder.ConfigBuilder" title="config_stash.config_builder.ConfigBuilder"><span class="pre">ConfigBuilder</span></a></span></span><a class="reference internal" href="../_modules/config_stash/config_builder.html#ConfigBuilder.create"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#config_stash.config_builder.ConfigBuilder.create" title="Link to this definition"></a></dt>
+<dd><p>Create a new ConfigBuilder instance.</p>
+<p>This is a convenience method for creating a builder. You can also
+use <cite>ConfigBuilder()</cite> directly.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>New ConfigBuilder instance</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">builder</span> <span class="o">=</span> <span class="n">ConfigBuilder</span><span class="o">.</span><span class="n">create</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="config_stash.config_builder.ConfigBuilder.disable_debug">
+<span class="sig-name descname"><span class="pre">disable_debug</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#config_stash.config_builder.ConfigBuilder" title="config_stash.config_builder.ConfigBuilder"><span class="pre">ConfigBuilder</span></a></span></span><a class="reference internal" href="../_modules/config_stash/config_builder.html#ConfigBuilder.disable_debug"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#config_stash.config_builder.ConfigBuilder.disable_debug" title="Link to this definition"></a></dt>
+<dd><p>Disable debug mode.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Self for method chaining</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">builder</span><span class="o">.</span><span class="n">disable_debug</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="config_stash.config_builder.ConfigBuilder.disable_deep_merge">
+<span class="sig-name descname"><span class="pre">disable_deep_merge</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#config_stash.config_builder.ConfigBuilder" title="config_stash.config_builder.ConfigBuilder"><span class="pre">ConfigBuilder</span></a></span></span><a class="reference internal" href="../_modules/config_stash/config_builder.html#ConfigBuilder.disable_deep_merge"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#config_stash.config_builder.ConfigBuilder.disable_deep_merge" title="Link to this definition"></a></dt>
+<dd><p>Disable deep merging (use shallow merge instead).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Self for method chaining</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">builder</span><span class="o">.</span><span class="n">disable_deep_merge</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="config_stash.config_builder.ConfigBuilder.disable_dynamic_reloading">
+<span class="sig-name descname"><span class="pre">disable_dynamic_reloading</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#config_stash.config_builder.ConfigBuilder" title="config_stash.config_builder.ConfigBuilder"><span class="pre">ConfigBuilder</span></a></span></span><a class="reference internal" href="../_modules/config_stash/config_builder.html#ConfigBuilder.disable_dynamic_reloading"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#config_stash.config_builder.ConfigBuilder.disable_dynamic_reloading" title="Link to this definition"></a></dt>
+<dd><p>Disable dynamic configuration reloading.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Self for method chaining</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">builder</span><span class="o">.</span><span class="n">disable_dynamic_reloading</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="config_stash.config_builder.ConfigBuilder.disable_env_expander">
+<span class="sig-name descname"><span class="pre">disable_env_expander</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#config_stash.config_builder.ConfigBuilder" title="config_stash.config_builder.ConfigBuilder"><span class="pre">ConfigBuilder</span></a></span></span><a class="reference internal" href="../_modules/config_stash/config_builder.html#ConfigBuilder.disable_env_expander"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#config_stash.config_builder.ConfigBuilder.disable_env_expander" title="Link to this definition"></a></dt>
+<dd><p>Disable environment variable expansion.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Self for method chaining</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">builder</span><span class="o">.</span><span class="n">disable_env_expander</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="config_stash.config_builder.ConfigBuilder.disable_ide_support">
+<span class="sig-name descname"><span class="pre">disable_ide_support</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#config_stash.config_builder.ConfigBuilder" title="config_stash.config_builder.ConfigBuilder"><span class="pre">ConfigBuilder</span></a></span></span><a class="reference internal" href="../_modules/config_stash/config_builder.html#ConfigBuilder.disable_ide_support"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#config_stash.config_builder.ConfigBuilder.disable_ide_support" title="Link to this definition"></a></dt>
+<dd><p>Disable IDE support generation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Self for method chaining</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">builder</span><span class="o">.</span><span class="n">disable_ide_support</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="config_stash.config_builder.ConfigBuilder.disable_type_casting">
+<span class="sig-name descname"><span class="pre">disable_type_casting</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#config_stash.config_builder.ConfigBuilder" title="config_stash.config_builder.ConfigBuilder"><span class="pre">ConfigBuilder</span></a></span></span><a class="reference internal" href="../_modules/config_stash/config_builder.html#ConfigBuilder.disable_type_casting"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#config_stash.config_builder.ConfigBuilder.disable_type_casting" title="Link to this definition"></a></dt>
+<dd><p>Disable automatic type casting.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Self for method chaining</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">builder</span><span class="o">.</span><span class="n">disable_type_casting</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="config_stash.config_builder.ConfigBuilder.disable_validation">
+<span class="sig-name descname"><span class="pre">disable_validation</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#config_stash.config_builder.ConfigBuilder" title="config_stash.config_builder.ConfigBuilder"><span class="pre">ConfigBuilder</span></a></span></span><a class="reference internal" href="../_modules/config_stash/config_builder.html#ConfigBuilder.disable_validation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#config_stash.config_builder.ConfigBuilder.disable_validation" title="Link to this definition"></a></dt>
+<dd><p>Disable validation on load.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Self for method chaining</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">builder</span><span class="o">.</span><span class="n">disable_validation</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="config_stash.config_builder.ConfigBuilder.enable_debug">
+<span class="sig-name descname"><span class="pre">enable_debug</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#config_stash.config_builder.ConfigBuilder" title="config_stash.config_builder.ConfigBuilder"><span class="pre">ConfigBuilder</span></a></span></span><a class="reference internal" href="../_modules/config_stash/config_builder.html#ConfigBuilder.enable_debug"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#config_stash.config_builder.ConfigBuilder.enable_debug" title="Link to this definition"></a></dt>
+<dd><p>Enable debug mode (detailed source tracking).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Self for method chaining</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">builder</span><span class="o">.</span><span class="n">enable_debug</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="config_stash.config_builder.ConfigBuilder.enable_deep_merge">
+<span class="sig-name descname"><span class="pre">enable_deep_merge</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#config_stash.config_builder.ConfigBuilder" title="config_stash.config_builder.ConfigBuilder"><span class="pre">ConfigBuilder</span></a></span></span><a class="reference internal" href="../_modules/config_stash/config_builder.html#ConfigBuilder.enable_deep_merge"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#config_stash.config_builder.ConfigBuilder.enable_deep_merge" title="Link to this definition"></a></dt>
+<dd><p>Enable deep merging of nested configurations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Self for method chaining</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">builder</span><span class="o">.</span><span class="n">enable_deep_merge</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="config_stash.config_builder.ConfigBuilder.enable_dynamic_reloading">
+<span class="sig-name descname"><span class="pre">enable_dynamic_reloading</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#config_stash.config_builder.ConfigBuilder" title="config_stash.config_builder.ConfigBuilder"><span class="pre">ConfigBuilder</span></a></span></span><a class="reference internal" href="../_modules/config_stash/config_builder.html#ConfigBuilder.enable_dynamic_reloading"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#config_stash.config_builder.ConfigBuilder.enable_dynamic_reloading" title="Link to this definition"></a></dt>
+<dd><p>Enable dynamic configuration reloading (file watching).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Self for method chaining</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">builder</span><span class="o">.</span><span class="n">enable_dynamic_reloading</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="config_stash.config_builder.ConfigBuilder.enable_env_expander">
+<span class="sig-name descname"><span class="pre">enable_env_expander</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#config_stash.config_builder.ConfigBuilder" title="config_stash.config_builder.ConfigBuilder"><span class="pre">ConfigBuilder</span></a></span></span><a class="reference internal" href="../_modules/config_stash/config_builder.html#ConfigBuilder.enable_env_expander"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#config_stash.config_builder.ConfigBuilder.enable_env_expander" title="Link to this definition"></a></dt>
+<dd><p>Enable environment variable expansion in config values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Self for method chaining</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">builder</span><span class="o">.</span><span class="n">enable_env_expander</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="config_stash.config_builder.ConfigBuilder.enable_ide_support">
+<span class="sig-name descname"><span class="pre">enable_ide_support</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stub_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#config_stash.config_builder.ConfigBuilder" title="config_stash.config_builder.ConfigBuilder"><span class="pre">ConfigBuilder</span></a></span></span><a class="reference internal" href="../_modules/config_stash/config_builder.html#ConfigBuilder.enable_ide_support"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#config_stash.config_builder.ConfigBuilder.enable_ide_support" title="Link to this definition"></a></dt>
+<dd><p>Enable IDE support (type stub generation).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>stub_path</strong> – Optional custom path for IDE stub file</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Self for method chaining</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">builder</span><span class="o">.</span><span class="n">enable_ide_support</span><span class="p">(</span><span class="s2">&quot;.config_stash/stubs.pyi&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="config_stash.config_builder.ConfigBuilder.enable_type_casting">
+<span class="sig-name descname"><span class="pre">enable_type_casting</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#config_stash.config_builder.ConfigBuilder" title="config_stash.config_builder.ConfigBuilder"><span class="pre">ConfigBuilder</span></a></span></span><a class="reference internal" href="../_modules/config_stash/config_builder.html#ConfigBuilder.enable_type_casting"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#config_stash.config_builder.ConfigBuilder.enable_type_casting" title="Link to this definition"></a></dt>
+<dd><p>Enable automatic type casting of config values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Self for method chaining</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">builder</span><span class="o">.</span><span class="n">enable_type_casting</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="config_stash.config_builder.ConfigBuilder.enable_validation">
+<span class="sig-name descname"><span class="pre">enable_validation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">strict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#config_stash.config_builder.ConfigBuilder" title="config_stash.config_builder.ConfigBuilder"><span class="pre">ConfigBuilder</span></a></span></span><a class="reference internal" href="../_modules/config_stash/config_builder.html#ConfigBuilder.enable_validation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#config_stash.config_builder.ConfigBuilder.enable_validation" title="Link to this definition"></a></dt>
+<dd><p>Enable validation using the configured schema.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>strict</strong> – If True, raise ConfigValidationError on failure (default: False)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Self for method chaining</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">builder</span><span class="o">.</span><span class="n">enable_validation</span><span class="p">(</span><span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="config_stash.config_builder.ConfigBuilder.with_env">
+<span class="sig-name descname"><span class="pre">with_env</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#config_stash.config_builder.ConfigBuilder" title="config_stash.config_builder.ConfigBuilder"><span class="pre">ConfigBuilder</span></a></span></span><a class="reference internal" href="../_modules/config_stash/config_builder.html#ConfigBuilder.with_env"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#config_stash.config_builder.ConfigBuilder.with_env" title="Link to this definition"></a></dt>
+<dd><p>Set the environment name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>env</strong> – Environment name (e.g., ‘development’, ‘production’, ‘staging’)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Self for method chaining</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">builder</span><span class="o">.</span><span class="n">with_env</span><span class="p">(</span><span class="s2">&quot;production&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="config_stash.config_builder.ConfigBuilder.with_schema">
+<span class="sig-name descname"><span class="pre">with_schema</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">validate_on_load</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#config_stash.config_builder.ConfigBuilder" title="config_stash.config_builder.ConfigBuilder"><span class="pre">ConfigBuilder</span></a></span></span><a class="reference internal" href="../_modules/config_stash/config_builder.html#ConfigBuilder.with_schema"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#config_stash.config_builder.ConfigBuilder.with_schema" title="Link to this definition"></a></dt>
+<dd><p>Configure schema validation for configuration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>schema</strong> – Pydantic model class or JSON Schema dictionary</p></li>
+<li><p><strong>validate_on_load</strong> – If True, validate immediately after loading (default: True)</p></li>
+<li><p><strong>strict</strong> – If True, raise ConfigValidationError on failure (default: False)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Self for method chaining</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">AppConfig</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="n">database_url</span><span class="p">:</span> <span class="nb">str</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">builder</span><span class="o">.</span><span class="n">with_schema</span><span class="p">(</span><span class="n">AppConfig</span><span class="p">,</span> <span class="n">validate_on_load</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="config_stash.config_builder.ConfigBuilder.with_secrets">
+<span class="sig-name descname"><span class="pre">with_secrets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">secret_resolver</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="secret_stores.html#config_stash.secret_stores.SecretResolver" title="config_stash.secret_stores.SecretResolver"><span class="pre">SecretResolver</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#config_stash.config_builder.ConfigBuilder" title="config_stash.config_builder.ConfigBuilder"><span class="pre">ConfigBuilder</span></a></span></span><a class="reference internal" href="../_modules/config_stash/config_builder.html#ConfigBuilder.with_secrets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#config_stash.config_builder.ConfigBuilder.with_secrets" title="Link to this definition"></a></dt>
+<dd><p>Configure secret resolver for secret store integration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>secret_resolver</strong> – SecretResolver instance for resolving secrets</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Self for method chaining</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">config_stash.secret_stores</span><span class="w"> </span><span class="kn">import</span> <span class="n">AWSSecretsManager</span><span class="p">,</span> <span class="n">SecretResolver</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">store</span> <span class="o">=</span> <span class="n">AWSSecretsManager</span><span class="p">(</span><span class="n">region_name</span><span class="o">=</span><span class="s1">&#39;us-east-1&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">builder</span><span class="o">.</span><span class="n">with_secrets</span><span class="p">(</span><span class="n">SecretResolver</span><span class="p">(</span><span class="n">store</span><span class="p">))</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="config_stash.config_builder.builder">
+<span class="sig-prename descclassname"><span class="pre">config_stash.config_builder.</span></span><span class="sig-name descname"><span class="pre">builder</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#config_stash.config_builder.ConfigBuilder" title="config_stash.config_builder.ConfigBuilder"><span class="pre">ConfigBuilder</span></a></span></span><a class="reference internal" href="../_modules/config_stash/config_builder.html#builder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#config_stash.config_builder.builder" title="Link to this definition"></a></dt>
+<dd><p>Create a new ConfigBuilder instance.</p>
+<p>This is a convenience function for creating a builder with a shorter
+syntax: <cite>builder().with_env(“prod”).build()</cite></p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>New ConfigBuilder instance</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">config_stash.config_builder</span><span class="w"> </span><span class="kn">import</span> <span class="n">builder</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">config</span> <span class="o">=</span> <span class="n">builder</span><span class="p">()</span><span class="o">.</span><span class="n">with_env</span><span class="p">(</span><span class="s2">&quot;prod&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="config.html" class="btn btn-neutral float-left" title="Config Class" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="loaders.html" class="btn btn-neutral float-right" title="Loaders" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, QAToolist.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,556 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>config_stash.config_builder &mdash; Config-Stash 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=d45e8c67"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Config-Stash
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/index.html">User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/index.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contributing.html">Contributing</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Config-Stash</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">config_stash.config_builder</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for config_stash.config_builder</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Configuration builder pattern for Config-Stash.</span>
+
+<span class="sd">This module provides a fluent builder interface for creating Config instances,</span>
+<span class="sd">making it easier to configure complex setup scenarios with better readability.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">config_stash.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">Config</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">config_stash.loaders.loader</span><span class="w"> </span><span class="kn">import</span> <span class="n">Loader</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">config_stash.secret_stores.resolver</span><span class="w"> </span><span class="kn">import</span> <span class="n">SecretResolver</span>
+
+
+<div class="viewcode-block" id="ConfigBuilder">
+<a class="viewcode-back" href="../../api/config_builder.html#config_stash.config_builder.ConfigBuilder">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ConfigBuilder</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Fluent builder for creating Config instances.</span>
+
+<span class="sd">    This class provides a builder pattern for constructing Config instances</span>
+<span class="sd">    with better readability and easier configuration management.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; builder = ConfigBuilder()</span>
+<span class="sd">        &gt;&gt;&gt; config = builder \</span>
+<span class="sd">        ...     .with_env(&quot;production&quot;) \</span>
+<span class="sd">        ...     .add_loader(YamlLoader(&quot;base.yaml&quot;)) \</span>
+<span class="sd">        ...     .add_loader(YamlLoader(&quot;production.yaml&quot;)) \</span>
+<span class="sd">        ...     .with_secrets(secret_resolver) \</span>
+<span class="sd">        ...     .enable_debug() \</span>
+<span class="sd">        ...     .enable_dynamic_reloading() \</span>
+<span class="sd">        ...     .build()</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ConfigBuilder.__init__">
+<a class="viewcode-back" href="../../api/config_builder.html#config_stash.config_builder.ConfigBuilder.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize a new ConfigBuilder with default values.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_env</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_loaders</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="s2">&quot;Loader&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dynamic_reloading</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_use_env_expander</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_use_type_casting</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_enable_ide_support</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ide_stub_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_debug_mode</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_deep_merge</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_secret_resolver</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;SecretResolver&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_schema</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_validate_on_load</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_strict_validation</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="ConfigBuilder.with_env">
+<a class="viewcode-back" href="../../api/config_builder.html#config_stash.config_builder.ConfigBuilder.with_env">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">with_env</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ConfigBuilder&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the environment name.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            env: Environment name (e.g., &#39;development&#39;, &#39;production&#39;, &#39;staging&#39;)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Self for method chaining</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; builder.with_env(&quot;production&quot;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_env</span> <span class="o">=</span> <span class="n">env</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="ConfigBuilder.add_loader">
+<a class="viewcode-back" href="../../api/config_builder.html#config_stash.config_builder.ConfigBuilder.add_loader">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_loader</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">loader</span><span class="p">:</span> <span class="s2">&quot;Loader&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ConfigBuilder&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add a configuration loader.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            loader: Configuration loader instance to add (e.g., YamlLoader, JsonLoader)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Self for method chaining</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; builder.add_loader(YamlLoader(&quot;config.yaml&quot;))</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_loaders</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">loader</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="ConfigBuilder.add_loaders">
+<a class="viewcode-back" href="../../api/config_builder.html#config_stash.config_builder.ConfigBuilder.add_loaders">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_loaders</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">loaders</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="s2">&quot;Loader&quot;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s2">&quot;ConfigBuilder&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add multiple configuration loaders at once.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            loaders: List of Loader instances to add</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Self for method chaining</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; builder.add_loaders([</span>
+<span class="sd">            ...     YamlLoader(&quot;base.yaml&quot;),</span>
+<span class="sd">            ...     JsonLoader(&quot;overrides.json&quot;),</span>
+<span class="sd">            ... ])</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_loaders</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">loaders</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="ConfigBuilder.with_secrets">
+<a class="viewcode-back" href="../../api/config_builder.html#config_stash.config_builder.ConfigBuilder.with_secrets">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">with_secrets</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">secret_resolver</span><span class="p">:</span> <span class="s2">&quot;SecretResolver&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ConfigBuilder&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Configure secret resolver for secret store integration.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            secret_resolver: SecretResolver instance for resolving secrets</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Self for method chaining</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; from config_stash.secret_stores import AWSSecretsManager, SecretResolver</span>
+<span class="sd">            &gt;&gt;&gt; store = AWSSecretsManager(region_name=&#39;us-east-1&#39;)</span>
+<span class="sd">            &gt;&gt;&gt; builder.with_secrets(SecretResolver(store))</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_secret_resolver</span> <span class="o">=</span> <span class="n">secret_resolver</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="ConfigBuilder.enable_dynamic_reloading">
+<a class="viewcode-back" href="../../api/config_builder.html#config_stash.config_builder.ConfigBuilder.enable_dynamic_reloading">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">enable_dynamic_reloading</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ConfigBuilder&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Enable dynamic configuration reloading (file watching).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Self for method chaining</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; builder.enable_dynamic_reloading()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dynamic_reloading</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="ConfigBuilder.disable_dynamic_reloading">
+<a class="viewcode-back" href="../../api/config_builder.html#config_stash.config_builder.ConfigBuilder.disable_dynamic_reloading">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">disable_dynamic_reloading</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ConfigBuilder&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Disable dynamic configuration reloading.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Self for method chaining</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; builder.disable_dynamic_reloading()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dynamic_reloading</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="ConfigBuilder.enable_env_expander">
+<a class="viewcode-back" href="../../api/config_builder.html#config_stash.config_builder.ConfigBuilder.enable_env_expander">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">enable_env_expander</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ConfigBuilder&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Enable environment variable expansion in config values.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Self for method chaining</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; builder.enable_env_expander()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_use_env_expander</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="ConfigBuilder.disable_env_expander">
+<a class="viewcode-back" href="../../api/config_builder.html#config_stash.config_builder.ConfigBuilder.disable_env_expander">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">disable_env_expander</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ConfigBuilder&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Disable environment variable expansion.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Self for method chaining</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; builder.disable_env_expander()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_use_env_expander</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="ConfigBuilder.enable_type_casting">
+<a class="viewcode-back" href="../../api/config_builder.html#config_stash.config_builder.ConfigBuilder.enable_type_casting">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">enable_type_casting</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ConfigBuilder&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Enable automatic type casting of config values.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Self for method chaining</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; builder.enable_type_casting()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_use_type_casting</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="ConfigBuilder.disable_type_casting">
+<a class="viewcode-back" href="../../api/config_builder.html#config_stash.config_builder.ConfigBuilder.disable_type_casting">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">disable_type_casting</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ConfigBuilder&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Disable automatic type casting.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Self for method chaining</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; builder.disable_type_casting()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_use_type_casting</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="ConfigBuilder.enable_ide_support">
+<a class="viewcode-back" href="../../api/config_builder.html#config_stash.config_builder.ConfigBuilder.enable_ide_support">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">enable_ide_support</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stub_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ConfigBuilder&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Enable IDE support (type stub generation).</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            stub_path: Optional custom path for IDE stub file</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Self for method chaining</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; builder.enable_ide_support(&quot;.config_stash/stubs.pyi&quot;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_enable_ide_support</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ide_stub_path</span> <span class="o">=</span> <span class="n">stub_path</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="ConfigBuilder.disable_ide_support">
+<a class="viewcode-back" href="../../api/config_builder.html#config_stash.config_builder.ConfigBuilder.disable_ide_support">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">disable_ide_support</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ConfigBuilder&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Disable IDE support generation.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Self for method chaining</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; builder.disable_ide_support()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_enable_ide_support</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="ConfigBuilder.enable_debug">
+<a class="viewcode-back" href="../../api/config_builder.html#config_stash.config_builder.ConfigBuilder.enable_debug">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">enable_debug</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ConfigBuilder&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Enable debug mode (detailed source tracking).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Self for method chaining</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; builder.enable_debug()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_debug_mode</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="ConfigBuilder.disable_debug">
+<a class="viewcode-back" href="../../api/config_builder.html#config_stash.config_builder.ConfigBuilder.disable_debug">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">disable_debug</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ConfigBuilder&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Disable debug mode.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Self for method chaining</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; builder.disable_debug()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_debug_mode</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="ConfigBuilder.enable_deep_merge">
+<a class="viewcode-back" href="../../api/config_builder.html#config_stash.config_builder.ConfigBuilder.enable_deep_merge">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">enable_deep_merge</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ConfigBuilder&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Enable deep merging of nested configurations.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Self for method chaining</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; builder.enable_deep_merge()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_deep_merge</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="ConfigBuilder.disable_deep_merge">
+<a class="viewcode-back" href="../../api/config_builder.html#config_stash.config_builder.ConfigBuilder.disable_deep_merge">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">disable_deep_merge</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ConfigBuilder&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Disable deep merging (use shallow merge instead).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Self for method chaining</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; builder.disable_deep_merge()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_deep_merge</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="ConfigBuilder.with_schema">
+<a class="viewcode-back" href="../../api/config_builder.html#config_stash.config_builder.ConfigBuilder.with_schema">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">with_schema</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">schema</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">validate_on_load</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">strict</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ConfigBuilder&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Configure schema validation for configuration.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            schema: Pydantic model class or JSON Schema dictionary</span>
+<span class="sd">            validate_on_load: If True, validate immediately after loading (default: True)</span>
+<span class="sd">            strict: If True, raise ConfigValidationError on failure (default: False)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Self for method chaining</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; from pydantic import BaseModel</span>
+<span class="sd">            &gt;&gt;&gt; class AppConfig(BaseModel):</span>
+<span class="sd">            ...     database_url: str</span>
+<span class="sd">            &gt;&gt;&gt; builder.with_schema(AppConfig, validate_on_load=True)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_schema</span> <span class="o">=</span> <span class="n">schema</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_validate_on_load</span> <span class="o">=</span> <span class="n">validate_on_load</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_strict_validation</span> <span class="o">=</span> <span class="n">strict</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="ConfigBuilder.enable_validation">
+<a class="viewcode-back" href="../../api/config_builder.html#config_stash.config_builder.ConfigBuilder.enable_validation">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">enable_validation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">strict</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ConfigBuilder&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Enable validation using the configured schema.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            strict: If True, raise ConfigValidationError on failure (default: False)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Self for method chaining</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; builder.enable_validation(strict=True)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_validate_on_load</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_strict_validation</span> <span class="o">=</span> <span class="n">strict</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="ConfigBuilder.disable_validation">
+<a class="viewcode-back" href="../../api/config_builder.html#config_stash.config_builder.ConfigBuilder.disable_validation">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">disable_validation</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ConfigBuilder&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Disable validation on load.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Self for method chaining</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; builder.disable_validation()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_validate_on_load</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="ConfigBuilder.build">
+<a class="viewcode-back" href="../../api/config_builder.html#config_stash.config_builder.ConfigBuilder.build">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">build</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Config&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Build and return the Config instance.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Configured Config instance</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ConfigStashError: If configuration is invalid</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; config = builder.build()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Use None for loaders if empty (allows default loading)</span>
+        <span class="n">loaders</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loaders</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loaders</span> <span class="k">else</span> <span class="kc">None</span>
+
+        <span class="kn">from</span><span class="w"> </span><span class="nn">config_stash.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">Config</span>  <span class="c1"># Import here to avoid circular import</span>
+
+        <span class="k">return</span> <span class="n">Config</span><span class="p">(</span>
+            <span class="n">env</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_env</span><span class="p">,</span>
+            <span class="n">loaders</span><span class="o">=</span><span class="n">loaders</span><span class="p">,</span>
+            <span class="n">dynamic_reloading</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dynamic_reloading</span><span class="p">,</span>
+            <span class="n">use_env_expander</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_use_env_expander</span><span class="p">,</span>
+            <span class="n">use_type_casting</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_use_type_casting</span><span class="p">,</span>
+            <span class="n">enable_ide_support</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_enable_ide_support</span><span class="p">,</span>
+            <span class="n">ide_stub_path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_ide_stub_path</span><span class="p">,</span>
+            <span class="n">debug_mode</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_debug_mode</span><span class="p">,</span>
+            <span class="n">deep_merge</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_deep_merge</span><span class="p">,</span>
+            <span class="n">secret_resolver</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_secret_resolver</span><span class="p">,</span>
+            <span class="n">schema</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_schema</span><span class="p">,</span>
+            <span class="n">validate_on_load</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_validate_on_load</span><span class="p">,</span>
+            <span class="n">strict_validation</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_strict_validation</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ConfigBuilder.create">
+<a class="viewcode-back" href="../../api/config_builder.html#config_stash.config_builder.ConfigBuilder.create">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ConfigBuilder&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a new ConfigBuilder instance.</span>
+
+<span class="sd">        This is a convenience method for creating a builder. You can also</span>
+<span class="sd">        use `ConfigBuilder()` directly.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            New ConfigBuilder instance</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; builder = ConfigBuilder.create()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">()</span></div>
+</div>
+
+
+
+<span class="c1"># Convenience function for creating builders</span>
+<div class="viewcode-block" id="builder">
+<a class="viewcode-back" href="../../api/config_builder.html#config_stash.config_builder.builder">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">builder</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">ConfigBuilder</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a new ConfigBuilder instance.</span>
+
+<span class="sd">    This is a convenience function for creating a builder with a shorter</span>
+<span class="sd">    syntax: `builder().with_env(&quot;prod&quot;).build()`</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        New ConfigBuilder instance</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; from config_stash.config_builder import builder</span>
+<span class="sd">        &gt;&gt;&gt; config = builder().with_env(&quot;prod&quot;).build()</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">ConfigBuilder</span><span class="p">()</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, QAToolist.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

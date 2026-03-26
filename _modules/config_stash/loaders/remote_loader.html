@@ -1,0 +1,1029 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>config_stash.loaders.remote_loader &mdash; Config-Stash 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=d45e8c67"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            Config-Stash
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/index.html">User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/index.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing.html">Contributing</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Config-Stash</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">config_stash.loaders.remote_loader</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for config_stash.loaders.remote_loader</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Remote configuration loaders for Config-Stash.&quot;&quot;&quot;</span>
+
+<span class="c1"># pyright: reportPossiblyUnboundVariable=false</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">urllib.parse</span><span class="w"> </span><span class="kn">import</span> <span class="n">urlparse</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">config_stash.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConfigLoadError</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="c1"># requests is optional</span>
+<span class="n">HAS_REQUESTS</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
+
+    <span class="n">HAS_REQUESTS</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;requests not installed. Remote loading disabled.&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="RemoteLoader">
+<a class="viewcode-back" href="../../../api/loaders.html#config_stash.loaders.RemoteLoader">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">RemoteLoader</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for remote configuration loading.</span>
+
+<span class="sd">    RemoteLoader provides the shared interface and common attributes for</span>
+<span class="sd">    all remote configuration loaders. Subclasses implement the ``load()``</span>
+<span class="sd">    method to fetch configuration from specific remote backends (HTTP, S3,</span>
+<span class="sd">    Azure Blob Storage, GCP Storage, Git repositories, IBM COS).</span>
+
+<span class="sd">    The loaded content is automatically parsed into a Python dictionary</span>
+<span class="sd">    based on the file extension or content-type header using the</span>
+<span class="sd">    ``format_parser`` utility.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        url: The remote URL or URI identifying the configuration source.</span>
+<span class="sd">        timeout: Request timeout in seconds.</span>
+<span class="sd">        headers: HTTP headers sent with the request (where applicable).</span>
+<span class="sd">        source: Alias for ``url``, used for source tracking.</span>
+<span class="sd">        config: The loaded configuration dictionary (populated after ``load()``).</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; # RemoteLoader is abstract; use a concrete subclass:</span>
+<span class="sd">        &gt;&gt;&gt; loader = HTTPLoader(&quot;https://example.com/config.json&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; config_dict = loader.load()</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="RemoteLoader.__init__">
+<a class="viewcode-back" href="../../../api/loaders.html#config_stash.loaders.RemoteLoader.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">30</span><span class="p">,</span> <span class="n">headers</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize remote loader.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            url: URL or URI to load configuration from.</span>
+<span class="sd">            timeout: Request timeout in seconds. Defaults to 30.</span>
+<span class="sd">            headers: Optional HTTP headers to include in requests.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">url</span> <span class="o">=</span> <span class="n">url</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">timeout</span> <span class="o">=</span> <span class="n">timeout</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">headers</span> <span class="o">=</span> <span class="n">headers</span> <span class="ow">or</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">source</span> <span class="o">=</span> <span class="n">url</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span></div>
+
+
+<div class="viewcode-block" id="RemoteLoader.load">
+<a class="viewcode-back" href="../../../api/loaders.html#config_stash.loaders.RemoteLoader.load">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load configuration from remote source.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Dictionary containing the loaded configuration.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: Always; subclasses must override this method.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="HTTPLoader">
+<a class="viewcode-back" href="../../../api/loaders.html#config_stash.loaders.HTTPLoader">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">HTTPLoader</span><span class="p">(</span><span class="n">RemoteLoader</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Load configuration from HTTP/HTTPS endpoints.</span>
+
+<span class="sd">    HTTPLoader fetches configuration files from any HTTP or HTTPS URL. The</span>
+<span class="sd">    response content-type header is used to determine the configuration</span>
+<span class="sd">    format; if the content-type is ambiguous, the URL&#39;s file extension is</span>
+<span class="sd">    used as a fallback. Supports JSON, YAML, and TOML formats.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        url: The HTTP/HTTPS URL of the configuration resource.</span>
+<span class="sd">        timeout: Request timeout in seconds.</span>
+<span class="sd">        headers: HTTP headers sent with the request.</span>
+<span class="sd">        auth: Optional basic-auth credentials as a ``(username, password)`` tuple.</span>
+<span class="sd">        config: The loaded configuration dictionary.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; from config_stash.loaders.remote_loader import HTTPLoader</span>
+<span class="sd">        &gt;&gt;&gt; loader = HTTPLoader(</span>
+<span class="sd">        ...     &quot;https://config-server.example.com/app/config.yaml&quot;,</span>
+<span class="sd">        ...     headers={&quot;X-API-Key&quot;: &quot;secret&quot;},</span>
+<span class="sd">        ...     timeout=10,</span>
+<span class="sd">        ... )</span>
+<span class="sd">        &gt;&gt;&gt; config_dict = loader.load()</span>
+<span class="sd">        &gt;&gt;&gt; print(config_dict[&quot;database&quot;][&quot;host&quot;])</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        Requires the ``requests`` package. Install it with::</span>
+
+<span class="sd">            pip install requests</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="HTTPLoader.__init__">
+<a class="viewcode-back" href="../../../api/loaders.html#config_stash.loaders.HTTPLoader.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">30</span><span class="p">,</span>
+        <span class="n">headers</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">auth</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize HTTP loader.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            url: HTTP/HTTPS URL to fetch configuration from.</span>
+<span class="sd">            timeout: Request timeout in seconds. Defaults to 30.</span>
+<span class="sd">            headers: Optional HTTP headers (e.g., API keys).</span>
+<span class="sd">            auth: Optional ``(username, password)`` tuple for HTTP Basic Auth.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ImportError: If the ``requests`` package is not installed.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">HAS_REQUESTS</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+                <span class="s2">&quot;requests is required for HTTP loading. Install with: pip install requests&quot;</span>
+            <span class="p">)</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">timeout</span><span class="p">,</span> <span class="n">headers</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">auth</span> <span class="o">=</span> <span class="n">auth</span></div>
+
+
+<div class="viewcode-block" id="HTTPLoader.load">
+<a class="viewcode-back" href="../../../api/loaders.html#config_stash.loaders.HTTPLoader.load">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load configuration from an HTTP/HTTPS endpoint.</span>
+
+<span class="sd">        Sends a GET request to the configured URL, detects the response</span>
+<span class="sd">        format from the content-type header or URL extension, and parses</span>
+<span class="sd">        the content into a dictionary.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Dictionary containing the loaded configuration.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ConfigLoadError: If the HTTP request fails or the response</span>
+<span class="sd">                content cannot be parsed.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; loader = HTTPLoader(&quot;https://example.com/config.json&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; config = loader.load()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loading configuration from </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">timeout</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">headers</span><span class="p">,</span> <span class="n">auth</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">auth</span>
+            <span class="p">)</span>
+            <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+
+            <span class="c1"># Detect format from content-type or URL</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">config_stash.utils.format_parser</span><span class="w"> </span><span class="kn">import</span> <span class="n">parse_config_content</span>
+
+            <span class="n">content_type</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;content-type&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Map content-type to a pseudo-filename for format detection</span>
+            <span class="k">if</span> <span class="s2">&quot;yaml&quot;</span> <span class="ow">in</span> <span class="n">content_type</span><span class="p">:</span>
+                <span class="n">format_hint</span> <span class="o">=</span> <span class="s2">&quot;response.yaml&quot;</span>
+            <span class="k">elif</span> <span class="s2">&quot;toml&quot;</span> <span class="ow">in</span> <span class="n">content_type</span><span class="p">:</span>
+                <span class="n">format_hint</span> <span class="o">=</span> <span class="s2">&quot;response.toml&quot;</span>
+            <span class="k">elif</span> <span class="s2">&quot;json&quot;</span> <span class="ow">in</span> <span class="n">content_type</span><span class="p">:</span>
+                <span class="n">format_hint</span> <span class="o">=</span> <span class="s2">&quot;response.json&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">format_hint</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">url</span>  <span class="c1"># Use URL extension</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">parse_config_content</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">,</span> <span class="n">format_hint</span><span class="p">)</span>
+
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Successfully loaded configuration from </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span>
+
+        <span class="k">except</span> <span class="n">requests</span><span class="o">.</span><span class="n">RequestException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to load configuration from </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">ConfigLoadError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Failed to load remote configuration from </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="n">source</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">,</span>
+                <span class="n">loader_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+                <span class="n">original_error</span><span class="o">=</span><span class="n">e</span><span class="p">,</span>
+            <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to parse configuration from </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">ConfigLoadError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Failed to parse remote configuration from </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="n">source</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">,</span>
+                <span class="n">loader_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+                <span class="n">original_error</span><span class="o">=</span><span class="n">e</span><span class="p">,</span>
+            <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="S3Loader">
+<a class="viewcode-back" href="../../../api/loaders.html#config_stash.loaders.S3Loader">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">S3Loader</span><span class="p">(</span><span class="n">RemoteLoader</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Load configuration from AWS S3.</span>
+
+<span class="sd">    S3Loader fetches configuration files stored in Amazon S3 buckets.</span>
+<span class="sd">    Authentication can be provided explicitly via access keys, or</span>
+<span class="sd">    implicitly through IAM roles, environment variables</span>
+<span class="sd">    (``AWS_ACCESS_KEY_ID``, ``AWS_SECRET_ACCESS_KEY``), or the default</span>
+<span class="sd">    boto3 credential chain.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        url: The original ``s3://`` URL.</span>
+<span class="sd">        bucket: The S3 bucket name (parsed from the URL).</span>
+<span class="sd">        key: The object key / path within the bucket.</span>
+<span class="sd">        aws_access_key: AWS access key ID (may be None for IAM).</span>
+<span class="sd">        aws_secret_key: AWS secret access key (may be None for IAM).</span>
+<span class="sd">        region: AWS region name.</span>
+<span class="sd">        config: The loaded configuration dictionary.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; from config_stash.loaders.remote_loader import S3Loader</span>
+<span class="sd">        &gt;&gt;&gt; loader = S3Loader(&quot;s3://my-bucket/configs/app.yaml&quot;, region=&quot;eu-west-1&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; config_dict = loader.load()</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        Requires the ``boto3`` package. Install it with::</span>
+
+<span class="sd">            pip install boto3</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="S3Loader.__init__">
+<a class="viewcode-back" href="../../../api/loaders.html#config_stash.loaders.S3Loader.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">s3_url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">aws_access_key</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">aws_secret_key</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">region</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;us-east-1&quot;</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize S3 loader.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            s3_url: S3 URL in the form ``s3://bucket/path/to/config.json``.</span>
+<span class="sd">            aws_access_key: AWS access key ID. Falls back to the</span>
+<span class="sd">                ``AWS_ACCESS_KEY_ID`` environment variable or IAM role.</span>
+<span class="sd">            aws_secret_key: AWS secret access key. Falls back to the</span>
+<span class="sd">                ``AWS_SECRET_ACCESS_KEY`` environment variable or IAM role.</span>
+<span class="sd">            region: AWS region name. Defaults to ``&quot;us-east-1&quot;``.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If the URL scheme is not ``s3``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">s3_url</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">aws_access_key</span> <span class="o">=</span> <span class="n">aws_access_key</span> <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;AWS_ACCESS_KEY_ID&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">aws_secret_key</span> <span class="o">=</span> <span class="n">aws_secret_key</span> <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;AWS_SECRET_ACCESS_KEY&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">region</span> <span class="o">=</span> <span class="n">region</span>
+
+        <span class="c1"># Parse S3 URL</span>
+        <span class="n">parsed</span> <span class="o">=</span> <span class="n">urlparse</span><span class="p">(</span><span class="n">s3_url</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">parsed</span><span class="o">.</span><span class="n">scheme</span> <span class="o">!=</span> <span class="s2">&quot;s3&quot;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid S3 URL: </span><span class="si">{</span><span class="n">s3_url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bucket</span> <span class="o">=</span> <span class="n">parsed</span><span class="o">.</span><span class="n">netloc</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">key</span> <span class="o">=</span> <span class="n">parsed</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="S3Loader.load">
+<a class="viewcode-back" href="../../../api/loaders.html#config_stash.loaders.S3Loader.load">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load configuration from an AWS S3 bucket.</span>
+
+<span class="sd">        Downloads the object specified by ``bucket`` and ``key``, then</span>
+<span class="sd">        parses the content based on the file extension of the key.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Dictionary containing the loaded configuration.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ImportError: If ``boto3`` is not installed.</span>
+<span class="sd">            ConfigLoadError: If the S3 request fails or the content</span>
+<span class="sd">                cannot be parsed.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; loader = S3Loader(&quot;s3://my-bucket/config.yaml&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; config = loader.load()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">import</span><span class="w"> </span><span class="nn">boto3</span>  <span class="c1"># type: ignore[import-untyped]</span>
+        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+                <span class="s2">&quot;boto3 is required for S3 loading. Install with: pip install boto3&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loading configuration from S3: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Create S3 client</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">aws_access_key</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">aws_secret_key</span><span class="p">:</span>
+                <span class="n">s3</span> <span class="o">=</span> <span class="n">boto3</span><span class="o">.</span><span class="n">client</span><span class="p">(</span>
+                    <span class="s2">&quot;s3&quot;</span><span class="p">,</span>
+                    <span class="n">aws_access_key_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">aws_access_key</span><span class="p">,</span>
+                    <span class="n">aws_secret_access_key</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">aws_secret_key</span><span class="p">,</span>
+                    <span class="n">region_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Use default credentials (IAM role, environment, etc.)</span>
+                <span class="n">s3</span> <span class="o">=</span> <span class="n">boto3</span><span class="o">.</span><span class="n">client</span><span class="p">(</span><span class="s2">&quot;s3&quot;</span><span class="p">,</span> <span class="n">region_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="p">)</span>
+
+            <span class="c1"># Get object from S3</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="n">s3</span><span class="o">.</span><span class="n">get_object</span><span class="p">(</span><span class="n">Bucket</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bucket</span><span class="p">,</span> <span class="n">Key</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">key</span><span class="p">)</span>
+            <span class="n">content</span> <span class="o">=</span> <span class="n">response</span><span class="p">[</span><span class="s2">&quot;Body&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Parse based on file extension</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">config_stash.utils.format_parser</span><span class="w"> </span><span class="kn">import</span> <span class="n">parse_config_content</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">parse_config_content</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">key</span><span class="p">)</span>
+
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Successfully loaded configuration from S3: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span>
+
+        <span class="k">except</span> <span class="n">ConfigLoadError</span><span class="p">:</span>
+            <span class="c1"># Re-raise ConfigLoadError as-is</span>
+            <span class="k">raise</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to load configuration from S3: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">ConfigLoadError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Failed to load S3 configuration from </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="n">source</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">,</span>
+                <span class="n">loader_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+                <span class="n">original_error</span><span class="o">=</span><span class="n">e</span><span class="p">,</span>
+            <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="GitLoader">
+<a class="viewcode-back" href="../../../api/loaders.html#config_stash.loaders.GitLoader">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">GitLoader</span><span class="p">(</span><span class="n">RemoteLoader</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Load configuration from a Git repository hosted on GitHub or GitLab.</span>
+
+<span class="sd">    GitLoader constructs a raw-content URL for the specified file and branch,</span>
+<span class="sd">    then delegates to HTTPLoader to fetch and parse it. Private repositories</span>
+<span class="sd">    are supported via personal access tokens.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        url: The Git repository URL (e.g., ``https://github.com/org/repo``).</span>
+<span class="sd">        file_path: Path to the configuration file within the repository.</span>
+<span class="sd">        branch: The Git branch to read from.</span>
+<span class="sd">        token: Access token for private repositories (may be None).</span>
+<span class="sd">        config: The loaded configuration dictionary.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; from config_stash.loaders.remote_loader import GitLoader</span>
+<span class="sd">        &gt;&gt;&gt; loader = GitLoader(</span>
+<span class="sd">        ...     repo_url=&quot;https://github.com/myorg/myrepo&quot;,</span>
+<span class="sd">        ...     file_path=&quot;config/production.yaml&quot;,</span>
+<span class="sd">        ...     branch=&quot;main&quot;,</span>
+<span class="sd">        ...     token=&quot;ghp_xxxxxxxxxxxx&quot;,</span>
+<span class="sd">        ... )</span>
+<span class="sd">        &gt;&gt;&gt; config_dict = loader.load()</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        Currently supports GitHub and GitLab. The ``GIT_TOKEN`` environment</span>
+<span class="sd">        variable is used as a fallback when ``token`` is not provided.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="GitLoader.__init__">
+<a class="viewcode-back" href="../../../api/loaders.html#config_stash.loaders.GitLoader.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">repo_url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">file_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">branch</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;main&quot;</span><span class="p">,</span>
+        <span class="n">token</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize Git loader.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            repo_url: Git repository URL (GitHub or GitLab).</span>
+<span class="sd">            file_path: Path to the configuration file within the repository.</span>
+<span class="sd">            branch: Git branch to read from. Defaults to ``&quot;main&quot;``.</span>
+<span class="sd">            token: Access token for private repositories. Falls back to</span>
+<span class="sd">                the ``GIT_TOKEN`` environment variable.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">repo_url</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">file_path</span> <span class="o">=</span> <span class="n">file_path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">branch</span> <span class="o">=</span> <span class="n">branch</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">token</span> <span class="o">=</span> <span class="n">token</span> <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;GIT_TOKEN&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GitLoader.load">
+<a class="viewcode-back" href="../../../api/loaders.html#config_stash.loaders.GitLoader.load">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load configuration from a Git repository.</span>
+
+<span class="sd">        Converts the repository URL to a raw-content URL based on the</span>
+<span class="sd">        hosting provider (GitHub or GitLab), then fetches the file via</span>
+<span class="sd">        HTTPLoader.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Dictionary containing the loaded configuration.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If the Git provider is not supported (neither</span>
+<span class="sd">                GitHub nor GitLab).</span>
+<span class="sd">            ConfigLoadError: If the HTTP request or parsing fails.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; loader = GitLoader(</span>
+<span class="sd">            ...     &quot;https://github.com/org/repo&quot;, &quot;config.yaml&quot;</span>
+<span class="sd">            ... )</span>
+<span class="sd">            &gt;&gt;&gt; config = loader.load()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Convert to raw URL based on provider</span>
+        <span class="k">if</span> <span class="s2">&quot;github.com&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">:</span>
+            <span class="c1"># GitHub raw URL format</span>
+            <span class="n">parts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;https://github.com/&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
+            <span class="n">repo</span> <span class="o">=</span> <span class="n">parts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">removesuffix</span><span class="p">(</span><span class="s2">&quot;.git&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">raw_url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;https://raw.githubusercontent.com/</span><span class="si">{</span><span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">repo</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">branch</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">file_path</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">elif</span> <span class="s2">&quot;gitlab.com&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">:</span>
+            <span class="c1"># GitLab raw URL format — handle subgroups by joining all path parts</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;https://gitlab.com/&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">removesuffix</span><span class="p">(</span><span class="s2">&quot;.git&quot;</span><span class="p">)</span>
+            <span class="n">raw_url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;https://gitlab.com/</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">/-/raw/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">branch</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">file_path</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported Git provider: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Use HTTP loader to fetch the raw file</span>
+        <span class="n">headers</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">token</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;gitlab.com&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">:</span>
+                <span class="n">headers</span><span class="p">[</span><span class="s2">&quot;PRIVATE-TOKEN&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">token</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">headers</span><span class="p">[</span><span class="s2">&quot;Authorization&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;token </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">token</span><span class="si">}</span><span class="s2">&quot;</span>
+
+        <span class="n">http_loader</span> <span class="o">=</span> <span class="n">HTTPLoader</span><span class="p">(</span><span class="n">raw_url</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">http_loader</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="AzureBlobLoader">
+<a class="viewcode-back" href="../../../api/loaders.html#config_stash.loaders.AzureBlobLoader">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">AzureBlobLoader</span><span class="p">(</span><span class="n">RemoteLoader</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Load configuration from Azure Blob Storage.</span>
+
+<span class="sd">    AzureBlobLoader downloads configuration files from Azure Blob Storage</span>
+<span class="sd">    containers. It supports multiple authentication methods: connection</span>
+<span class="sd">    strings, account key, SAS tokens, and Azure Managed Identity via</span>
+<span class="sd">    ``DefaultAzureCredential``.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        url: Synthetic URI in the form ``azure://&lt;container&gt;/&lt;blob&gt;``.</span>
+<span class="sd">        container_url: The Azure container URL or container name.</span>
+<span class="sd">        blob_name: The blob (file) name within the container.</span>
+<span class="sd">        account_name: Azure Storage account name.</span>
+<span class="sd">        account_key: Azure Storage account key (may be None).</span>
+<span class="sd">        sas_token: Shared Access Signature token (may be None).</span>
+<span class="sd">        connection_string: Full Azure Storage connection string (may be None).</span>
+<span class="sd">        config: The loaded configuration dictionary.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; from config_stash.loaders.remote_loader import AzureBlobLoader</span>
+<span class="sd">        &gt;&gt;&gt; loader = AzureBlobLoader(</span>
+<span class="sd">        ...     container_url=&quot;my-container&quot;,</span>
+<span class="sd">        ...     blob_name=&quot;config/app.yaml&quot;,</span>
+<span class="sd">        ...     account_name=&quot;mystorageaccount&quot;,</span>
+<span class="sd">        ...     account_key=&quot;base64key==&quot;,</span>
+<span class="sd">        ... )</span>
+<span class="sd">        &gt;&gt;&gt; config_dict = loader.load()</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        Requires the ``azure-storage-blob`` package. Install it with::</span>
+
+<span class="sd">            pip install azure-storage-blob</span>
+
+<span class="sd">        Environment variable fallbacks: ``AZURE_STORAGE_ACCOUNT``,</span>
+<span class="sd">        ``AZURE_STORAGE_KEY``, ``AZURE_SAS_TOKEN``,</span>
+<span class="sd">        ``AZURE_STORAGE_CONNECTION_STRING``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="AzureBlobLoader.__init__">
+<a class="viewcode-back" href="../../../api/loaders.html#config_stash.loaders.AzureBlobLoader.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">container_url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">blob_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">account_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">account_key</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">sas_token</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">connection_string</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize Azure Blob loader.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            container_url: Azure container URL or plain container name.</span>
+<span class="sd">            blob_name: Name of the blob (file) to load.</span>
+<span class="sd">            account_name: Azure storage account name. Falls back to</span>
+<span class="sd">                ``AZURE_STORAGE_ACCOUNT`` environment variable.</span>
+<span class="sd">            account_key: Azure storage account key. Falls back to</span>
+<span class="sd">                ``AZURE_STORAGE_KEY`` environment variable.</span>
+<span class="sd">            sas_token: Shared Access Signature token. Falls back to</span>
+<span class="sd">                ``AZURE_SAS_TOKEN`` environment variable.</span>
+<span class="sd">            connection_string: Full connection string (alternative to</span>
+<span class="sd">                individual credentials). Falls back to</span>
+<span class="sd">                ``AZURE_STORAGE_CONNECTION_STRING`` environment variable.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;azure://</span><span class="si">{</span><span class="n">container_url</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">blob_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">container_url</span> <span class="o">=</span> <span class="n">container_url</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">blob_name</span> <span class="o">=</span> <span class="n">blob_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">account_name</span> <span class="o">=</span> <span class="n">account_name</span> <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;AZURE_STORAGE_ACCOUNT&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">account_key</span> <span class="o">=</span> <span class="n">account_key</span> <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;AZURE_STORAGE_KEY&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sas_token</span> <span class="o">=</span> <span class="n">sas_token</span> <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;AZURE_SAS_TOKEN&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connection_string</span> <span class="o">=</span> <span class="n">connection_string</span> <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="s2">&quot;AZURE_STORAGE_CONNECTION_STRING&quot;</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="AzureBlobLoader.load">
+<a class="viewcode-back" href="../../../api/loaders.html#config_stash.loaders.AzureBlobLoader.load">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load configuration from Azure Blob Storage.</span>
+
+<span class="sd">        Downloads the blob content and parses it based on the blob</span>
+<span class="sd">        name&#39;s file extension (e.g., ``.yaml``, ``.json``, ``.toml``).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Dictionary containing the loaded configuration.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ImportError: If ``azure-storage-blob`` is not installed.</span>
+<span class="sd">            ValueError: If ``account_name`` is required but not provided.</span>
+<span class="sd">            ConfigLoadError: If the Azure request fails or the content</span>
+<span class="sd">                cannot be parsed.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; loader = AzureBlobLoader(&quot;my-container&quot;, &quot;config.yaml&quot;,</span>
+<span class="sd">            ...                          account_name=&quot;myaccount&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; config = loader.load()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">azure.storage.blob</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+                <span class="n">BlobServiceClient</span><span class="p">,</span>  <span class="c1"># type: ignore[import-untyped]</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+                <span class="s2">&quot;azure-storage-blob is required for Azure loading. &quot;</span>
+                <span class="s2">&quot;Install with: pip install azure-storage-blob&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loading configuration from Azure: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Create blob client based on available credentials</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection_string</span><span class="p">:</span>
+                <span class="n">blob_service</span> <span class="o">=</span> <span class="n">BlobServiceClient</span><span class="o">.</span><span class="n">from_connection_string</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">connection_string</span>
+                <span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">account_name</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">account_key</span><span class="p">:</span>
+                <span class="n">blob_service</span> <span class="o">=</span> <span class="n">BlobServiceClient</span><span class="p">(</span>
+                    <span class="n">account_url</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;https://</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">account_name</span><span class="si">}</span><span class="s2">.blob.core.windows.net&quot;</span><span class="p">,</span>
+                    <span class="n">credential</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">account_key</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">account_name</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">sas_token</span><span class="p">:</span>
+                <span class="n">blob_service</span> <span class="o">=</span> <span class="n">BlobServiceClient</span><span class="p">(</span>
+                    <span class="n">account_url</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;https://</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">account_name</span><span class="si">}</span><span class="s2">.blob.core.windows.net&quot;</span><span class="p">,</span>
+                    <span class="n">credential</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sas_token</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Try DefaultAzureCredential for managed identity</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">account_name</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="s2">&quot;Azure storage account name is required. Provide &#39;account_name&#39; &quot;</span>
+                        <span class="s2">&quot;or set the AZURE_STORAGE_ACCOUNT environment variable.&quot;</span>
+                    <span class="p">)</span>
+                <span class="kn">from</span><span class="w"> </span><span class="nn">azure.identity</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+                    <span class="n">DefaultAzureCredential</span><span class="p">,</span>  <span class="c1"># type: ignore[import-untyped]</span>
+                <span class="p">)</span>
+
+                <span class="n">blob_service</span> <span class="o">=</span> <span class="n">BlobServiceClient</span><span class="p">(</span>
+                    <span class="n">account_url</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;https://</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">account_name</span><span class="si">}</span><span class="s2">.blob.core.windows.net&quot;</span><span class="p">,</span>
+                    <span class="n">credential</span><span class="o">=</span><span class="n">DefaultAzureCredential</span><span class="p">(),</span>
+                <span class="p">)</span>
+
+            <span class="c1"># Extract container name if full URL provided</span>
+            <span class="n">container_name</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">container_url</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                <span class="k">if</span> <span class="s2">&quot;/&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">container_url</span>
+                <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">container_url</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Get blob client and download content</span>
+            <span class="n">blob_client</span> <span class="o">=</span> <span class="n">blob_service</span><span class="o">.</span><span class="n">get_blob_client</span><span class="p">(</span>
+                <span class="n">container</span><span class="o">=</span><span class="n">container_name</span><span class="p">,</span> <span class="n">blob</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">blob_name</span>
+            <span class="p">)</span>
+            <span class="n">content</span> <span class="o">=</span> <span class="n">blob_client</span><span class="o">.</span><span class="n">download_blob</span><span class="p">()</span><span class="o">.</span><span class="n">readall</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Parse based on file extension</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">config_stash.utils.format_parser</span><span class="w"> </span><span class="kn">import</span> <span class="n">parse_config_content</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">parse_config_content</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">blob_name</span><span class="p">)</span>
+
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Successfully loaded configuration from Azure: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span>
+
+        <span class="k">except</span> <span class="n">ConfigLoadError</span><span class="p">:</span>
+            <span class="c1"># Re-raise ConfigLoadError as-is</span>
+            <span class="k">raise</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to load configuration from Azure: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">ConfigLoadError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Failed to load Azure configuration from </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="n">source</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">,</span>
+                <span class="n">loader_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+                <span class="n">original_error</span><span class="o">=</span><span class="n">e</span><span class="p">,</span>
+            <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="GCPStorageLoader">
+<a class="viewcode-back" href="../../../api/loaders.html#config_stash.loaders.GCPStorageLoader">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">GCPStorageLoader</span><span class="p">(</span><span class="n">RemoteLoader</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Load configuration from Google Cloud Storage.</span>
+
+<span class="sd">    GCPStorageLoader downloads configuration files from GCS buckets.</span>
+<span class="sd">    Authentication is handled via explicit service account credentials</span>
+<span class="sd">    or Application Default Credentials (ADC).</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        url: Synthetic URI in the form ``gs://&lt;bucket&gt;/&lt;blob&gt;``.</span>
+<span class="sd">        bucket_name: The GCS bucket name.</span>
+<span class="sd">        blob_name: The blob (file) name within the bucket.</span>
+<span class="sd">        project_id: GCP project ID.</span>
+<span class="sd">        credentials_path: Path to a service account JSON key file.</span>
+<span class="sd">        config: The loaded configuration dictionary.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; from config_stash.loaders.remote_loader import GCPStorageLoader</span>
+<span class="sd">        &gt;&gt;&gt; loader = GCPStorageLoader(</span>
+<span class="sd">        ...     bucket_name=&quot;my-config-bucket&quot;,</span>
+<span class="sd">        ...     blob_name=&quot;services/app.yaml&quot;,</span>
+<span class="sd">        ...     project_id=&quot;my-gcp-project&quot;,</span>
+<span class="sd">        ... )</span>
+<span class="sd">        &gt;&gt;&gt; config_dict = loader.load()</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        Requires the ``google-cloud-storage`` package. Install it with::</span>
+
+<span class="sd">            pip install google-cloud-storage</span>
+
+<span class="sd">        Environment variable fallbacks: ``GCP_PROJECT_ID``,</span>
+<span class="sd">        ``GOOGLE_APPLICATION_CREDENTIALS``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="GCPStorageLoader.__init__">
+<a class="viewcode-back" href="../../../api/loaders.html#config_stash.loaders.GCPStorageLoader.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">bucket_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">blob_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">project_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">credentials_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize GCP Storage loader.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            bucket_name: GCS bucket name.</span>
+<span class="sd">            blob_name: Name of the blob (file) to load.</span>
+<span class="sd">            project_id: GCP project ID. Falls back to the</span>
+<span class="sd">                ``GCP_PROJECT_ID`` environment variable.</span>
+<span class="sd">            credentials_path: Path to a service account JSON key file.</span>
+<span class="sd">                Falls back to the ``GOOGLE_APPLICATION_CREDENTIALS``</span>
+<span class="sd">                environment variable.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;gs://</span><span class="si">{</span><span class="n">bucket_name</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">blob_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bucket_name</span> <span class="o">=</span> <span class="n">bucket_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">blob_name</span> <span class="o">=</span> <span class="n">blob_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">project_id</span> <span class="o">=</span> <span class="n">project_id</span> <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;GCP_PROJECT_ID&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">credentials_path</span> <span class="o">=</span> <span class="n">credentials_path</span> <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="s2">&quot;GOOGLE_APPLICATION_CREDENTIALS&quot;</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GCPStorageLoader.load">
+<a class="viewcode-back" href="../../../api/loaders.html#config_stash.loaders.GCPStorageLoader.load">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load configuration from Google Cloud Storage.</span>
+
+<span class="sd">        Downloads the blob content as text and parses it based on the</span>
+<span class="sd">        blob name&#39;s file extension.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Dictionary containing the loaded configuration.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ImportError: If ``google-cloud-storage`` is not installed.</span>
+<span class="sd">            ConfigLoadError: If the GCS request fails or the content</span>
+<span class="sd">                cannot be parsed.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; loader = GCPStorageLoader(&quot;my-bucket&quot;, &quot;config.yaml&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; config = loader.load()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">google.cloud</span><span class="w"> </span><span class="kn">import</span> <span class="n">storage</span>  <span class="c1"># type: ignore[import-untyped]</span>
+        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+                <span class="s2">&quot;google-cloud-storage is required for GCS loading. &quot;</span>
+                <span class="s2">&quot;Install with: pip install google-cloud-storage&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loading configuration from GCS: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Create storage client</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">credentials_path</span><span class="p">:</span>
+                <span class="c1"># Use service account credentials</span>
+                <span class="kn">from</span><span class="w"> </span><span class="nn">google.oauth2</span><span class="w"> </span><span class="kn">import</span> <span class="n">service_account</span>
+
+                <span class="n">credentials</span> <span class="o">=</span> <span class="n">service_account</span><span class="o">.</span><span class="n">Credentials</span><span class="o">.</span><span class="n">from_service_account_file</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">credentials_path</span>
+                <span class="p">)</span>
+                <span class="n">client</span> <span class="o">=</span> <span class="n">storage</span><span class="o">.</span><span class="n">Client</span><span class="p">(</span>
+                    <span class="n">project</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">project_id</span><span class="p">,</span> <span class="n">credentials</span><span class="o">=</span><span class="n">credentials</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Use default credentials (ADC)</span>
+                <span class="n">client</span> <span class="o">=</span> <span class="n">storage</span><span class="o">.</span><span class="n">Client</span><span class="p">(</span><span class="n">project</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">project_id</span><span class="p">)</span>
+
+            <span class="c1"># Get bucket and blob</span>
+            <span class="n">bucket</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">bucket</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bucket_name</span><span class="p">)</span>
+            <span class="n">blob</span> <span class="o">=</span> <span class="n">bucket</span><span class="o">.</span><span class="n">blob</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">blob_name</span><span class="p">)</span>
+
+            <span class="c1"># Download content</span>
+            <span class="n">content</span> <span class="o">=</span> <span class="n">blob</span><span class="o">.</span><span class="n">download_as_text</span><span class="p">()</span>
+
+            <span class="c1"># Parse based on file extension</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">config_stash.utils.format_parser</span><span class="w"> </span><span class="kn">import</span> <span class="n">parse_config_content</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">parse_config_content</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">blob_name</span><span class="p">)</span>
+
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Successfully loaded configuration from GCS: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span>
+
+        <span class="k">except</span> <span class="n">ConfigLoadError</span><span class="p">:</span>
+            <span class="c1"># Re-raise ConfigLoadError as-is</span>
+            <span class="k">raise</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to load configuration from GCS: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">ConfigLoadError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Failed to load GCS configuration from </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="n">source</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">,</span>
+                <span class="n">loader_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+                <span class="n">original_error</span><span class="o">=</span><span class="n">e</span><span class="p">,</span>
+            <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="IBMCloudObjectStorageLoader">
+<a class="viewcode-back" href="../../../api/loaders.html#config_stash.loaders.IBMCloudObjectStorageLoader">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">IBMCloudObjectStorageLoader</span><span class="p">(</span><span class="n">RemoteLoader</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Load configuration from IBM Cloud Object Storage.</span>
+
+<span class="sd">    IBMCloudObjectStorageLoader fetches configuration files stored in IBM</span>
+<span class="sd">    Cloud Object Storage (COS) buckets using the S3-compatible API provided</span>
+<span class="sd">    by the ``ibm-cos-sdk`` package. Authentication uses IBM IAM OAuth via</span>
+<span class="sd">    an API key and service instance ID.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        url: Synthetic URI in the form ``ibmcos://&lt;bucket&gt;/&lt;key&gt;``.</span>
+<span class="sd">        bucket_name: The IBM COS bucket name.</span>
+<span class="sd">        object_key: The object key (path) within the bucket.</span>
+<span class="sd">        api_key: IBM Cloud API key.</span>
+<span class="sd">        service_instance_id: IBM COS service instance ID.</span>
+<span class="sd">        region: IBM Cloud region (e.g., ``&quot;us-south&quot;``).</span>
+<span class="sd">        endpoint_url: The S3-compatible endpoint URL.</span>
+<span class="sd">        config: The loaded configuration dictionary.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; from config_stash.loaders.remote_loader import IBMCloudObjectStorageLoader</span>
+<span class="sd">        &gt;&gt;&gt; loader = IBMCloudObjectStorageLoader(</span>
+<span class="sd">        ...     bucket_name=&quot;my-config-bucket&quot;,</span>
+<span class="sd">        ...     object_key=&quot;app/config.yaml&quot;,</span>
+<span class="sd">        ...     api_key=&quot;ibm-api-key&quot;,</span>
+<span class="sd">        ...     service_instance_id=&quot;crn:v1:...&quot;,</span>
+<span class="sd">        ... )</span>
+<span class="sd">        &gt;&gt;&gt; config_dict = loader.load()</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        Requires the ``ibm-cos-sdk`` package. Install it with::</span>
+
+<span class="sd">            pip install ibm-cos-sdk</span>
+
+<span class="sd">        Environment variable fallbacks: ``IBM_API_KEY``,</span>
+<span class="sd">        ``IBM_SERVICE_INSTANCE_ID``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="IBMCloudObjectStorageLoader.__init__">
+<a class="viewcode-back" href="../../../api/loaders.html#config_stash.loaders.IBMCloudObjectStorageLoader.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">bucket_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">object_key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">api_key</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">service_instance_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">endpoint_url</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">region</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;us-south&quot;</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize IBM Cloud Object Storage loader.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            bucket_name: IBM COS bucket name.</span>
+<span class="sd">            object_key: Key (path) of the object to load.</span>
+<span class="sd">            api_key: IBM Cloud API key. Falls back to the</span>
+<span class="sd">                ``IBM_API_KEY`` environment variable.</span>
+<span class="sd">            service_instance_id: IBM COS service instance ID. Falls back</span>
+<span class="sd">                to the ``IBM_SERVICE_INSTANCE_ID`` environment variable.</span>
+<span class="sd">            endpoint_url: Custom S3-compatible endpoint URL. Defaults to</span>
+<span class="sd">                the public endpoint for the given region.</span>
+<span class="sd">            region: IBM Cloud region. Defaults to ``&quot;us-south&quot;``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ibmcos://</span><span class="si">{</span><span class="n">bucket_name</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">object_key</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bucket_name</span> <span class="o">=</span> <span class="n">bucket_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">object_key</span> <span class="o">=</span> <span class="n">object_key</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">api_key</span> <span class="o">=</span> <span class="n">api_key</span> <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;IBM_API_KEY&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">service_instance_id</span> <span class="o">=</span> <span class="n">service_instance_id</span> <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="s2">&quot;IBM_SERVICE_INSTANCE_ID&quot;</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">region</span> <span class="o">=</span> <span class="n">region</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">endpoint_url</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">endpoint_url</span> <span class="ow">or</span> <span class="sa">f</span><span class="s2">&quot;https://s3.</span><span class="si">{</span><span class="n">region</span><span class="si">}</span><span class="s2">.cloud-object-storage.appdomain.cloud&quot;</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="IBMCloudObjectStorageLoader.load">
+<a class="viewcode-back" href="../../../api/loaders.html#config_stash.loaders.IBMCloudObjectStorageLoader.load">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load configuration from IBM Cloud Object Storage.</span>
+
+<span class="sd">        Downloads the object content and parses it based on the object</span>
+<span class="sd">        key&#39;s file extension.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Dictionary containing the loaded configuration.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ImportError: If ``ibm-cos-sdk`` is not installed.</span>
+<span class="sd">            ConfigLoadError: If the IBM COS request fails or the content</span>
+<span class="sd">                cannot be parsed.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; loader = IBMCloudObjectStorageLoader(</span>
+<span class="sd">            ...     &quot;my-bucket&quot;, &quot;config.yaml&quot;</span>
+<span class="sd">            ... )</span>
+<span class="sd">            &gt;&gt;&gt; config = loader.load()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">import</span><span class="w"> </span><span class="nn">ibm_boto3</span>  <span class="c1"># type: ignore[import-untyped]</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">ibm_botocore.client</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+                <span class="n">Config</span> <span class="k">as</span> <span class="n">IBMConfig</span><span class="p">,</span>  <span class="c1"># type: ignore[import-untyped]</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+                <span class="s2">&quot;ibm-cos-sdk is required for IBM COS loading. &quot;</span>
+                <span class="s2">&quot;Install with: pip install ibm-cos-sdk&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loading configuration from IBM COS: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Create COS client</span>
+            <span class="n">cos_client</span> <span class="o">=</span> <span class="n">ibm_boto3</span><span class="o">.</span><span class="n">client</span><span class="p">(</span>
+                <span class="s2">&quot;s3&quot;</span><span class="p">,</span>
+                <span class="n">ibm_api_key_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">api_key</span><span class="p">,</span>
+                <span class="n">ibm_service_instance_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">service_instance_id</span><span class="p">,</span>
+                <span class="n">config</span><span class="o">=</span><span class="n">IBMConfig</span><span class="p">(</span><span class="n">signature_version</span><span class="o">=</span><span class="s2">&quot;oauth&quot;</span><span class="p">),</span>
+                <span class="n">endpoint_url</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">endpoint_url</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Get object from IBM COS</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="n">cos_client</span><span class="o">.</span><span class="n">get_object</span><span class="p">(</span>
+                <span class="n">Bucket</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bucket_name</span><span class="p">,</span> <span class="n">Key</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">object_key</span>
+            <span class="p">)</span>
+            <span class="n">content</span> <span class="o">=</span> <span class="n">response</span><span class="p">[</span><span class="s2">&quot;Body&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Parse based on file extension</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">config_stash.utils.format_parser</span><span class="w"> </span><span class="kn">import</span> <span class="n">parse_config_content</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">parse_config_content</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">object_key</span><span class="p">)</span>
+
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Successfully loaded configuration from IBM COS: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span>
+
+        <span class="k">except</span> <span class="n">ConfigLoadError</span><span class="p">:</span>
+            <span class="c1"># Re-raise ConfigLoadError as-is</span>
+            <span class="k">raise</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to load configuration from IBM COS: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">ConfigLoadError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Failed to load IBM COS configuration from </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="n">source</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">,</span>
+                <span class="n">loader_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+                <span class="n">original_error</span><span class="o">=</span><span class="n">e</span><span class="p">,</span>
+            <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, QAToolist.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

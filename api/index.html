@@ -1,0 +1,298 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>API Reference &mdash; Config-Stash 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=d45e8c67"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Config Class" href="config.html" />
+    <link rel="prev" title="Advanced Features" href="../user_guide/advanced_features.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Config-Stash
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user_guide/index.html">User Guide</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">API Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#core-classes">Core Classes</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="config.html">Config Class</a></li>
+<li class="toctree-l3"><a class="reference internal" href="config_builder.html">ConfigBuilder</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#loaders">Loaders</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="loaders.html">Loaders</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#secret-stores">Secret Stores</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="secret_stores.html">Secret Stores</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#validators">Validators</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="validators.html">Validators</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#advanced-features">Advanced Features</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="async_config.html">Async Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="config_diff.html">Configuration Diff</a></li>
+<li class="toctree-l3"><a class="reference internal" href="config_versioning.html">Configuration Versioning</a></li>
+<li class="toctree-l3"><a class="reference internal" href="observability.html">Observability</a></li>
+<li class="toctree-l3"><a class="reference internal" href="merge_strategies.html">Merge Strategies</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#utilities">Utilities</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="introspection.html">Configuration Introspection</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#cli">CLI</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="cli.html">CLI Reference</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#exceptions">Exceptions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="exceptions.html">Exceptions</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Config-Stash</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">API Reference</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="api-reference">
+<h1>API Reference<a class="headerlink" href="#api-reference" title="Link to this heading"></a></h1>
+<p>Complete API reference for Config-Stash.</p>
+<section id="core-classes">
+<h2>Core Classes<a class="headerlink" href="#core-classes" title="Link to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="config.html">Config Class</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="config.html#config_stash.config.Config"><code class="docutils literal notranslate"><span class="pre">Config</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="config_builder.html">ConfigBuilder</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="config_builder.html#config_stash.config_builder.ConfigBuilder"><code class="docutils literal notranslate"><span class="pre">ConfigBuilder</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="config_builder.html#config_stash.config_builder.builder"><code class="docutils literal notranslate"><span class="pre">builder()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="loaders">
+<h2>Loaders<a class="headerlink" href="#loaders" title="Link to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="loaders.html">Loaders</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="loaders.html#module-config_stash.loaders">Configuration Loaders</a></li>
+<li class="toctree-l2"><a class="reference internal" href="loaders.html#module-config_stash.loaders.loader">Base Loader</a></li>
+<li class="toctree-l2"><a class="reference internal" href="loaders.html#module-config_stash.loaders.yaml_loader">YAML Loader</a></li>
+<li class="toctree-l2"><a class="reference internal" href="loaders.html#module-config_stash.loaders.json_loader">JSON Loader</a></li>
+<li class="toctree-l2"><a class="reference internal" href="loaders.html#module-config_stash.loaders.toml_loader">TOML Loader</a></li>
+<li class="toctree-l2"><a class="reference internal" href="loaders.html#module-config_stash.loaders.environment_loader">Environment Loader</a></li>
+<li class="toctree-l2"><a class="reference internal" href="loaders.html#module-config_stash.loaders.remote_loader">Remote Loaders</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="secret-stores">
+<h2>Secret Stores<a class="headerlink" href="#secret-stores" title="Link to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="secret_stores.html">Secret Stores</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="secret_stores.html#config_stash.secret_stores.AWSSecretsManager"><code class="docutils literal notranslate"><span class="pre">AWSSecretsManager</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="secret_stores.html#config_stash.secret_stores.AzureKeyVault"><code class="docutils literal notranslate"><span class="pre">AzureKeyVault</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="secret_stores.html#config_stash.secret_stores.DictSecretStore"><code class="docutils literal notranslate"><span class="pre">DictSecretStore</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="secret_stores.html#config_stash.secret_stores.EnvSecretStore"><code class="docutils literal notranslate"><span class="pre">EnvSecretStore</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="secret_stores.html#config_stash.secret_stores.GCPSecretManager"><code class="docutils literal notranslate"><span class="pre">GCPSecretManager</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="secret_stores.html#config_stash.secret_stores.HashiCorpVault"><code class="docutils literal notranslate"><span class="pre">HashiCorpVault</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="secret_stores.html#config_stash.secret_stores.MultiSecretStore"><code class="docutils literal notranslate"><span class="pre">MultiSecretStore</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="secret_stores.html#config_stash.secret_stores.SecretResolver"><code class="docutils literal notranslate"><span class="pre">SecretResolver</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="secret_stores.html#config_stash.secret_stores.SecretStore"><code class="docutils literal notranslate"><span class="pre">SecretStore</span></code></a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="validators">
+<h2>Validators<a class="headerlink" href="#validators" title="Link to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="validators.html">Validators</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="validators.html#available-validators">Available Validators</a></li>
+<li class="toctree-l2"><a class="reference internal" href="validators.html#config_stash.validators.PydanticValidator"><code class="docutils literal notranslate"><span class="pre">PydanticValidator</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="validators.html#config_stash.validators.SchemaValidator"><code class="docutils literal notranslate"><span class="pre">SchemaValidator</span></code></a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="advanced-features">
+<h2>Advanced Features<a class="headerlink" href="#advanced-features" title="Link to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="async_config.html">Async Configuration</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="async_config.html#config_stash.async_config.AsyncConfig"><code class="docutils literal notranslate"><span class="pre">AsyncConfig</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="async_config.html#config_stash.async_config.AsyncHTTPLoader"><code class="docutils literal notranslate"><span class="pre">AsyncHTTPLoader</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="async_config.html#config_stash.async_config.AsyncLoader"><code class="docutils literal notranslate"><span class="pre">AsyncLoader</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="async_config.html#config_stash.async_config.AsyncYamlLoader"><code class="docutils literal notranslate"><span class="pre">AsyncYamlLoader</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="config_diff.html">Configuration Diff</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="config_diff.html#config_stash.config_diff.ConfigDiff"><code class="docutils literal notranslate"><span class="pre">ConfigDiff</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="config_diff.html#config_stash.config_diff.ConfigDiffer"><code class="docutils literal notranslate"><span class="pre">ConfigDiffer</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="config_diff.html#config_stash.config_diff.ConfigDriftDetector"><code class="docutils literal notranslate"><span class="pre">ConfigDriftDetector</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="config_diff.html#config_stash.config_diff.DiffType"><code class="docutils literal notranslate"><span class="pre">DiffType</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="config_versioning.html">Configuration Versioning</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="config_versioning.html#config_stash.config_versioning.ConfigVersion"><code class="docutils literal notranslate"><span class="pre">ConfigVersion</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="config_versioning.html#config_stash.config_versioning.ConfigVersionManager"><code class="docutils literal notranslate"><span class="pre">ConfigVersionManager</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="observability.html">Observability</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="observability.html#config_stash.observability.ConfigAccessMetric"><code class="docutils literal notranslate"><span class="pre">ConfigAccessMetric</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="observability.html#config_stash.observability.ConfigEventEmitter"><code class="docutils literal notranslate"><span class="pre">ConfigEventEmitter</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="observability.html#config_stash.observability.ConfigMetrics"><code class="docutils literal notranslate"><span class="pre">ConfigMetrics</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="observability.html#config_stash.observability.ConfigObserver"><code class="docutils literal notranslate"><span class="pre">ConfigObserver</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="merge_strategies.html">Merge Strategies</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="merge_strategies.html#config_stash.merge_strategies.AdvancedConfigMerger"><code class="docutils literal notranslate"><span class="pre">AdvancedConfigMerger</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="merge_strategies.html#config_stash.merge_strategies.MergeStrategy"><code class="docutils literal notranslate"><span class="pre">MergeStrategy</span></code></a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="utilities">
+<h2>Utilities<a class="headerlink" href="#utilities" title="Link to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="introspection.html">Configuration Introspection</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="introspection.html#config_stash.config_introspection.get_all_keys"><code class="docutils literal notranslate"><span class="pre">get_all_keys()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="introspection.html#config_stash.config_introspection.get_nested_value"><code class="docutils literal notranslate"><span class="pre">get_nested_value()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="introspection.html#config_stash.config_introspection.get_schema_info"><code class="docutils literal notranslate"><span class="pre">get_schema_info()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="introspection.html#config_stash.config_introspection.has_key"><code class="docutils literal notranslate"><span class="pre">has_key()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="introspection.html#config_stash.config_introspection.infer_type"><code class="docutils literal notranslate"><span class="pre">infer_type()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="cli">
+<h2>CLI<a class="headerlink" href="#cli" title="Link to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">CLI Reference</a></li>
+</ul>
+</div>
+</section>
+<section id="exceptions">
+<h2>Exceptions<a class="headerlink" href="#exceptions" title="Link to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="exceptions.html">Exceptions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="exceptions.html#config_stash.exceptions.ConfigAccessError"><code class="docutils literal notranslate"><span class="pre">ConfigAccessError</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="exceptions.html#config_stash.exceptions.ConfigFormatError"><code class="docutils literal notranslate"><span class="pre">ConfigFormatError</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="exceptions.html#config_stash.exceptions.ConfigLoadError"><code class="docutils literal notranslate"><span class="pre">ConfigLoadError</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="exceptions.html#config_stash.exceptions.ConfigMergeConflictError"><code class="docutils literal notranslate"><span class="pre">ConfigMergeConflictError</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="exceptions.html#config_stash.exceptions.ConfigNotFoundError"><code class="docutils literal notranslate"><span class="pre">ConfigNotFoundError</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="exceptions.html#config_stash.exceptions.ConfigStashError"><code class="docutils literal notranslate"><span class="pre">ConfigStashError</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="exceptions.html#config_stash.exceptions.ConfigValidationError"><code class="docutils literal notranslate"><span class="pre">ConfigValidationError</span></code></a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../user_guide/advanced_features.html" class="btn btn-neutral float-left" title="Advanced Features" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="config.html" class="btn btn-neutral float-right" title="Config Class" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, QAToolist.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

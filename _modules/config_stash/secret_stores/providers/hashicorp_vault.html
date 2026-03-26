@@ -1,0 +1,583 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>config_stash.secret_stores.providers.hashicorp_vault &mdash; Config-Stash 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=d45e8c67"></script>
+      <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            Config-Stash
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../user_guide/index.html">User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/index.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../contributing.html">Contributing</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">Config-Stash</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">config_stash.secret_stores.providers.hashicorp_vault</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for config_stash.secret_stores.providers.hashicorp_vault</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;HashiCorp Vault secret store provider.&quot;&quot;&quot;</span>
+
+<span class="c1"># pyright: reportPossiblyUnboundVariable=false</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">config_stash.secret_stores.base</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">SecretAccessError</span><span class="p">,</span>
+    <span class="n">SecretNotFoundError</span><span class="p">,</span>
+    <span class="n">SecretStore</span><span class="p">,</span>
+    <span class="n">SecretStoreError</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">hvac</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">hvac.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">Forbidden</span><span class="p">,</span> <span class="n">InvalidPath</span><span class="p">,</span> <span class="n">VaultError</span>
+
+    <span class="n">HVAC_AVAILABLE</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="n">HVAC_AVAILABLE</span> <span class="o">=</span> <span class="kc">False</span>
+
+
+<div class="viewcode-block" id="HashiCorpVault">
+<a class="viewcode-back" href="../../../../api/secret_stores.html#config_stash.secret_stores.HashiCorpVault">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">HashiCorpVault</span><span class="p">(</span><span class="n">SecretStore</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;HashiCorp Vault secret store provider.</span>
+
+<span class="sd">    This provider integrates with HashiCorp Vault to retrieve secrets from:</span>
+<span class="sd">    - KV v1 and KV v2 secrets engines</span>
+<span class="sd">    - Dynamic secrets</span>
+<span class="sd">    - Custom secrets engines</span>
+
+<span class="sd">    Prerequisites:</span>
+<span class="sd">        pip install hvac</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; from config_stash import Config</span>
+<span class="sd">        &gt;&gt;&gt; from config_stash.secret_stores import HashiCorpVault, SecretResolver</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; # Initialize with token authentication</span>
+<span class="sd">        &gt;&gt;&gt; store = HashiCorpVault(</span>
+<span class="sd">        ...     url=&#39;http://localhost:8200&#39;,</span>
+<span class="sd">        ...     token=&#39;your-vault-token&#39;</span>
+<span class="sd">        ... )</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; # Or with AppRole authentication</span>
+<span class="sd">        &gt;&gt;&gt; store = HashiCorpVault(</span>
+<span class="sd">        ...     url=&#39;http://localhost:8200&#39;,</span>
+<span class="sd">        ...     role_id=&#39;your-role-id&#39;,</span>
+<span class="sd">        ...     secret_id=&#39;your-secret-id&#39;</span>
+<span class="sd">        ... )</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; # Use with Config</span>
+<span class="sd">        &gt;&gt;&gt; config = Config(secret_resolver=SecretResolver(store))</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; # In config file:</span>
+<span class="sd">        &gt;&gt;&gt; # database.password = &quot;${secret:secret/data/db/password:password}&quot;</span>
+<span class="sd">        &gt;&gt;&gt; # For KV v2: secret/data/myapp/db</span>
+<span class="sd">        &gt;&gt;&gt; # For KV v1: secret/myapp/db</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="HashiCorpVault.__init__">
+<a class="viewcode-back" href="../../../../api/secret_stores.html#config_stash.secret_stores.HashiCorpVault.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;http://127.0.0.1:8200&quot;</span><span class="p">,</span>
+        <span class="n">token</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">role_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">secret_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">auth_method</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">namespace</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">mount_point</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;secret&quot;</span><span class="p">,</span>
+        <span class="n">kv_version</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="n">verify</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize HashiCorp Vault client.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            url: Vault server URL (default: &#39;http://127.0.0.1:8200&#39;).</span>
+<span class="sd">            token: Vault authentication token (for token auth). Deprecated: use auth_method.</span>
+<span class="sd">            role_id: Role ID for AppRole authentication. Deprecated: use auth_method.</span>
+<span class="sd">            secret_id: Secret ID for AppRole authentication. Deprecated: use auth_method.</span>
+<span class="sd">            auth_method: VaultAuthMethod instance (recommended). Supports:</span>
+<span class="sd">                - TokenAuth, AppRoleAuth, OIDCAuth, KerberosAuth, LDAPAuth</span>
+<span class="sd">                - JWTAuth, KubernetesAuth, AWSAuth, AzureAuth, GCPAuth</span>
+<span class="sd">            namespace: Vault namespace (Vault Enterprise feature).</span>
+<span class="sd">            mount_point: KV secrets engine mount point (default: &#39;secret&#39;).</span>
+<span class="sd">            kv_version: KV secrets engine version, 1 or 2 (default: 2).</span>
+<span class="sd">            verify: Verify SSL certificates (default: True).</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ImportError: If hvac is not installed.</span>
+<span class="sd">            SecretAccessError: If authentication fails.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; # Token auth (legacy)</span>
+<span class="sd">            &gt;&gt;&gt; store = HashiCorpVault(</span>
+<span class="sd">            ...     url=&#39;https://vault.example.com&#39;,</span>
+<span class="sd">            ...     token=&#39;s.1234567890&#39;,</span>
+<span class="sd">            ...     mount_point=&#39;myapp&#39;,</span>
+<span class="sd">            ...     kv_version=2</span>
+<span class="sd">            ... )</span>
+<span class="sd">            &gt;&gt;&gt;</span>
+<span class="sd">            &gt;&gt;&gt; # AppRole auth (legacy)</span>
+<span class="sd">            &gt;&gt;&gt; store = HashiCorpVault(</span>
+<span class="sd">            ...     url=&#39;https://vault.example.com&#39;,</span>
+<span class="sd">            ...     role_id=&#39;role-id-here&#39;,</span>
+<span class="sd">            ...     secret_id=&#39;secret-id-here&#39;</span>
+<span class="sd">            ... )</span>
+<span class="sd">            &gt;&gt;&gt;</span>
+<span class="sd">            &gt;&gt;&gt; # OIDC with Kerberos (recommended)</span>
+<span class="sd">            &gt;&gt;&gt; from config_stash.secret_stores.vault_auth import OIDCAuth</span>
+<span class="sd">            &gt;&gt;&gt; auth = OIDCAuth(role=&#39;myapp-role&#39;, use_kerberos=True)</span>
+<span class="sd">            &gt;&gt;&gt; store = HashiCorpVault(</span>
+<span class="sd">            ...     url=&#39;https://vault.example.com&#39;,</span>
+<span class="sd">            ...     auth_method=auth</span>
+<span class="sd">            ... )</span>
+<span class="sd">            &gt;&gt;&gt;</span>
+<span class="sd">            &gt;&gt;&gt; # LDAP with PIN+Token</span>
+<span class="sd">            &gt;&gt;&gt; from config_stash.secret_stores.vault_auth import LDAPAuth</span>
+<span class="sd">            &gt;&gt;&gt; def get_pin_token():</span>
+<span class="sd">            ...     pin = getpass.getpass(&quot;PIN: &quot;)</span>
+<span class="sd">            ...     token = getpass.getpass(&quot;Token: &quot;)</span>
+<span class="sd">            ...     return pin + token</span>
+<span class="sd">            &gt;&gt;&gt; auth = LDAPAuth(username=&#39;user&#39;, password_provider=get_pin_token)</span>
+<span class="sd">            &gt;&gt;&gt; store = HashiCorpVault(</span>
+<span class="sd">            ...     url=&#39;https://vault.example.com&#39;,</span>
+<span class="sd">            ...     auth_method=auth</span>
+<span class="sd">            ... )</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">HVAC_AVAILABLE</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+                <span class="s2">&quot;hvac is required for HashiCorpVault. &quot;</span>
+                <span class="s2">&quot;Install it with: pip install hvac&quot;</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">url</span> <span class="o">=</span> <span class="n">url</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mount_point</span> <span class="o">=</span> <span class="n">mount_point</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kv_version</span> <span class="o">=</span> <span class="n">kv_version</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">namespace</span> <span class="o">=</span> <span class="n">namespace</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">client</span> <span class="o">=</span> <span class="n">hvac</span><span class="o">.</span><span class="n">Client</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="n">url</span><span class="p">,</span> <span class="n">verify</span><span class="o">=</span><span class="n">verify</span><span class="p">,</span> <span class="n">namespace</span><span class="o">=</span><span class="n">namespace</span><span class="p">)</span>
+
+            <span class="c1"># Use new auth_method system if provided</span>
+            <span class="k">if</span> <span class="n">auth_method</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">token</span> <span class="o">=</span> <span class="n">auth_method</span><span class="o">.</span><span class="n">authenticate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="p">)</span>
+            <span class="c1"># Fall back to legacy authentication</span>
+            <span class="k">elif</span> <span class="n">token</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">token</span> <span class="o">=</span> <span class="n">token</span>
+            <span class="k">elif</span> <span class="n">role_id</span> <span class="ow">and</span> <span class="n">secret_id</span><span class="p">:</span>
+                <span class="n">auth_response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">auth</span><span class="o">.</span><span class="n">approle</span><span class="o">.</span><span class="n">login</span><span class="p">(</span>
+                    <span class="n">role_id</span><span class="o">=</span><span class="n">role_id</span><span class="p">,</span> <span class="n">secret_id</span><span class="o">=</span><span class="n">secret_id</span>
+                <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">token</span> <span class="o">=</span> <span class="n">auth_response</span><span class="p">[</span><span class="s2">&quot;auth&quot;</span><span class="p">][</span><span class="s2">&quot;client_token&quot;</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;Either &#39;auth_method&#39; or &#39;token&#39; or both &#39;role_id&#39; and &#39;secret_id&#39; must be provided&quot;</span>
+                <span class="p">)</span>
+
+            <span class="c1"># Verify authentication</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">is_authenticated</span><span class="p">():</span>
+                <span class="k">raise</span> <span class="n">SecretAccessError</span><span class="p">(</span><span class="s2">&quot;Failed to authenticate with Vault&quot;</span><span class="p">)</span>
+
+        <span class="k">except</span> <span class="p">(</span><span class="n">SecretAccessError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
+            <span class="k">raise</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">SecretAccessError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to initialize Vault client: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span></div>
+
+
+<div class="viewcode-block" id="HashiCorpVault.get_secret">
+<a class="viewcode-back" href="../../../../api/secret_stores.html#config_stash.secret_stores.HashiCorpVault.get_secret">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_secret</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">version</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Retrieve a secret from Vault.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            key: The secret path. For KV v2, use format: &quot;path/to/secret:field&quot;</span>
+<span class="sd">                to extract a specific field. For example:</span>
+<span class="sd">                - &quot;myapp/database:password&quot; extracts the &#39;password&#39; field</span>
+<span class="sd">                - &quot;myapp/database&quot; returns the entire secret dict</span>
+<span class="sd">            version: For KV v2, specify version number. If None, gets latest.</span>
+<span class="sd">            **kwargs: Additional parameters for read operation.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The secret value or dict of values.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            SecretNotFoundError: If the secret doesn&#39;t exist.</span>
+<span class="sd">            SecretAccessError: If there&#39;s a permission error.</span>
+<span class="sd">            SecretStoreError: For other Vault errors.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; store = HashiCorpVault(url=&#39;http://localhost:8200&#39;, token=&#39;...&#39;)</span>
+<span class="sd">            &gt;&gt;&gt;</span>
+<span class="sd">            &gt;&gt;&gt; # Get entire secret</span>
+<span class="sd">            &gt;&gt;&gt; secret = store.get_secret(&quot;myapp/database&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; # Returns: {&quot;host&quot;: &quot;localhost&quot;, &quot;password&quot;: &quot;secret&quot;}</span>
+<span class="sd">            &gt;&gt;&gt;</span>
+<span class="sd">            &gt;&gt;&gt; # Get specific field</span>
+<span class="sd">            &gt;&gt;&gt; password = store.get_secret(&quot;myapp/database:password&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; # Returns: &quot;secret&quot;</span>
+<span class="sd">            &gt;&gt;&gt;</span>
+<span class="sd">            &gt;&gt;&gt; # Get specific version (KV v2)</span>
+<span class="sd">            &gt;&gt;&gt; old_secret = store.get_secret(&quot;myapp/database&quot;, version=&quot;2&quot;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Parse key and field from format &quot;path:field&quot;</span>
+        <span class="k">if</span> <span class="s2">&quot;:&quot;</span> <span class="ow">in</span> <span class="n">key</span><span class="p">:</span>
+            <span class="n">path</span><span class="p">,</span> <span class="n">field</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">key</span>
+            <span class="n">field</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">kv_version</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="c1"># KV v2 API</span>
+                <span class="n">read_params</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s2">&quot;path&quot;</span><span class="p">:</span> <span class="n">path</span><span class="p">,</span>
+                    <span class="s2">&quot;mount_point&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">mount_point</span><span class="p">,</span>
+                <span class="p">}</span>
+                <span class="k">if</span> <span class="n">version</span><span class="p">:</span>
+                    <span class="n">read_params</span><span class="p">[</span><span class="s2">&quot;version&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">version</span><span class="p">)</span>
+                <span class="n">read_params</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+
+                <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">secrets</span><span class="o">.</span><span class="n">kv</span><span class="o">.</span><span class="n">v2</span><span class="o">.</span><span class="n">read_secret_version</span><span class="p">(</span><span class="o">**</span><span class="n">read_params</span><span class="p">)</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="p">{})</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># KV v1 API</span>
+                <span class="n">read_params</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;path&quot;</span><span class="p">:</span> <span class="n">path</span><span class="p">,</span> <span class="s2">&quot;mount_point&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">mount_point</span><span class="p">}</span>
+                <span class="n">read_params</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+
+                <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">secrets</span><span class="o">.</span><span class="n">kv</span><span class="o">.</span><span class="n">v1</span><span class="o">.</span><span class="n">read_secret</span><span class="p">(</span><span class="o">**</span><span class="n">read_params</span><span class="p">)</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="p">{})</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">data</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">SecretNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Secret &#39;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&#39; exists but has no data&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Extract specific field if requested</span>
+            <span class="k">if</span> <span class="n">field</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">data</span><span class="p">[</span><span class="n">field</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">SecretNotFoundError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;Field &#39;</span><span class="si">{</span><span class="n">field</span><span class="si">}</span><span class="s2">&#39; not found in secret &#39;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&#39;. &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;Available fields: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">data</span>
+
+        <span class="k">except</span> <span class="n">InvalidPath</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">SecretNotFoundError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Secret &#39;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&#39; not found in Vault &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;(mount: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">mount_point</span><span class="si">}</span><span class="s2">, version: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">kv_version</span><span class="si">}</span><span class="s2">)&quot;</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="n">Forbidden</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">SecretAccessError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Access denied to secret &#39;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&#39;: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">VaultError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">SecretStoreError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Vault error for &#39;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&#39;: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">SecretStoreError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unexpected error accessing &#39;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&#39;: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="HashiCorpVault.set_secret">
+<a class="viewcode-back" href="../../../../api/secret_stores.html#config_stash.secret_stores.HashiCorpVault.set_secret">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_secret</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Store a secret in Vault.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            key: The secret path.</span>
+<span class="sd">            value: The secret value. For KV engines, should be a dict.</span>
+<span class="sd">                If a string/other type is provided, it will be wrapped as {&quot;value&quot;: value}.</span>
+<span class="sd">            **kwargs: Additional parameters for create/update operation.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            SecretAccessError: If there&#39;s a permission error.</span>
+<span class="sd">            SecretStoreError: For other Vault errors.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; store = HashiCorpVault(url=&#39;http://localhost:8200&#39;, token=&#39;...&#39;)</span>
+<span class="sd">            &gt;&gt;&gt;</span>
+<span class="sd">            &gt;&gt;&gt; # Store dict secret</span>
+<span class="sd">            &gt;&gt;&gt; store.set_secret(&quot;myapp/database&quot;, {</span>
+<span class="sd">            ...     &quot;host&quot;: &quot;localhost&quot;,</span>
+<span class="sd">            ...     &quot;port&quot;: 5432,</span>
+<span class="sd">            ...     &quot;password&quot;: &quot;secret&quot;</span>
+<span class="sd">            ... })</span>
+<span class="sd">            &gt;&gt;&gt;</span>
+<span class="sd">            &gt;&gt;&gt; # Store simple value</span>
+<span class="sd">            &gt;&gt;&gt; store.set_secret(&quot;myapp/api-key&quot;, &quot;abc123&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; # Stored as: {&quot;value&quot;: &quot;abc123&quot;}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Ensure value is a dict for KV engines</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">secret_data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="n">value</span><span class="p">}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">secret_data</span> <span class="o">=</span> <span class="n">value</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">kv_version</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="c1"># KV v2 API</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">secrets</span><span class="o">.</span><span class="n">kv</span><span class="o">.</span><span class="n">v2</span><span class="o">.</span><span class="n">create_or_update_secret</span><span class="p">(</span>
+                    <span class="n">path</span><span class="o">=</span><span class="n">key</span><span class="p">,</span> <span class="n">secret</span><span class="o">=</span><span class="n">secret_data</span><span class="p">,</span> <span class="n">mount_point</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mount_point</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># KV v1 API</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">secrets</span><span class="o">.</span><span class="n">kv</span><span class="o">.</span><span class="n">v1</span><span class="o">.</span><span class="n">create_or_update_secret</span><span class="p">(</span>
+                    <span class="n">path</span><span class="o">=</span><span class="n">key</span><span class="p">,</span> <span class="n">secret</span><span class="o">=</span><span class="n">secret_data</span><span class="p">,</span> <span class="n">mount_point</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mount_point</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+                <span class="p">)</span>
+
+        <span class="k">except</span> <span class="n">Forbidden</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">SecretAccessError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Access denied writing secret &#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&#39;: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">VaultError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">SecretStoreError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Vault error writing &#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&#39;: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">SecretStoreError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unexpected error writing &#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&#39;: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="HashiCorpVault.delete_secret">
+<a class="viewcode-back" href="../../../../api/secret_stores.html#config_stash.secret_stores.HashiCorpVault.delete_secret">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">delete_secret</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Delete a secret from Vault.</span>
+
+<span class="sd">        For KV v2, this performs a soft delete (can be recovered).</span>
+<span class="sd">        Use destroy_secret() for permanent deletion.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            key: The secret path to delete.</span>
+<span class="sd">            **kwargs: Additional parameters:</span>
+<span class="sd">                - versions: For KV v2, list of versions to delete (default: [latest])</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            SecretNotFoundError: If the secret doesn&#39;t exist.</span>
+<span class="sd">            SecretAccessError: If there&#39;s a permission error.</span>
+<span class="sd">            SecretStoreError: For other Vault errors.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; store = HashiCorpVault(url=&#39;http://localhost:8200&#39;, token=&#39;...&#39;)</span>
+<span class="sd">            &gt;&gt;&gt;</span>
+<span class="sd">            &gt;&gt;&gt; # Delete latest version</span>
+<span class="sd">            &gt;&gt;&gt; store.delete_secret(&quot;myapp/old-key&quot;)</span>
+<span class="sd">            &gt;&gt;&gt;</span>
+<span class="sd">            &gt;&gt;&gt; # Delete specific versions (KV v2)</span>
+<span class="sd">            &gt;&gt;&gt; store.delete_secret(&quot;myapp/secret&quot;, versions=[1, 2, 3])</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">kv_version</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="c1"># KV v2 soft delete</span>
+                <span class="n">versions</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;versions&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">versions</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="c1"># Delete latest version - first read to get current version</span>
+                    <span class="n">metadata</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">secrets</span><span class="o">.</span><span class="n">kv</span><span class="o">.</span><span class="n">v2</span><span class="o">.</span><span class="n">read_secret_metadata</span><span class="p">(</span>
+                        <span class="n">path</span><span class="o">=</span><span class="n">key</span><span class="p">,</span> <span class="n">mount_point</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mount_point</span>
+                    <span class="p">)</span>
+                    <span class="n">current_version</span> <span class="o">=</span> <span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">][</span><span class="s2">&quot;current_version&quot;</span><span class="p">]</span>
+                    <span class="n">versions</span> <span class="o">=</span> <span class="p">[</span><span class="n">current_version</span><span class="p">]</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">secrets</span><span class="o">.</span><span class="n">kv</span><span class="o">.</span><span class="n">v2</span><span class="o">.</span><span class="n">delete_secret_versions</span><span class="p">(</span>
+                    <span class="n">path</span><span class="o">=</span><span class="n">key</span><span class="p">,</span> <span class="n">versions</span><span class="o">=</span><span class="n">versions</span><span class="p">,</span> <span class="n">mount_point</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mount_point</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># KV v1 delete</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">secrets</span><span class="o">.</span><span class="n">kv</span><span class="o">.</span><span class="n">v1</span><span class="o">.</span><span class="n">delete_secret</span><span class="p">(</span>
+                    <span class="n">path</span><span class="o">=</span><span class="n">key</span><span class="p">,</span> <span class="n">mount_point</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mount_point</span>
+                <span class="p">)</span>
+
+        <span class="k">except</span> <span class="n">InvalidPath</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">SecretNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Secret &#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&#39; not found&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">Forbidden</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">SecretAccessError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Access denied deleting secret &#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&#39;: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">VaultError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">SecretStoreError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Vault error deleting &#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&#39;: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="HashiCorpVault.list_secrets">
+<a class="viewcode-back" href="../../../../api/secret_stores.html#config_stash.secret_stores.HashiCorpVault.list_secrets">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">list_secrets</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;List secrets in Vault.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            prefix: Optional path prefix to list from.</span>
+<span class="sd">            **kwargs: Additional parameters for list operation.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List of secret paths.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            SecretAccessError: If there&#39;s a permission error.</span>
+<span class="sd">            SecretStoreError: For other Vault errors.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; store = HashiCorpVault(url=&#39;http://localhost:8200&#39;, token=&#39;...&#39;)</span>
+<span class="sd">            &gt;&gt;&gt;</span>
+<span class="sd">            &gt;&gt;&gt; # List all secrets at root</span>
+<span class="sd">            &gt;&gt;&gt; all_secrets = store.list_secrets()</span>
+<span class="sd">            &gt;&gt;&gt;</span>
+<span class="sd">            &gt;&gt;&gt; # List secrets under a path</span>
+<span class="sd">            &gt;&gt;&gt; app_secrets = store.list_secrets(prefix=&quot;myapp/&quot;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">prefix</span> <span class="k">if</span> <span class="n">prefix</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">kv_version</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">secrets</span><span class="o">.</span><span class="n">kv</span><span class="o">.</span><span class="n">v2</span><span class="o">.</span><span class="n">list_secrets</span><span class="p">(</span>
+                    <span class="n">path</span><span class="o">=</span><span class="n">path</span><span class="p">,</span> <span class="n">mount_point</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mount_point</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">secrets</span><span class="o">.</span><span class="n">kv</span><span class="o">.</span><span class="n">v1</span><span class="o">.</span><span class="n">list_secrets</span><span class="p">(</span>
+                    <span class="n">path</span><span class="o">=</span><span class="n">path</span><span class="p">,</span> <span class="n">mount_point</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mount_point</span>
+                <span class="p">)</span>
+
+            <span class="n">keys</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;keys&quot;</span><span class="p">,</span> <span class="p">[])</span>
+            <span class="k">return</span> <span class="n">keys</span>
+
+        <span class="k">except</span> <span class="n">InvalidPath</span><span class="p">:</span>
+            <span class="c1"># Path doesn&#39;t exist or is empty</span>
+            <span class="k">return</span> <span class="p">[]</span>
+        <span class="k">except</span> <span class="n">Forbidden</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">SecretAccessError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Access denied listing secrets at &#39;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&#39;: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">VaultError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">SecretStoreError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Vault error listing secrets at &#39;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&#39;: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="HashiCorpVault.get_secret_metadata">
+<a class="viewcode-back" href="../../../../api/secret_stores.html#config_stash.secret_stores.HashiCorpVault.get_secret_metadata">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_secret_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get metadata about a secret.</span>
+
+<span class="sd">        Only available for KV v2.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            key: The secret path.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Dictionary with secret metadata.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: For KV v1.</span>
+<span class="sd">            SecretNotFoundError: If the secret doesn&#39;t exist.</span>
+<span class="sd">            SecretAccessError: If there&#39;s a permission error.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; store = HashiCorpVault(url=&#39;http://localhost:8200&#39;, token=&#39;...&#39;, kv_version=2)</span>
+<span class="sd">            &gt;&gt;&gt; metadata = store.get_secret_metadata(&quot;myapp/database&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; print(f&quot;Current version: {metadata[&#39;current_version&#39;]}&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; print(f&quot;Created: {metadata[&#39;created_time&#39;]}&quot;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">kv_version</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+                <span class="s2">&quot;Metadata is only available for KV v2 secrets engine&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">secrets</span><span class="o">.</span><span class="n">kv</span><span class="o">.</span><span class="n">v2</span><span class="o">.</span><span class="n">read_secret_metadata</span><span class="p">(</span>
+                <span class="n">path</span><span class="o">=</span><span class="n">key</span><span class="p">,</span> <span class="n">mount_point</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mount_point</span>
+            <span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="p">{})</span>
+
+        <span class="k">except</span> <span class="n">InvalidPath</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">SecretNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Secret &#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&#39; not found&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">Forbidden</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">SecretAccessError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Access denied to secret metadata &#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&#39;: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">VaultError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">SecretStoreError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Vault error reading metadata for &#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&#39;: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="HashiCorpVault.__repr__">
+<a class="viewcode-back" href="../../../../api/secret_stores.html#config_stash.secret_stores.HashiCorpVault.__repr__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;String representation of the store.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;HashiCorpVault(url=&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2">&#39;, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;mount=&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">mount_point</span><span class="si">}</span><span class="s2">&#39;, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;kv_version=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">kv_version</span><span class="si">}</span><span class="s2">)&quot;</span>
+        <span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, QAToolist.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

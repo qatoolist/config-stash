@@ -1,0 +1,335 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>config_stash.validators.schema_validator &mdash; Config-Stash 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=d45e8c67"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            Config-Stash
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/index.html">User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/index.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing.html">Contributing</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Config-Stash</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">config_stash.validators.schema_validator</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for config_stash.validators.schema_validator</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;JSON Schema validation for configurations.&quot;&quot;&quot;</span>
+
+<span class="c1"># pyright: reportPossiblyUnboundVariable=false</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="c1"># jsonschema is optional</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">jsonschema</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">jsonschema</span><span class="w"> </span><span class="kn">import</span> <span class="n">ValidationError</span><span class="p">,</span> <span class="n">validate</span>
+
+    <span class="n">HAS_JSONSCHEMA</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="n">HAS_JSONSCHEMA</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;jsonschema not installed. Schema validation disabled.&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="SchemaValidator">
+<a class="viewcode-back" href="../../../api/validators.html#config_stash.validators.SchemaValidator">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SchemaValidator</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Validates configuration dictionaries against a JSON Schema.</span>
+
+<span class="sd">    SchemaValidator uses the ``jsonschema`` library to validate configuration</span>
+<span class="sd">    dictionaries against a JSON Schema (Draft 4 through Draft 7). It also</span>
+<span class="sd">    supports applying default values defined in the schema to produce a</span>
+<span class="sd">    complete configuration dictionary.</span>
+
+<span class="sd">    This validator is ideal when you need a language-agnostic schema</span>
+<span class="sd">    definition that can be shared across services written in different</span>
+<span class="sd">    languages, or when you want to validate configuration without</span>
+<span class="sd">    defining Python model classes.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        schema: The JSON Schema dictionary used for validation.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; from config_stash.validators import SchemaValidator</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; schema = {</span>
+<span class="sd">        ...     &quot;type&quot;: &quot;object&quot;,</span>
+<span class="sd">        ...     &quot;properties&quot;: {</span>
+<span class="sd">        ...         &quot;host&quot;: {&quot;type&quot;: &quot;string&quot;, &quot;default&quot;: &quot;localhost&quot;},</span>
+<span class="sd">        ...         &quot;port&quot;: {&quot;type&quot;: &quot;integer&quot;, &quot;minimum&quot;: 1},</span>
+<span class="sd">        ...     },</span>
+<span class="sd">        ...     &quot;required&quot;: [&quot;port&quot;],</span>
+<span class="sd">        ... }</span>
+<span class="sd">        &gt;&gt;&gt; validator = SchemaValidator(schema)</span>
+<span class="sd">        &gt;&gt;&gt; validator.validate({&quot;port&quot;: 8080})  # Returns True</span>
+<span class="sd">        True</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        Requires the ``jsonschema`` package. Install it with::</span>
+
+<span class="sd">            pip install jsonschema</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="SchemaValidator.__init__">
+<a class="viewcode-back" href="../../../api/validators.html#config_stash.validators.SchemaValidator.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">schema</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize with a JSON Schema.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            schema: JSON Schema dictionary</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ImportError: If jsonschema is not installed</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">HAS_JSONSCHEMA</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+                <span class="s2">&quot;jsonschema is required for schema validation. &quot;</span>
+                <span class="s2">&quot;Install with: pip install jsonschema&quot;</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">schema</span> <span class="o">=</span> <span class="n">schema</span></div>
+
+
+<div class="viewcode-block" id="SchemaValidator.validate">
+<a class="viewcode-back" href="../../../api/validators.html#config_stash.validators.SchemaValidator.validate">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">validate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Validate configuration against schema.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            config: Configuration dictionary to validate</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            True if valid</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValidationError: If validation fails</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">validate</span><span class="p">(</span><span class="n">instance</span><span class="o">=</span><span class="n">config</span><span class="p">,</span> <span class="n">schema</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">schema</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">except</span> <span class="n">ValidationError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Schema validation failed: </span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="n">message</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed at path: </span><span class="si">{</span><span class="s1">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">e</span><span class="o">.</span><span class="n">path</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span></div>
+
+
+<div class="viewcode-block" id="SchemaValidator.validate_with_defaults">
+<a class="viewcode-back" href="../../../api/validators.html#config_stash.validators.SchemaValidator.validate_with_defaults">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">validate_with_defaults</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Validate and apply default values from schema.</span>
+
+<span class="sd">        First validates the configuration against the schema, then creates</span>
+<span class="sd">        a deep copy and fills in any missing properties that have ``default``</span>
+<span class="sd">        values defined in the schema. Nested object properties are handled</span>
+<span class="sd">        recursively.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            config: Configuration dictionary. This dictionary is **not**</span>
+<span class="sd">                modified; a deep copy is returned.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            New configuration dictionary with schema defaults applied for</span>
+<span class="sd">            any missing properties.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValidationError: If the configuration does not conform to the</span>
+<span class="sd">                schema.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; schema = {</span>
+<span class="sd">            ...     &quot;type&quot;: &quot;object&quot;,</span>
+<span class="sd">            ...     &quot;properties&quot;: {</span>
+<span class="sd">            ...         &quot;host&quot;: {&quot;type&quot;: &quot;string&quot;, &quot;default&quot;: &quot;localhost&quot;},</span>
+<span class="sd">            ...         &quot;port&quot;: {&quot;type&quot;: &quot;integer&quot;, &quot;default&quot;: 5432},</span>
+<span class="sd">            ...         &quot;database&quot;: {&quot;type&quot;: &quot;string&quot;},</span>
+<span class="sd">            ...     },</span>
+<span class="sd">            ...     &quot;required&quot;: [&quot;database&quot;],</span>
+<span class="sd">            ... }</span>
+<span class="sd">            &gt;&gt;&gt; validator = SchemaValidator(schema)</span>
+<span class="sd">            &gt;&gt;&gt; result = validator.validate_with_defaults({&quot;database&quot;: &quot;mydb&quot;})</span>
+<span class="sd">            &gt;&gt;&gt; print(result)</span>
+<span class="sd">            {&#39;database&#39;: &#39;mydb&#39;, &#39;host&#39;: &#39;localhost&#39;, &#39;port&#39;: 5432}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
+
+        <span class="c1"># First validate</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+
+        <span class="c1"># Work on a copy to avoid mutating the input</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+
+        <span class="c1"># Apply defaults from schema recursively</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_apply_defaults</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">schema</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">result</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_apply_defaults</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">schema</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Recursively apply default values from schema properties.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            config: Configuration dictionary to apply defaults to (mutated in-place)</span>
+<span class="sd">            schema: Schema dictionary with properties and defaults</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="s2">&quot;properties&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">schema</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="k">for</span> <span class="n">prop</span><span class="p">,</span> <span class="n">prop_schema</span> <span class="ow">in</span> <span class="n">schema</span><span class="p">[</span><span class="s2">&quot;properties&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">prop</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">config</span> <span class="ow">and</span> <span class="s2">&quot;default&quot;</span> <span class="ow">in</span> <span class="n">prop_schema</span><span class="p">:</span>
+                <span class="n">config</span><span class="p">[</span><span class="n">prop</span><span class="p">]</span> <span class="o">=</span> <span class="n">prop_schema</span><span class="p">[</span><span class="s2">&quot;default&quot;</span><span class="p">]</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Applied default value for &#39;</span><span class="si">{</span><span class="n">prop</span><span class="si">}</span><span class="s2">&#39;: </span><span class="si">{</span><span class="n">prop_schema</span><span class="p">[</span><span class="s1">&#39;default&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+            <span class="k">elif</span> <span class="p">(</span>
+                <span class="n">prop</span> <span class="ow">in</span> <span class="n">config</span>
+                <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="n">prop</span><span class="p">],</span> <span class="nb">dict</span><span class="p">)</span>
+                <span class="ow">and</span> <span class="n">prop_schema</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;object&quot;</span>
+            <span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_apply_defaults</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="n">prop</span><span class="p">],</span> <span class="n">prop_schema</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SchemaValidator.from_file">
+<a class="viewcode-back" href="../../../api/validators.html#config_stash.validators.SchemaValidator.from_file">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_file</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">schema_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;SchemaValidator&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a SchemaValidator from a JSON schema file.</span>
+
+<span class="sd">        Reads a JSON file from disk and uses its contents as the</span>
+<span class="sd">        validation schema.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            schema_path: Path to a JSON schema file.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A new SchemaValidator instance configured with the loaded schema.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            FileNotFoundError: If the schema file does not exist.</span>
+<span class="sd">            json.JSONDecodeError: If the file is not valid JSON.</span>
+<span class="sd">            ImportError: If ``jsonschema`` is not installed.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; validator = SchemaValidator.from_file(&quot;schemas/app.schema.json&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; validator.validate({&quot;port&quot;: 8080})</span>
+<span class="sd">            True</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">schema_path</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">schema</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">schema</span><span class="p">)</span></div>
+</div>
+
+
+
+<span class="c1"># Example schema for database configuration</span>
+<span class="n">DATABASE_SCHEMA</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;$schema&quot;</span><span class="p">:</span> <span class="s2">&quot;http://json-schema.org/draft-07/schema#&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;host&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Database host&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="s2">&quot;localhost&quot;</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;port&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;integer&quot;</span><span class="p">,</span> <span class="s2">&quot;minimum&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;maximum&quot;</span><span class="p">:</span> <span class="mi">65535</span><span class="p">,</span> <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="mi">5432</span><span class="p">},</span>
+        <span class="s2">&quot;database&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Database name&quot;</span><span class="p">},</span>
+        <span class="s2">&quot;username&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Database username&quot;</span><span class="p">},</span>
+        <span class="s2">&quot;password&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Database password&quot;</span><span class="p">},</span>
+        <span class="s2">&quot;pool_size&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;integer&quot;</span><span class="p">,</span> <span class="s2">&quot;minimum&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;maximum&quot;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span> <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">},</span>
+        <span class="s2">&quot;ssl&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;boolean&quot;</span><span class="p">,</span> <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;database&quot;</span><span class="p">,</span> <span class="s2">&quot;username&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;additionalProperties&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, QAToolist.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
