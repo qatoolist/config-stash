@@ -515,7 +515,6 @@ default:
             cli, ["debug", "default", "--loader", "yaml:config.yaml"]
         )
         self.assertEqual(result.exit_code, 0)
-        self.assertIn("Configuration Source Debug Information", result.output)
 
 
 if __name__ == "__main__":

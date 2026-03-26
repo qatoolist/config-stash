@@ -87,6 +87,24 @@ class Config(
         config = Config(loaders=[YamlLoader("config.yaml")])
         config.database.host   # type: Any
 
+    Thread Safety:
+        - ``reload()`` and ``set()`` are protected by an ``RLock``, ensuring
+          that concurrent mutations do not corrupt internal state.
+        - ``__getattr__`` (read access) is safe to call concurrently from
+          multiple threads without external synchronisation.
+        - ``freeze()`` makes the config fully thread-safe by preventing all
+          further writes.
+        - File watcher callbacks run in a separate thread and are
+          lock-protected, so reloads triggered by file changes are serialised.
+        - ``HookProcessor`` uses its own ``RLock`` for thread-safe hook
+          registration and execution.
+
+    Versioning:
+        This library follows Semantic Versioning. Pre-1.0 releases may include
+        breaking changes in minor versions. Post-1.0, breaking changes will
+        only occur in major versions with deprecation warnings in the prior
+        minor release.
+
     Attributes:
         env: Current environment name
         dynamic_reloading: Whether file watching is enabled

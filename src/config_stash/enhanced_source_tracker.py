@@ -1,10 +1,13 @@
 """Enhanced source tracking for configuration values with debug support."""
 
 import json
+import logging
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Tuple
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -234,57 +237,57 @@ class EnhancedSourceTracker:
             key: Specific key to debug, or None for all keys
         """
         if not self.debug_mode:
-            print(
+            logger.warning(
                 "Debug mode is not enabled. Set debug_mode=True to track detailed source information."
             )
             return
 
-        print("=" * 80)
-        print("Configuration Source Debug Information")
-        print("=" * 80)
+        logger.info("=" * 80)
+        logger.info("Configuration Source Debug Information")
+        logger.info("=" * 80)
 
         if key:
             # Debug specific key
             if key in self.sources:
-                print(f"\n{self.sources[key]}")
+                logger.info("%s", self.sources[key])
 
                 # Show override history if available
                 if key in self.override_history:
-                    print("\nOverride History:")
-                    print("-" * 40)
+                    logger.info("Override History:")
+                    logger.info("-" * 40)
                     for i, info in enumerate(self.override_history[key], 1):
-                        print(f"\nOverride #{i}:")
-                        print(f"  Source: {info.source_file}")
-                        print(f"  Value: {info.value}")
-                        print(f"  Timestamp: {info.timestamp.isoformat()}")
+                        logger.info("Override #%d:", i)
+                        logger.info("  Source: %s", info.source_file)
+                        logger.info("  Value: %s", info.value)
+                        logger.info("  Timestamp: %s", info.timestamp.isoformat())
             else:
-                print(f"\nKey '{key}' not found in tracked sources.")
+                logger.info("Key '%s' not found in tracked sources.", key)
 
                 # Suggest similar keys
                 similar = [k for k in self.sources.keys() if key in k or k in key]
                 if similar:
-                    print("\nSimilar keys found:")
+                    logger.info("Similar keys found:")
                     for k in similar:
-                        print(f"  - {k}")
+                        logger.info("  - %s", k)
         else:
             # Show all sources
-            print(f"\nTotal tracked keys: {len(self.sources)}")
-            print(f"Keys with overrides: {len(self.override_history)}")
-            print("\nLoader Order:")
-            print("-" * 40)
+            logger.info("Total tracked keys: %d", len(self.sources))
+            logger.info("Keys with overrides: %d", len(self.override_history))
+            logger.info("Loader Order:")
+            logger.info("-" * 40)
             for i, (loader_type, source) in enumerate(self.loader_order, 1):
-                print(f"  {i}. {loader_type}: {source}")
+                logger.info("  %d. %s: %s", i, loader_type, source)
 
             if self.override_history:
-                print("\nConflicting Keys (overridden values):")
-                print("-" * 40)
+                logger.info("Conflicting Keys (overridden values):")
+                logger.info("-" * 40)
                 for key, history in self.override_history.items():
                     current = self.sources[key]
-                    print(f"\n  {key}:")
-                    print(f"    Current: {current.value} (from {current.source_file})")
-                    print(f"    Overridden {len(history)} time(s)")
+                    logger.info("  %s:", key)
+                    logger.info("    Current: %s (from %s)", current.value, current.source_file)
+                    logger.info("    Overridden %d time(s)", len(history))
                     for info in history[-3:]:  # Show last 3 overrides
-                        print(f"      - Was: {info.value} (from {info.source_file})")
+                        logger.info("      - Was: %s (from %s)", info.value, info.source_file)
 
     def export_debug_report(
         self, output_path: str = "config_debug_report.json"
@@ -295,7 +298,7 @@ class EnhancedSourceTracker:
             output_path: Path to output JSON file
         """
         if not self.debug_mode:
-            print(
+            logger.warning(
                 "Debug mode is not enabled. Set debug_mode=True to export debug reports."
             )
             return
@@ -315,7 +318,7 @@ class EnhancedSourceTracker:
         with open(output_path, "w") as f:
             json.dump(report, f, indent=2, default=str)
 
-        print(f"Debug report exported to: {output_path}")
+        logger.info("Debug report exported to: %s", output_path)
 
     def find_keys_from_source(self, source_pattern: str) -> List[str]:
         """Find all keys that came from a specific source.

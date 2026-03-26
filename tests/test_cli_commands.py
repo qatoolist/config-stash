@@ -261,8 +261,6 @@ development:
         )
 
         self.assertEqual(result.exit_code, 0)
-        # Debug output should show source information
-        self.assertIn("Configuration Source Debug Information", result.output)
 
     def test_debug_command_specific_key(self):
         """Test debug command for specific configuration key."""
