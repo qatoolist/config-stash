@@ -544,7 +544,7 @@ def lint(env, loader_specs, fix, strict):
 
 @cli.command()
 @click.argument(
-    "source_format", type=click.Choice(["dynaconf", "hydra", "dotenv", "env"])
+    "source_format", type=click.Choice(["dynaconf", "hydra", "omegaconf", "dotenv", "env"])
 )
 @click.argument("config_file", type=click.Path(exists=True))
 @click.option("--output", "-o", help="Output file path (default: stdout)")
@@ -617,6 +617,24 @@ def migrate(source_format, config_file, output, target_format):
                             f"Warning: Could not parse {config_file} as YAML or JSON",
                             err=True,
                         )
+
+        elif source_format == "omegaconf":
+            # OmegaConf configs are YAML, possibly with ${interpolation}
+            with open(config_file, "r") as f:
+                content = f.read()
+                config = yaml.safe_load(content) or {}
+                # Warn about interpolation patterns
+                import re
+
+                interpolations = re.findall(r"\$\{[^}]+\}", content)
+                if interpolations:
+                    click.echo(
+                        f"Warning: Found {len(interpolations)} OmegaConf "
+                        f"interpolation(s) that need manual conversion: "
+                        f"{interpolations[:3]}{'...' if len(interpolations) > 3 else ''}",
+                        err=True,
+                    )
+                migrated_config = config
 
         elif source_format == "hydra":
             # Hydra configs are usually YAML with defaults list
