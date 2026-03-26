@@ -145,7 +145,7 @@ class LoaderManager:
         loaders = {}
         # Python 3.10+ uses select() method, older versions use dict-like access
         try:
-            eps = importlib.metadata.entry_points(group="config_stash.loaders")
+            eps = importlib.metadata.entry_points(group="config_stash.loaders")  # type: ignore[call-arg]
         except TypeError:
             # Python < 3.10
             eps = importlib.metadata.entry_points().get("config_stash.loaders", [])  # type: ignore[reportAttributeAccessIssue]

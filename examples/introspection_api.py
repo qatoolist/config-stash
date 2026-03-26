@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# pyright: basic
 """
 Configuration Introspection API Examples
 

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# pyright: basic
 """Config Management — reload, freeze, versioning, diff, drift detection, callbacks."""
 
 import json

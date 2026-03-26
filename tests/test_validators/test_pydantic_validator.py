@@ -24,11 +24,6 @@ except ImportError:
 class TestPydanticValidator(unittest.TestCase):
     """Test cases for PydanticValidator."""
 
-    # pyright: reportOptionalSubscript=false, reportOptionalMemberAccess=false
-    # pyright: reportArgumentType=false, reportPossiblyUnboundVariable=false
-    # pyright: reportAttributeAccessIssue=false, reportCallIssue=false
-    # pyright: reportMissingImports=false
-
     def setUp(self):
         """Set up test fixtures."""
         if not HAS_PYDANTIC:

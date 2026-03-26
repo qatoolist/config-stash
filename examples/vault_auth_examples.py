@@ -1,4 +1,3 @@
-# pyright: basic
 """Comprehensive examples of HashiCorp Vault authentication methods.
 
 This demonstrates all supported authentication methods including:

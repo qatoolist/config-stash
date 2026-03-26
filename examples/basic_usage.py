@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# pyright: basic
 """
 Basic Usage Examples for Config-Stash
 

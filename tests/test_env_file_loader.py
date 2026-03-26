@@ -11,10 +11,6 @@ from config_stash.loaders import EnvFileLoader
 class TestEnvFileLoader(unittest.TestCase):
     """Test .env file loading functionality."""
 
-    # pyright: reportOptionalSubscript=false, reportOptionalMemberAccess=false
-    # pyright: reportArgumentType=false, reportPossiblyUnboundVariable=false
-    # pyright: reportAttributeAccessIssue=false, reportCallIssue=false
-    # pyright: reportMissingImports=false
 
     def setUp(self):
         """Set up test environment."""

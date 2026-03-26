@@ -3,10 +3,6 @@
 Run with: pytest tests/benchmarks/test_performance.py --benchmark-only
 """
 
-# pyright: reportOptionalSubscript=false, reportOptionalMemberAccess=false
-# pyright: reportArgumentType=false, reportPossiblyUnboundVariable=false
-# pyright: reportAttributeAccessIssue=false, reportCallIssue=false
-# pyright: reportMissingImports=false
 
 import tempfile
 from pathlib import Path

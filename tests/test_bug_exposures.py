@@ -6,10 +6,6 @@ demonstrating a specific real bug. Tests are named after the bug they expose.
 Once a bug is fixed, the corresponding test should PASS.
 """
 
-# pyright: reportOptionalSubscript=false, reportOptionalMemberAccess=false
-# pyright: reportArgumentType=false, reportPossiblyUnboundVariable=false
-# pyright: reportAttributeAccessIssue=false, reportCallIssue=false
-# pyright: reportMissingImports=false
 
 import copy
 import json

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# pyright: basic
 """
 Async/Await Support Examples
 

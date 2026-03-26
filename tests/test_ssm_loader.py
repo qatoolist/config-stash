@@ -1,4 +1,3 @@
-# pyright: basic
 """Tests for SSMLoader — AWS Systems Manager Parameter Store loader."""
 
 import os

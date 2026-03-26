@@ -4,10 +4,6 @@ Every test creates real files on disk, uses real environment variables,
 and exercises actual code paths end-to-end.
 """
 
-# pyright: reportOptionalSubscript=false, reportOptionalMemberAccess=false
-# pyright: reportArgumentType=false, reportPossiblyUnboundVariable=false
-# pyright: reportAttributeAccessIssue=false, reportCallIssue=false
-# pyright: reportMissingImports=false
 
 import copy
 import json

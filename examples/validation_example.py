@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# pyright: basic
 """
 Schema Validation Examples
 

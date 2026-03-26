@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# pyright: basic
 """Advanced features showcase for Config-Stash.
 
 This example demonstrates the new features that make Config-Stash

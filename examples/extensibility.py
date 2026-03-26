@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# pyright: basic
 """Extensibility — custom hooks, custom loaders, observability, events, composition."""
 
 import json

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# pyright: basic
 """Loader Showcase — demonstrates every config file format supported by Config-Stash."""
 
 import json
