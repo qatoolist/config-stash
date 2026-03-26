@@ -140,7 +140,7 @@ class AsyncHTTPLoader(AsyncLoader):
             ConfigLoadError: If loading fails
         """
         try:
-            import aiohttp  # type: ignore[import-untyped]
+            import aiohttp
         except ImportError:
             raise ImportError(
                 "aiohttp is required for async HTTP loading. Install with: pip install aiohttp"

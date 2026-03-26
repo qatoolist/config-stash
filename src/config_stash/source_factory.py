@@ -93,7 +93,7 @@ def create_loader_from_config(source_dict: Dict[str, Any]) -> Any:
     """
     # Expand env vars in all values
     expanded: Dict[str, Any] = _expand_env_vars(source_dict)
-    source_type: str = expanded.pop("type", None)  # type: ignore[assignment]
+    source_type: str = expanded.pop("type", None)
 
     if source_type is None:
         raise ConfigStashError("Source configuration must include a 'type' key")

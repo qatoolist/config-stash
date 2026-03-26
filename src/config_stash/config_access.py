@@ -401,7 +401,7 @@ class ConfigAccess:
                 if isinstance(schema_class, type) and issubclass(
                     schema_class, BaseModel
                 ):
-                    for field_name, field_info in schema_class.model_fields.items():
+                    for field_name, field_info in schema_class.model_fields.items():  # type: ignore[attr-defined]
                         pydantic_fields[field_name] = {
                             "description": field_info.description or "",
                             "default": (

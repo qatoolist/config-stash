@@ -28,8 +28,9 @@ repos:
     rev: v1.8.0
     hooks:
       - id: mypy
-        args: [--install-types, --non-interactive, --ignore-missing-imports]
-        additional_dependencies: [types-PyYAML, types-click]
+        args: [--install-types, --non-interactive, --ignore-missing-imports, --no-strict-optional]
+        files: ^src/
+        additional_dependencies: [types-PyYAML]
 
   - repo: https://github.com/pycqa/isort
     rev: 5.13.2

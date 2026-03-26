@@ -20,7 +20,7 @@ try:
 except ImportError:
     HAS_PYDANTIC = False
     BaseModel = type
-    T = TypeVar("T")  # type: ignore[misc]
+    T = TypeVar("T")
     logger.warning("pydantic not installed. Pydantic validation disabled.")
 
 

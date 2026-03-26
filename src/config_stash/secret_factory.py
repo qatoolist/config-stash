@@ -194,9 +194,7 @@ def _create_secret_store(config_dict: Dict[str, Any]) -> SecretStore:
         )
 
     if provider == "env":
-        from config_stash.secret_stores.providers.env_secret_store import (
-            EnvSecretStore,
-        )
+        from config_stash.secret_stores.providers.env_secret_store import EnvSecretStore
 
         return EnvSecretStore(
             prefix=expanded.get("prefix", ""),

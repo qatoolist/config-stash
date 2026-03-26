@@ -10,7 +10,6 @@ from typing import Any, Dict, Optional
 from cs import Config
 from cs.loaders import Loader, YamlLoader
 
-
 # ---------------------------------------------------------------------------
 # 1. Custom global hook — uppercase all string values
 # ---------------------------------------------------------------------------
@@ -24,10 +23,7 @@ def example_global_hook():
 
     with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
         f.write(
-            "app:\n"
-            "  name: my-application\n"
-            "  region: us-east-1\n"
-            "  version: 3\n"
+            "app:\n" "  name: my-application\n" "  region: us-east-1\n" "  version: 3\n"
         )
         config_file = f.name
 
@@ -66,9 +62,7 @@ def example_key_hook():
 
     with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
         f.write(
-            "database:\n"
-            "  host: db.example.com\n"
-            "  password: super-secret-123\n"
+            "database:\n" "  host: db.example.com\n" "  password: super-secret-123\n"
         )
         config_file = f.name
 
@@ -99,10 +93,7 @@ def example_condition_hook():
     print("=" * 70)
 
     with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
-        f.write(
-            "greeting: Hello, ${USER_NAME}!\n"
-            "static_value: no-variables-here\n"
-        )
+        f.write("greeting: Hello, ${USER_NAME}!\n" "static_value: no-variables-here\n")
         config_file = f.name
 
     os.environ["USER_NAME"] = "Alice"
@@ -119,6 +110,7 @@ def example_condition_hook():
 
         def expand_placeholders(value: Any) -> Any:
             """Replace ${VAR} with os.environ[VAR]."""
+
             def replacer(match: re.Match) -> str:
                 var_name = match.group(1)
                 return os.environ.get(var_name, match.group(0))
@@ -188,11 +180,7 @@ def example_observability():
 
     with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
         f.write(
-            "server:\n"
-            "  host: 0.0.0.0\n"
-            "  port: 8080\n"
-            "cache:\n"
-            "  ttl: 300\n"
+            "server:\n" "  host: 0.0.0.0\n" "  port: 8080\n" "cache:\n" "  ttl: 300\n"
         )
         config_file = f.name
 
@@ -230,14 +218,8 @@ def example_event_emission():
     print("6. Event Emission — reload / change")
     print("=" * 70)
 
-    with tempfile.NamedTemporaryFile(
-        mode="w", suffix=".yaml", delete=False
-    ) as f:
-        f.write(
-            "service:\n"
-            "  name: event-demo\n"
-            "  version: 1\n"
-        )
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        f.write("service:\n" "  name: event-demo\n" "  version: 1\n")
         config_file = f.name
 
     try:
@@ -285,19 +267,10 @@ def example_composition_include():
     main_path = os.path.join(tmpdir, "main.yaml")
 
     with open(base_path, "w") as f:
-        f.write(
-            "defaults:\n"
-            "  timeout: 30\n"
-            "  retries: 3\n"
-        )
+        f.write("defaults:\n" "  timeout: 30\n" "  retries: 3\n")
 
     with open(main_path, "w") as f:
-        f.write(
-            "_include:\n"
-            "  - base.yaml\n"
-            "app:\n"
-            "  name: composed-app\n"
-        )
+        f.write("_include:\n" "  - base.yaml\n" "app:\n" "  name: composed-app\n")
 
     try:
         config = Config(
@@ -431,11 +404,10 @@ def example_cs_alias():
     print("=" * 70)
 
     # These two import styles are equivalent:
-    from cs import Config as CsConfig
     from config_stash import Config as FullConfig
-
-    from cs.loaders import YamlLoader as CsYaml
     from config_stash.loaders import YamlLoader as FullYaml
+    from cs import Config as CsConfig
+    from cs.loaders import YamlLoader as CsYaml
 
     print(f"  cs.Config is config_stash.Config           -> {CsConfig is FullConfig}")
     print(f"  cs.loaders.YamlLoader is ...YamlLoader     -> {CsYaml is FullYaml}")

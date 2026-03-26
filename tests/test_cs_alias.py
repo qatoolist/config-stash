@@ -21,11 +21,7 @@ class TestCsAlias(unittest.TestCase):
         from config_stash import ConfigLoadError as CL
         from config_stash import ConfigStashError as CS
         from config_stash import ConfigValidationError as CV
-        from cs import (
-            ConfigLoadError,
-            ConfigStashError,
-            ConfigValidationError,
-        )
+        from cs import ConfigLoadError, ConfigStashError, ConfigValidationError
 
         self.assertIs(ConfigStashError, CS)
         self.assertIs(ConfigLoadError, CL)

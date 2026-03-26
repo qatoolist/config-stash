@@ -44,7 +44,12 @@ def example_1_schema_validation():
         "type": "object",
         "properties": {
             "app_name": {"type": "string"},
-            "port": {"type": "integer", "minimum": 1, "maximum": 65535, "default": 8080},
+            "port": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 65535,
+                "default": 8080,
+            },
             "debug": {"type": "boolean", "default": False},
             "database": {
                 "type": "object",

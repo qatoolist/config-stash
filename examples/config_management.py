@@ -7,13 +7,13 @@ import shutil
 import tempfile
 
 from config_stash import Config
-from config_stash.loaders import JsonLoader, YamlLoader, EnvironmentLoader
+from config_stash.loaders import EnvironmentLoader, JsonLoader, YamlLoader
 from config_stash.merge_strategies import MergeStrategy
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _header(title: str) -> None:
     """Print a section header."""
@@ -35,6 +35,7 @@ def _write_json(path: str, data: dict) -> None:
 # ---------------------------------------------------------------------------
 # 1. Manual reload
 # ---------------------------------------------------------------------------
+
 
 def manual_reload() -> None:
     """Create config, modify file on disk, call config.reload(), show new values."""
@@ -64,6 +65,7 @@ def manual_reload() -> None:
 # 2. Incremental reload
 # ---------------------------------------------------------------------------
 
+
 def incremental_reload() -> None:
     """Show config.reload(incremental=True) vs incremental=False."""
     _header("2. Incremental vs Full Reload")
@@ -79,22 +81,28 @@ def incremental_reload() -> None:
         config = Config(
             loaders=[YamlLoader(base_path), JsonLoader(extra_path)],
         )
-        print(f"Initial        -> app.version={config.app.version}, "
-              f"logging.level={config.logging.level}")
+        print(
+            f"Initial        -> app.version={config.app.version}, "
+            f"logging.level={config.logging.level}"
+        )
 
         # Only modify base.yaml; extra.json stays the same
         _write_yaml(base_path, "app:\n  name: demo\n  version: 2\n")
 
         # Incremental reload — only changed files are re-read
         config.reload(incremental=True)
-        print(f"Incremental    -> app.version={config.app.version}, "
-              f"logging.level={config.logging.level}")
+        print(
+            f"Incremental    -> app.version={config.app.version}, "
+            f"logging.level={config.logging.level}"
+        )
 
         # Full reload — all files are re-read from scratch
         _write_yaml(base_path, "app:\n  name: demo\n  version: 3\n")
         config.reload(incremental=False)
-        print(f"Full reload    -> app.version={config.app.version}, "
-              f"logging.level={config.logging.level}")
+        print(
+            f"Full reload    -> app.version={config.app.version}, "
+            f"logging.level={config.logging.level}"
+        )
     finally:
         shutil.rmtree(tmpdir)
 
@@ -102,6 +110,7 @@ def incremental_reload() -> None:
 # ---------------------------------------------------------------------------
 # 3. Dry-run reload
 # ---------------------------------------------------------------------------
+
 
 def dry_run_reload() -> None:
     """Modify file, call config.reload(dry_run=True), show values did not change."""
@@ -116,16 +125,20 @@ def dry_run_reload() -> None:
         config = Config(
             loaders=[YamlLoader(cfg_path)],
         )
-        print(f"Before         -> enabled={config.feature.enabled}, "
-              f"max_retries={config.feature.max_retries}")
+        print(
+            f"Before         -> enabled={config.feature.enabled}, "
+            f"max_retries={config.feature.max_retries}"
+        )
 
         # Change file on disk
         _write_yaml(cfg_path, "feature:\n  enabled: true\n  max_retries: 10\n")
 
         # Dry-run: Config-Stash loads the new values but does NOT apply them
         config.reload(dry_run=True, incremental=False)
-        print(f"After dry-run  -> enabled={config.feature.enabled}, "
-              f"max_retries={config.feature.max_retries}")
+        print(
+            f"After dry-run  -> enabled={config.feature.enabled}, "
+            f"max_retries={config.feature.max_retries}"
+        )
         print("  (values unchanged — dry run discards new data)")
     finally:
         shutil.rmtree(tmpdir)
@@ -134,6 +147,7 @@ def dry_run_reload() -> None:
 # ---------------------------------------------------------------------------
 # 4. on_change callbacks
 # ---------------------------------------------------------------------------
+
 
 def on_change_callbacks() -> None:
     """Register @config.on_change callback, reload, show callback fired."""
@@ -169,6 +183,7 @@ def on_change_callbacks() -> None:
 # ---------------------------------------------------------------------------
 # 5. freeze()
 # ---------------------------------------------------------------------------
+
 
 def freeze_config() -> None:
     """Load config, freeze it, show that set() raises RuntimeError."""
@@ -212,6 +227,7 @@ def freeze_config() -> None:
 # 6. env_prefix
 # ---------------------------------------------------------------------------
 
+
 def env_prefix_loading() -> None:
     """Show Config(env_prefix='MYAPP') auto-loading from MYAPP_* env vars."""
     _header("6. env_prefix")
@@ -246,6 +262,7 @@ def env_prefix_loading() -> None:
 # ---------------------------------------------------------------------------
 # 7. merge_strategy
 # ---------------------------------------------------------------------------
+
 
 def merge_strategy_demo() -> None:
     """Show Config(merge_strategy=..., merge_strategy_map={...})."""
@@ -290,6 +307,7 @@ def merge_strategy_demo() -> None:
 # 8. Versioning
 # ---------------------------------------------------------------------------
 
+
 def versioning_demo() -> None:
     """Enable versioning, save snapshots, modify, rollback."""
     _header("8. Versioning")
@@ -308,7 +326,9 @@ def versioning_demo() -> None:
         config.enable_versioning(storage_path=versions_dir)
 
         # Save first version
-        v1 = config.save_version(metadata={"author": "alice", "message": "initial release"})
+        v1 = config.save_version(
+            metadata={"author": "alice", "message": "initial release"}
+        )
         print(f"v1 saved       -> id={v1.version_id}, app.version={config.app.version}")
 
         # Modify config and save second version
@@ -328,6 +348,7 @@ def versioning_demo() -> None:
 # ---------------------------------------------------------------------------
 # 9. Config diff
 # ---------------------------------------------------------------------------
+
 
 def config_diff_demo() -> None:
     """Create two configs, call config1.diff(config2), print diffs."""
@@ -377,6 +398,7 @@ def config_diff_demo() -> None:
 # ---------------------------------------------------------------------------
 # 10. Drift detection
 # ---------------------------------------------------------------------------
+
 
 def drift_detection_demo() -> None:
     """actual.detect_drift(intended), show drift entries."""
@@ -431,6 +453,7 @@ def drift_detection_demo() -> None:
 # 11. config.layers
 # ---------------------------------------------------------------------------
 
+
 def layers_demo() -> None:
     """Load from 2 sources, print config.layers showing precedence."""
     _header("11. config.layers (source precedence)")
@@ -462,8 +485,9 @@ def layers_demo() -> None:
             print(f"    keys        = {layer['keys']}")
             print()
 
-        print(f"Resolved app.debug = {config.app.debug}  "
-              "(override wins over default)")
+        print(
+            f"Resolved app.debug = {config.app.debug}  " "(override wins over default)"
+        )
     finally:
         shutil.rmtree(tmpdir)
 
@@ -471,6 +495,7 @@ def layers_demo() -> None:
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
+
 
 def main() -> None:
     """Run every example in sequence."""

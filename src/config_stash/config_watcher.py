@@ -15,13 +15,13 @@ try:
     HAS_WATCHDOG = True
 except ImportError:
     HAS_WATCHDOG = False
-    FileSystemEventHandler = object  # type: ignore[reportAssignmentType]
-    Observer = object  # type: ignore[reportAssignmentType]
+    FileSystemEventHandler = object
+    Observer = object
 
 logger = logging.getLogger(__name__)
 
 
-class ConfigFileHandler(FileSystemEventHandler):  # type: ignore[reportGeneralTypeIssues]
+class ConfigFileHandler(FileSystemEventHandler):
     """Handles file system events for configuration files.
 
     ConfigFileHandler listens for file modification events from the
@@ -121,7 +121,7 @@ class ConfigFileWatcher:
             )
         self.config = config
         self.event_handler = ConfigFileHandler(config)
-        self.observer = Observer()  # type: ignore[reportPossiblyUnboundVariable]
+        self.observer = Observer()
 
     def start(self) -> None:
         """Start watching configuration files for changes.

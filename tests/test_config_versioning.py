@@ -8,10 +8,7 @@ import time
 import unittest
 
 from config_stash.config import Config
-from config_stash.config_versioning import (
-    ConfigVersion,
-    ConfigVersionManager,
-)
+from config_stash.config_versioning import ConfigVersion, ConfigVersionManager
 from config_stash.loaders import YamlLoader
 
 

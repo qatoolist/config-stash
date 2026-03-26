@@ -181,10 +181,14 @@ class TestReadSelfConfig:
         )
 
         pyproject = tmp_path / "pyproject.toml"
-        pyproject.write_text(textwrap.dedent("""\
+        pyproject.write_text(
+            textwrap.dedent(
+                """\
             [tool.config_stash]
             default_environment = "from-pyproject"
-        """))
+        """
+            )
+        )
 
         monkeypatch.chdir(tmp_path)
         result = read_self_config(search_dir=str(tmp_path))
@@ -192,10 +196,14 @@ class TestReadSelfConfig:
 
     def test_falls_back_to_pyproject_when_no_config_file(self, tmp_path, monkeypatch):
         pyproject = tmp_path / "pyproject.toml"
-        pyproject.write_text(textwrap.dedent("""\
+        pyproject.write_text(
+            textwrap.dedent(
+                """\
             [tool.config_stash]
             default_environment = "from-pyproject"
-        """))
+        """
+            )
+        )
 
         monkeypatch.chdir(tmp_path)
         result = read_self_config(search_dir=str(tmp_path))
@@ -403,10 +411,14 @@ class TestConfigInitIntegration:
     def test_pyproject_fallback_when_no_config_file(self, tmp_path, monkeypatch):
         """When no config-stash.* file exists, fall back to pyproject.toml."""
         pyproject = tmp_path / "pyproject.toml"
-        pyproject.write_text(textwrap.dedent("""\
+        pyproject.write_text(
+            textwrap.dedent(
+                """\
             [tool.config_stash]
             default_environment = "from-pyproject"
-        """))
+        """
+            )
+        )
 
         monkeypatch.chdir(tmp_path)
 

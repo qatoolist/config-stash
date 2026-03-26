@@ -7,8 +7,8 @@ for use in asynchronous Python applications.
 """
 
 import asyncio
-import tempfile
 import os
+import tempfile
 
 from config_stash.async_config import AsyncConfig, AsyncYamlLoader
 
@@ -21,7 +21,8 @@ async def example_1_basic_async():
 
     # Create a temporary config file
     with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
-        f.write("""
+        f.write(
+            """
 database:
   host: localhost
   port: 5432
@@ -30,7 +31,8 @@ database:
 api:
   endpoint: http://api.example.com
   timeout: 30
-        """)
+        """
+        )
         config_file = f.name
 
     try:
@@ -68,10 +70,7 @@ async def example_2_parallel_loading():
 
     try:
         # Load multiple configs in parallel (happens automatically)
-        loaders = [
-            AsyncYamlLoader(config1_file),
-            AsyncYamlLoader(config2_file)
-        ]
+        loaders = [AsyncYamlLoader(config1_file), AsyncYamlLoader(config2_file)]
         config = await AsyncConfig.create(env="production", loaders=loaders)
 
         # Access merged configuration
@@ -93,11 +92,13 @@ async def example_3_async_reload():
     print("=" * 70)
 
     with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
-        f.write("""
+        f.write(
+            """
 database:
   host: localhost
   port: 5432
-        """)
+        """
+        )
         config_file = f.name
 
     try:
@@ -109,11 +110,13 @@ database:
 
         # Modify config file
         with open(config_file, "w") as f:
-            f.write("""
+            f.write(
+                """
 database:
   host: remote.db.example.com
   port: 3306
-            """)
+            """
+            )
 
         # Reload configuration
         await config.reload()
@@ -133,11 +136,13 @@ async def example_4_async_validation():
     print("=" * 70)
 
     with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
-        f.write("""
+        f.write(
+            """
 database:
   host: localhost
   port: 5432
-        """)
+        """
+        )
         config_file = f.name
 
     try:

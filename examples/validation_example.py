@@ -6,8 +6,8 @@ This example demonstrates how to use schema validation with Config-Stash,
 including Pydantic models and JSON Schema validation.
 """
 
-import tempfile
 import os
+import tempfile
 
 from config_stash import Config
 from config_stash.loaders import YamlLoader
@@ -36,7 +36,8 @@ def example_1_pydantic_validation():
 
         # Create config file
         with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
-            f.write("""
+            f.write(
+                """
 app_name: MyApp
 database:
   host: localhost
@@ -44,7 +45,8 @@ database:
   name: myapp_db
   ssl: true
 debug: false
-            """)
+            """
+            )
             config_file = f.name
 
         try:
@@ -53,7 +55,7 @@ debug: false
                 loaders=[YamlLoader(config_file)],
                 schema=AppConfig,
                 validate_on_load=True,
-                strict_validation=False  # Don't raise on validation errors
+                strict_validation=False,  # Don't raise on validation errors
             )
 
             print("✅ Configuration validated successfully!")
@@ -80,7 +82,12 @@ def example_2_json_schema_validation():
         "type": "object",
         "properties": {
             "app_name": {"type": "string"},
-            "port": {"type": "integer", "minimum": 1, "maximum": 65535, "default": 8080},
+            "port": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 65535,
+                "default": 8080,
+            },
             "debug": {"type": "boolean", "default": False},
             "database": {
                 "type": "object",
@@ -95,22 +102,22 @@ def example_2_json_schema_validation():
     }
 
     with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
-        f.write("""
+        f.write(
+            """
 app_name: MyApp
 port: 8080
 database:
   host: localhost
   port: 5432
-        """)
+        """
+        )
         config_file = f.name
 
     try:
         from config_stash.validators import SchemaValidator
 
         config = Config(
-            loaders=[YamlLoader(config_file)],
-            schema=schema,
-            validate_on_load=True
+            loaders=[YamlLoader(config_file)], schema=schema, validate_on_load=True
         )
 
         print("✅ Configuration validated with JSON Schema!")

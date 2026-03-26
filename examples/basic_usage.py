@@ -11,7 +11,7 @@ import tempfile
 from pathlib import Path
 
 from config_stash import Config
-from config_stash.loaders import YamlLoader, JsonLoader, EnvironmentLoader
+from config_stash.loaders import EnvironmentLoader, JsonLoader, YamlLoader
 
 
 def example_1_simple_config():
@@ -22,7 +22,8 @@ def example_1_simple_config():
 
     # Create a temporary config file
     with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
-        f.write("""
+        f.write(
+            """
 database:
   host: localhost
   port: 5432
@@ -31,7 +32,8 @@ database:
 api:
   endpoint: http://api.example.com
   timeout: 30
-        """)
+        """
+        )
         config_file = f.name
 
     try:
@@ -55,36 +57,29 @@ def example_2_multiple_sources():
 
     # Create base config
     with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
-        f.write("""
+        f.write(
+            """
 database:
   host: localhost
   port: 5432
-        """)
+        """
+        )
         base_file = f.name
 
     # Create override config
     with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
         import json
-        json.dump({
-            "database": {
-                "port": 3306,
-                "ssl": True
-            }
-        }, f)
+
+        json.dump({"database": {"port": 3306, "ssl": True}}, f)
         override_file = f.name
 
     try:
         # Load from multiple sources (later sources override earlier ones)
-        config = Config(
-            loaders=[
-                YamlLoader(base_file),
-                JsonLoader(override_file)
-            ]
-        )
+        config = Config(loaders=[YamlLoader(base_file), JsonLoader(override_file)])
 
         print(f"Database host: {config.database.host}")  # From base
         print(f"Database port: {config.database.port}")  # Overridden
-        print(f"Database SSL: {config.database.ssl}")    # From override
+        print(f"Database SSL: {config.database.ssl}")  # From override
 
     finally:
         os.unlink(base_file)
@@ -104,9 +99,7 @@ def example_3_environment_variables():
 
     try:
         # Load from environment with prefix 'APP'
-        config = Config(
-            loaders=[EnvironmentLoader("APP", separator="__")]
-        )
+        config = Config(loaders=[EnvironmentLoader("APP", separator="__")])
 
         print(f"Database host: {config.database.host}")
         print(f"Database port: {config.database.port}")
@@ -126,7 +119,8 @@ def example_4_environment_specific():
 
     # Create config with multiple environments
     with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
-        f.write("""
+        f.write(
+            """
 development:
   database:
     host: localhost
@@ -138,25 +132,20 @@ production:
     host: prod.db.example.com
     port: 3306
     debug: false
-        """)
+        """
+        )
         config_file = f.name
 
     try:
         # Load development config
-        dev_config = Config(
-            env="development",
-            loaders=[YamlLoader(config_file)]
-        )
+        dev_config = Config(env="development", loaders=[YamlLoader(config_file)])
         print("Development config:")
         print(f"  Host: {dev_config.database.host}")
         print(f"  Port: {dev_config.database.port}")
         print(f"  Debug: {dev_config.database.debug}")
 
         # Load production config
-        prod_config = Config(
-            env="production",
-            loaders=[YamlLoader(config_file)]
-        )
+        prod_config = Config(env="production", loaders=[YamlLoader(config_file)])
         print("\nProduction config:")
         print(f"  Host: {prod_config.database.host}")
         print(f"  Port: {prod_config.database.port}")
@@ -173,22 +162,26 @@ def example_5_config_builder():
     print("=" * 70)
 
     with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
-        f.write("""
+        f.write(
+            """
 database:
   host: localhost
   port: 5432
-        """)
+        """
+        )
         config_file = f.name
 
     try:
         from config_stash import ConfigBuilder
 
         # Build configuration using fluent API
-        config = (ConfigBuilder()
-                  .with_env("production")
-                  .add_loader(YamlLoader(config_file))
-                  .enable_deep_merge()
-                  .build())
+        config = (
+            ConfigBuilder()
+            .with_env("production")
+            .add_loader(YamlLoader(config_file))
+            .enable_deep_merge()
+            .build()
+        )
 
         print(f"Database host: {config.database.host}")
         print(f"Database port: {config.database.port}")

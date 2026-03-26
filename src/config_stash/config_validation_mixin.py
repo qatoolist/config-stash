@@ -59,7 +59,7 @@ class ConfigValidation:
                 # JSON Schema validation
                 from config_stash.validators.schema_validator import SchemaValidator
 
-                validator = SchemaValidator(self._schema)
+                validator = SchemaValidator(self._schema)  # type: ignore[assignment]
                 validator.validate(config_dict)
                 logger.info("Configuration validated successfully against JSON Schema")
             else:

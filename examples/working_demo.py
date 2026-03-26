@@ -26,7 +26,11 @@ def main():
                 "password": "dev_pass",
                 "pool_size": 10,
             },
-            "api": {"base_url": "http://localhost:8000", "timeout": 30, "retry_count": 3},
+            "api": {
+                "base_url": "http://localhost:8000",
+                "timeout": 30,
+                "retry_count": 3,
+            },
             "features": {"logging": True, "metrics": False, "cache": True},
         },
         "production": {
@@ -45,7 +49,12 @@ def main():
                 "retry_count": 5,
                 "rate_limit": 1000,
             },
-            "features": {"logging": True, "metrics": True, "cache": True, "monitoring": True},
+            "features": {
+                "logging": True,
+                "metrics": True,
+                "cache": True,
+                "monitoring": True,
+            },
         },
     }
 
@@ -83,7 +92,9 @@ def main():
     print(f"API URL: {prod_config.api.base_url}")
     print(f"API Rate Limit: {getattr(prod_config.api, 'rate_limit', 'N/A')}")
     print(f"Features - Metrics: {prod_config.features.metrics}")
-    print(f"Features - Monitoring: {getattr(prod_config.features, 'monitoring', False)}")
+    print(
+        f"Features - Monitoring: {getattr(prod_config.features, 'monitoring', False)}"
+    )
     print()
 
     # 3. Export Configuration

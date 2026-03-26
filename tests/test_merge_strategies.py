@@ -3,10 +3,7 @@
 import unittest
 from typing import Any, Dict
 
-from config_stash.merge_strategies import (
-    AdvancedConfigMerger,
-    MergeStrategy,
-)
+from config_stash.merge_strategies import AdvancedConfigMerger, MergeStrategy
 
 
 class TestMergeStrategy(unittest.TestCase):

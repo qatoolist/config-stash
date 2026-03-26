@@ -274,7 +274,7 @@ class S3Loader(RemoteLoader):
             >>> config = loader.load()
         """
         try:
-            import boto3  # type: ignore[import-untyped]
+            import boto3
         except ImportError:
             raise ImportError(
                 "boto3 is required for S3 loading. Install with: pip install boto3"
@@ -510,9 +510,7 @@ class AzureBlobLoader(RemoteLoader):
             >>> config = loader.load()
         """
         try:
-            from azure.storage.blob import (
-                BlobServiceClient,  # type: ignore[import-untyped]
-            )
+            from azure.storage.blob import BlobServiceClient
         except ImportError:
             raise ImportError(
                 "azure-storage-blob is required for Azure loading. "
@@ -544,9 +542,7 @@ class AzureBlobLoader(RemoteLoader):
                         "Azure storage account name is required. Provide 'account_name' "
                         "or set the AZURE_STORAGE_ACCOUNT environment variable."
                     )
-                from azure.identity import (
-                    DefaultAzureCredential,  # type: ignore[import-untyped]
-                )
+                from azure.identity import DefaultAzureCredential
 
                 blob_service = BlobServiceClient(
                     account_url=f"https://{self.account_name}.blob.core.windows.net",
@@ -665,7 +661,7 @@ class GCPStorageLoader(RemoteLoader):
             >>> config = loader.load()
         """
         try:
-            from google.cloud import storage  # type: ignore[import-untyped]
+            from google.cloud import storage
         except ImportError:
             raise ImportError(
                 "google-cloud-storage is required for GCS loading. "
@@ -810,10 +806,8 @@ class IBMCloudObjectStorageLoader(RemoteLoader):
             >>> config = loader.load()
         """
         try:
-            import ibm_boto3  # type: ignore[import-untyped]
-            from ibm_botocore.client import (
-                Config as IBMConfig,  # type: ignore[import-untyped]
-            )
+            import ibm_boto3
+            from ibm_botocore.client import Config as IBMConfig
         except ImportError:
             raise ImportError(
                 "ibm-cos-sdk is required for IBM COS loading. "

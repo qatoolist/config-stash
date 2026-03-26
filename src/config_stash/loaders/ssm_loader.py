@@ -119,7 +119,7 @@ class SSMLoader(Loader):
             >>> config = loader.load()
         """
         try:
-            import boto3  # type: ignore[import-untyped]
+            import boto3
         except ImportError:
             raise ImportError(
                 "boto3 is required for SSM Parameter Store loading. "

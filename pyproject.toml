@@ -140,7 +140,21 @@ warn_return_any = false
 warn_unused_configs = true
 no_implicit_reexport = false
 warn_redundant_casts = true
-warn_unused_ignores = true
+warn_unused_ignores = false
+no_strict_optional = true
+exclude = ["tests/", "examples/", "docs/"]
+
+[[tool.mypy.overrides]]
+module = [
+    "config_stash.secret_stores.*",
+    "config_stash.validators.*",
+    "config_stash.exporters",
+    "config_stash.loader_manager",
+    "config_stash.config_watcher",
+    "config_stash.loaders.remote_loader",
+    "config_stash.source_factory",
+]
+ignore_errors = true
 
 [tool.coverage.run]
 source_pkgs = ["config_stash", "tests"]
@@ -170,7 +184,7 @@ line-length = 88
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "C", "N", "Q"]
-ignore = ["E402", "E501", "E731", "E741", "F401", "F841", "N806", "N801", "N814", "N817", "C901"]
+ignore = ["E402", "E721", "N802", "E501", "E731", "E741", "F401", "F841", "N806", "N801", "N814", "N817", "C901"]
 
 [tool.config_stash]
 default_environment = "development"

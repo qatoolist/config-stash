@@ -14,11 +14,12 @@ import tempfile
 
 def example_oidc_with_kerberos():
     """Example: OIDC authentication with Kerberos (no browser needed)."""
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("Example 1: OIDC Authentication with Kerberos")
-    print("="*70)
+    print("=" * 70)
 
-    print("""
+    print(
+        """
 OIDC with Kerberos allows automatic authentication if you've already
 done 'kinit' to get a Kerberos ticket. No browser interaction needed!
 
@@ -57,16 +58,18 @@ Benefits:
 - Works in automated scripts
 - Uses existing Kerberos ticket
 - Falls back to browser if Kerberos fails
-""")
+"""
+    )
 
 
 def example_oidc_browser():
     """Example: OIDC authentication with browser flow."""
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("Example 2: OIDC Authentication with Browser")
-    print("="*70)
+    print("=" * 70)
 
-    print("""
+    print(
+        """
 Standard OIDC authentication that opens a browser for login.
 Works with any OIDC provider (Okta, Azure AD, Google, etc.)
 
@@ -91,16 +94,18 @@ What happens:
 2. You authenticate with username/password or SSO
 3. Browser redirects back to local callback
 4. Vault token is obtained automatically
-""")
+"""
+    )
 
 
 def example_ldap_pin_token():
     """Example: LDAP authentication with PIN+Token password policy."""
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("Example 3: LDAP Authentication with PIN+Token")
-    print("="*70)
+    print("=" * 70)
 
-    print("""
+    print(
+        """
 Many organizations use complex password policies where the password
 is constructed from multiple inputs (e.g., PIN + Token from RSA/Duo).
 
@@ -130,16 +135,18 @@ Supports any custom password construction:
 - Password + OTP
 - Password + Biometric code
 - Any custom logic you need
-""")
+"""
+    )
 
 
 def example_ldap_kerberos_id():
     """Example: LDAP with Kerberos ID and PIN+Token."""
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("Example 4: LDAP with Kerberos ID Username")
-    print("="*70)
+    print("=" * 70)
 
-    print("""
+    print(
+        """
 Use your Kerberos ID as username with custom password policy.
 
 Usage:
@@ -190,16 +197,18 @@ Usage:
         username=os.getenv('USER'),  # Kerberos ID
         password_provider=get_pin_token
     )
-""")
+"""
+    )
 
 
 def example_kubernetes():
     """Example: Kubernetes authentication."""
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("Example 5: Kubernetes Authentication")
-    print("="*70)
+    print("=" * 70)
 
-    print("""
+    print(
+        """
 Automatic authentication when running inside Kubernetes pods.
 
 Usage:
@@ -229,16 +238,18 @@ Usage:
 
 The Kubernetes service account token is automatically mounted at:
 /var/run/secrets/kubernetes.io/serviceaccount/token
-""")
+"""
+    )
 
 
 def example_aws():
     """Example: AWS authentication."""
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("Example 6: AWS Authentication")
-    print("="*70)
+    print("=" * 70)
 
-    print("""
+    print(
+        """
 Automatic authentication when running on AWS (EC2, ECS, Lambda).
 
 Usage:
@@ -265,16 +276,18 @@ Usage:
 Vault will verify:
 - IAM credentials from instance metadata
 - EC2 instance identity document
-""")
+"""
+    )
 
 
 def example_jwt():
     """Example: JWT authentication."""
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("Example 7: JWT Authentication")
-    print("="*70)
+    print("=" * 70)
 
-    print("""
+    print(
+        """
 Use JWT tokens from external sources (CI/CD, service mesh, etc.).
 
 Usage:
@@ -300,16 +313,18 @@ Common JWT sources:
 - GitLab CI: CI_JOB_JWT
 - GitHub Actions: ACTIONS_ID_TOKEN_REQUEST_TOKEN
 - Service mesh (Istio, Linkerd): /var/run/secrets/tokens/vault-token
-""")
+"""
+    )
 
 
 def example_multi_auth_fallback():
     """Example: Multiple authentication methods with fallback."""
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("Example 8: Multiple Authentication with Fallback")
-    print("="*70)
+    print("=" * 70)
 
-    print("""
+    print(
+        """
 Try multiple authentication methods in order of preference.
 
 Usage:
@@ -354,16 +369,18 @@ Usage:
         raise Exception("All authentication methods failed")
 
     vault = get_vault_store()
-""")
+"""
+    )
 
 
 def example_complete_workflow():
     """Complete example with all components."""
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("Example 9: Complete Production Workflow")
-    print("="*70)
+    print("=" * 70)
 
-    print("""
+    print(
+        """
 Complete example integrating Vault auth with Config-Stash.
 
 File structure:
@@ -459,15 +476,16 @@ development:
     endpoint: https://api.dev.example.com
     key: "${secret:dev/api/key}"
     timeout: 60
-""")
+"""
+    )
 
 
 def main():
     """Run all examples."""
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("HashiCorp Vault Authentication Examples")
     print("Advanced Enterprise Authentication Patterns")
-    print("="*70)
+    print("=" * 70)
 
     example_oidc_with_kerberos()
     example_oidc_browser()
@@ -479,10 +497,11 @@ def main():
     example_multi_auth_fallback()
     example_complete_workflow()
 
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("Summary of Authentication Methods")
-    print("="*70)
-    print("""
+    print("=" * 70)
+    print(
+        """
 Available Authentication Methods:
 
 1. OIDCAuth - OIDC/OAuth2 with optional Kerberos
@@ -530,12 +549,13 @@ All methods support:
 - Custom mount points
 - Namespace support (Vault Enterprise)
 - Error handling and fallbacks
-""")
+"""
+    )
 
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("For complete documentation, see:")
     print("docs/SECRET_STORES.md")
-    print("="*70 + "\n")
+    print("=" * 70 + "\n")
 
 
 if __name__ == "__main__":

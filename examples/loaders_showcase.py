@@ -16,10 +16,10 @@ from cs.loaders import (
     YamlLoader,
 )
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _header(title: str) -> None:
     """Print a section header."""
@@ -48,6 +48,7 @@ def _print_dict(d: dict, indent: int = 0) -> None:
 # 1. TOML loading
 # ---------------------------------------------------------------------------
 
+
 def example_toml_loading() -> None:
     """Load configuration from a TOML file with [database] and [app] sections."""
     _header("1. TOML Loading")
@@ -66,9 +67,7 @@ workers = 4
 debug   = false
 """
 
-    tmp = tempfile.NamedTemporaryFile(
-        mode="w", suffix=".toml", delete=False
-    )
+    tmp = tempfile.NamedTemporaryFile(mode="w", suffix=".toml", delete=False)
     try:
         tmp.write(toml_content)
         tmp.close()
@@ -89,6 +88,7 @@ debug   = false
 # ---------------------------------------------------------------------------
 # 2. INI loading
 # ---------------------------------------------------------------------------
+
 
 def example_ini_loading() -> None:
     """Load configuration from an INI file and show section-to-dict mapping."""
@@ -112,9 +112,7 @@ ttl = 300
 max_size = 1024
 """
 
-    tmp = tempfile.NamedTemporaryFile(
-        mode="w", suffix=".ini", delete=False
-    )
+    tmp = tempfile.NamedTemporaryFile(mode="w", suffix=".ini", delete=False)
     try:
         tmp.write(ini_content)
         tmp.close()
@@ -125,12 +123,18 @@ max_size = 1024
 
         _subheader("Section -> dict mapping")
         print(f"server.host     : {config.server.host}")
-        print(f"server.port     : {config.server.port}  (type: {type(config.server.port).__name__})")
-        print(f"server.debug    : {config.server.debug}  (type: {type(config.server.debug).__name__})")
+        print(
+            f"server.port     : {config.server.port}  (type: {type(config.server.port).__name__})"
+        )
+        print(
+            f"server.debug    : {config.server.debug}  (type: {type(config.server.debug).__name__})"
+        )
         print(f"logging.level   : {config.logging.level}")
         print(f"logging.rotate  : {config.logging.rotate}")
         print(f"cache.backend   : {config.cache.backend}")
-        print(f"cache.ttl       : {config.cache.ttl}  (type: {type(config.cache.ttl).__name__})")
+        print(
+            f"cache.ttl       : {config.cache.ttl}  (type: {type(config.cache.ttl).__name__})"
+        )
     finally:
         os.unlink(tmp.name)
 
@@ -138,6 +142,7 @@ max_size = 1024
 # ---------------------------------------------------------------------------
 # 3. .env file loading
 # ---------------------------------------------------------------------------
+
 
 def example_env_file_loading() -> None:
     """.env file loading with comments, quoting, nesting, and type coercion."""
@@ -164,9 +169,7 @@ database.port=5432
 database.name=mydb
 """
 
-    tmp = tempfile.NamedTemporaryFile(
-        mode="w", suffix=".env", delete=False
-    )
+    tmp = tempfile.NamedTemporaryFile(mode="w", suffix=".env", delete=False)
     try:
         tmp.write(env_content)
         tmp.close()
@@ -183,15 +186,25 @@ database.name=mydb
         print(f"LOG_LEVEL  : {config.LOG_LEVEL!r}")
 
         _subheader("Type coercion")
-        print(f"ENABLED    : {config.ENABLED!r}  (type: {type(config.ENABLED).__name__})")
-        print(f"DISABLED   : {config.DISABLED!r}  (type: {type(config.DISABLED).__name__})")
-        print(f"RETRIES    : {config.RETRIES!r}  (type: {type(config.RETRIES).__name__})")
+        print(
+            f"ENABLED    : {config.ENABLED!r}  (type: {type(config.ENABLED).__name__})"
+        )
+        print(
+            f"DISABLED   : {config.DISABLED!r}  (type: {type(config.DISABLED).__name__})"
+        )
+        print(
+            f"RETRIES    : {config.RETRIES!r}  (type: {type(config.RETRIES).__name__})"
+        )
         print(f"RATE       : {config.RATE!r}  (type: {type(config.RATE).__name__})")
-        print(f"NEGATIVE   : {config.NEGATIVE!r}  (type: {type(config.NEGATIVE).__name__})")
+        print(
+            f"NEGATIVE   : {config.NEGATIVE!r}  (type: {type(config.NEGATIVE).__name__})"
+        )
 
         _subheader("Dot-notation nesting")
         print(f"database.host : {config.database.host}")
-        print(f"database.port : {config.database.port}  (type: {type(config.database.port).__name__})")
+        print(
+            f"database.port : {config.database.port}  (type: {type(config.database.port).__name__})"
+        )
         print(f"database.name : {config.database.name}")
     finally:
         os.unlink(tmp.name)
@@ -200,6 +213,7 @@ database.name=mydb
 # ---------------------------------------------------------------------------
 # 4. Environment variable loading
 # ---------------------------------------------------------------------------
+
 
 def example_environment_variable_loading() -> None:
     """Load env vars with a prefix; double-underscore becomes nested keys."""
@@ -224,10 +238,16 @@ def example_environment_variable_loading() -> None:
 
         _subheader("Nested keys created via double-underscore separator")
         print(f"database.host : {config.database.host}")
-        print(f"database.port : {config.database.port}  (type: {type(config.database.port).__name__})")
-        print(f"database.ssl  : {config.database.ssl}  (type: {type(config.database.ssl).__name__})")
+        print(
+            f"database.port : {config.database.port}  (type: {type(config.database.port).__name__})"
+        )
+        print(
+            f"database.ssl  : {config.database.ssl}  (type: {type(config.database.ssl).__name__})"
+        )
         print(f"cache.backend : {config.cache.backend}")
-        print(f"cache.ttl     : {config.cache.ttl}  (type: {type(config.cache.ttl).__name__})")
+        print(
+            f"cache.ttl     : {config.cache.ttl}  (type: {type(config.cache.ttl).__name__})"
+        )
 
         _subheader("Single-level key (no separator)")
         print(f"log_level     : {config.log_level}")
@@ -239,6 +259,7 @@ def example_environment_variable_loading() -> None:
 # ---------------------------------------------------------------------------
 # 5. HTTP remote loading (conceptual)
 # ---------------------------------------------------------------------------
+
 
 def example_http_remote_loading() -> None:
     """Show HTTPLoader usage pattern. Not executed — requires a live server."""
@@ -269,6 +290,7 @@ def example_http_remote_loading() -> None:
 # ---------------------------------------------------------------------------
 # 6. AWS SSM Parameter Store loading (conceptual)
 # ---------------------------------------------------------------------------
+
 
 def example_ssm_loader() -> None:
     """Show SSMLoader usage pattern. Not executed — requires AWS credentials."""
@@ -304,6 +326,7 @@ def example_ssm_loader() -> None:
 # 7. Multi-source merge (deep merge)
 # ---------------------------------------------------------------------------
 
+
 def example_multi_source_merge() -> None:
     """Load YAML + JSON + env vars and show deep merge preserving nested keys."""
     _header("7. Multi-Source Merge (deep_merge=True)")
@@ -321,24 +344,22 @@ app:
   version: "1.0.0"
 """
 
-    json_content = json.dumps({
-        "database": {
-            "port": 3306,
-            "options": {
-                "ssl": True,
+    json_content = json.dumps(
+        {
+            "database": {
+                "port": 3306,
+                "options": {
+                    "ssl": True,
+                },
             },
-        },
-        "app": {
-            "debug": True,
-        },
-    })
+            "app": {
+                "debug": True,
+            },
+        }
+    )
 
-    yaml_tmp = tempfile.NamedTemporaryFile(
-        mode="w", suffix=".yaml", delete=False
-    )
-    json_tmp = tempfile.NamedTemporaryFile(
-        mode="w", suffix=".json", delete=False
-    )
+    yaml_tmp = tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False)
+    json_tmp = tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False)
 
     env_vars = {
         "MERGE_DATABASE__OPTIONS__POOL_SIZE": "20",
@@ -363,10 +384,18 @@ app:
 
         _subheader("Result after deep merge (YAML <- JSON <- env vars)")
         print(f"database.host               : {config.database.host}  (from YAML)")
-        print(f"database.port               : {config.database.port}  (overridden by JSON)")
-        print(f"database.options.pool_size   : {config.database.options.pool_size}  (overridden by env var)")
-        print(f"database.options.timeout     : {config.database.options.timeout}  (preserved from YAML)")
-        print(f"database.options.ssl         : {config.database.options.ssl}  (added by JSON)")
+        print(
+            f"database.port               : {config.database.port}  (overridden by JSON)"
+        )
+        print(
+            f"database.options.pool_size   : {config.database.options.pool_size}  (overridden by env var)"
+        )
+        print(
+            f"database.options.timeout     : {config.database.options.timeout}  (preserved from YAML)"
+        )
+        print(
+            f"database.options.ssl         : {config.database.options.ssl}  (added by JSON)"
+        )
         print(f"app.name                    : {config.app.name}  (from YAML)")
         print(f"app.version                 : {config.app.version}  (from YAML)")
         print(f"app.debug                   : {config.app.debug}  (added by JSON)")
@@ -384,6 +413,7 @@ app:
 # 8. Shallow vs deep merge
 # ---------------------------------------------------------------------------
 
+
 def example_shallow_vs_deep_merge() -> None:
     """Show how shallow merge replaces entire sections instead of merging."""
     _header("8. Shallow vs Deep Merge")
@@ -397,21 +427,19 @@ database:
     timeout: 30
 """
 
-    json_content = json.dumps({
-        "database": {
-            "port": 3306,
-            "options": {
-                "ssl": True,
+    json_content = json.dumps(
+        {
+            "database": {
+                "port": 3306,
+                "options": {
+                    "ssl": True,
+                },
             },
-        },
-    })
+        }
+    )
 
-    yaml_tmp = tempfile.NamedTemporaryFile(
-        mode="w", suffix=".yaml", delete=False
-    )
-    json_tmp = tempfile.NamedTemporaryFile(
-        mode="w", suffix=".json", delete=False
-    )
+    yaml_tmp = tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False)
+    json_tmp = tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False)
 
     try:
         yaml_tmp.write(yaml_content)
@@ -445,6 +473,7 @@ database:
 # ---------------------------------------------------------------------------
 # main
 # ---------------------------------------------------------------------------
+
 
 def main() -> None:
     """Run all loader showcase examples."""

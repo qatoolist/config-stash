@@ -8,20 +8,22 @@ import os
 import tempfile
 from pathlib import Path
 
+
 # Example 1: Using DictSecretStore (for development/testing)
 def example_dict_secret_store():
     """Simple in-memory secret store for development."""
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("Example 1: DictSecretStore (Development/Testing)")
-    print("="*60)
+    print("=" * 60)
 
     from config_stash import Config
-    from config_stash.secret_stores import DictSecretStore, SecretResolver
     from config_stash.loaders import YamlLoader
+    from config_stash.secret_stores import DictSecretStore, SecretResolver
 
     # Create temporary config file
     with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
-        f.write("""
+        f.write(
+            """
 default:
   database:
     host: localhost
@@ -35,16 +37,19 @@ default:
 
   redis:
     url: "redis://:${secret:redis/password}@localhost:6379/0"
-""")
+"""
+        )
         config_file = f.name
 
     try:
         # Create a secret store with development secrets
-        secrets = DictSecretStore({
-            "database/password": "dev-password-123",
-            "api/key": "dev-api-key-abc123",
-            "redis/password": "redis-dev-password",
-        })
+        secrets = DictSecretStore(
+            {
+                "database/password": "dev-password-123",
+                "api/key": "dev-api-key-abc123",
+                "redis/password": "redis-dev-password",
+            }
+        )
 
         # Create config with secret resolver
         config = Config(
@@ -65,13 +70,13 @@ default:
 # Example 2: Using Environment Variables as Secret Store
 def example_env_secret_store():
     """Use environment variables as a secret source."""
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("Example 2: EnvSecretStore (Environment Variables)")
-    print("="*60)
+    print("=" * 60)
 
     from config_stash import Config
-    from config_stash.secret_stores import EnvSecretStore, SecretResolver
     from config_stash.loaders import YamlLoader
+    from config_stash.secret_stores import EnvSecretStore, SecretResolver
 
     # Set some environment variables
     os.environ["DB_PASSWORD"] = "env-password-456"
@@ -79,13 +84,15 @@ def example_env_secret_store():
 
     # Create temporary config file
     with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
-        f.write("""
+        f.write(
+            """
 default:
   database:
     password: "${secret:db/password}"
   api:
     key: "${secret:api/key}"
-""")
+"""
+        )
         config_file = f.name
 
     try:
@@ -112,53 +119,54 @@ default:
 # Example 3: Multi-Store with Fallback
 def example_multi_store():
     """Use multiple secret stores with fallback hierarchy."""
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("Example 3: MultiSecretStore (Fallback Hierarchy)")
-    print("="*60)
+    print("=" * 60)
 
     from config_stash import Config
+    from config_stash.loaders import YamlLoader
     from config_stash.secret_stores import (
         DictSecretStore,
         EnvSecretStore,
         MultiSecretStore,
-        SecretResolver
+        SecretResolver,
     )
-    from config_stash.loaders import YamlLoader
 
     # Setup environment
     os.environ["FALLBACK_SECRET"] = "from-environment"
 
     with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
-        f.write("""
+        f.write(
+            """
 default:
   primary_secret: "${secret:primary/key}"
   override_secret: "${secret:override/key}"
   fallback_secret: "${secret:fallback/secret}"
-""")
+"""
+        )
         config_file = f.name
 
     try:
         # Create a hierarchy of secret stores
         # 1. Local overrides (highest priority)
-        local_overrides = DictSecretStore({
-            "override/key": "local-override-value"
-        })
+        local_overrides = DictSecretStore({"override/key": "local-override-value"})
 
         # 2. Application secrets (medium priority)
-        app_secrets = DictSecretStore({
-            "primary/key": "primary-value",
-            "override/key": "this-will-be-overridden"
-        })
+        app_secrets = DictSecretStore(
+            {"primary/key": "primary-value", "override/key": "this-will-be-overridden"}
+        )
 
         # 3. Environment variables (fallback)
         env_store = EnvSecretStore(transform_key=True)
 
         # Create multi-store with priority order
-        multi_store = MultiSecretStore([
-            local_overrides,  # Checked first
-            app_secrets,      # Checked second
-            env_store,        # Fallback
-        ])
+        multi_store = MultiSecretStore(
+            [
+                local_overrides,  # Checked first
+                app_secrets,  # Checked second
+                env_store,  # Fallback
+            ]
+        )
 
         config = Config(
             env="default",
@@ -179,39 +187,40 @@ default:
 # Example 4: JSON Path Extraction from Secrets
 def example_json_path_extraction():
     """Extract nested values from JSON secrets."""
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("Example 4: JSON Path Extraction")
-    print("="*60)
+    print("=" * 60)
 
     from config_stash import Config
-    from config_stash.secret_stores import DictSecretStore, SecretResolver
     from config_stash.loaders import YamlLoader
+    from config_stash.secret_stores import DictSecretStore, SecretResolver
 
     with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
-        f.write("""
+        f.write(
+            """
 default:
   database:
     host: "${secret:db-config:connection.host}"
     port: "${secret:db-config:connection.port}"
     user: "${secret:db-config:credentials.username}"
     password: "${secret:db-config:credentials.password}"
-""")
+"""
+        )
         config_file = f.name
 
     try:
         # Create a secret store with nested JSON structure
-        secrets = DictSecretStore({
-            "db-config": {
-                "connection": {
-                    "host": "db.example.com",
-                    "port": 5432
-                },
-                "credentials": {
-                    "username": "app_user",
-                    "password": "super-secret-pass"
+        secrets = DictSecretStore(
+            {
+                "db-config": {
+                    "connection": {"host": "db.example.com", "port": 5432},
+                    "credentials": {
+                        "username": "app_user",
+                        "password": "super-secret-pass",
+                    },
                 }
             }
-        })
+        )
 
         config = Config(
             env="default",
@@ -232,34 +241,37 @@ default:
 # Example 5: Environment-Specific Secret Prefixes
 def example_env_prefixed_secrets():
     """Use environment-specific secret prefixes."""
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("Example 5: Environment-Specific Secret Prefixes")
-    print("="*60)
+    print("=" * 60)
 
     from config_stash import Config
-    from config_stash.secret_stores import DictSecretStore, SecretResolver
     from config_stash.loaders import YamlLoader
+    from config_stash.secret_stores import DictSecretStore, SecretResolver
 
     with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
-        f.write("""
+        f.write(
+            """
 default:
   api:
     key: "${secret:api/key}"
-""")
+"""
+        )
         config_file = f.name
 
     try:
         # Create a secret store with environment-prefixed secrets
-        all_secrets = DictSecretStore({
-            "dev/api/key": "dev-key-123",
-            "staging/api/key": "staging-key-456",
-            "prod/api/key": "prod-key-789",
-        })
+        all_secrets = DictSecretStore(
+            {
+                "dev/api/key": "dev-key-123",
+                "staging/api/key": "staging-key-456",
+                "prod/api/key": "prod-key-789",
+            }
+        )
 
         # Use production secrets with prefix
         prod_resolver = SecretResolver(
-            all_secrets,
-            prefix="prod/"  # Automatically prepends to all lookups
+            all_secrets, prefix="prod/"  # Automatically prepends to all lookups
         )
 
         config = Config(
@@ -278,11 +290,12 @@ default:
 # Example 6: AWS Secrets Manager (requires boto3)
 def example_aws_secrets_manager():
     """Example of using AWS Secrets Manager (conceptual)."""
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("Example 6: AWS Secrets Manager (Conceptual)")
-    print("="*60)
+    print("=" * 60)
 
-    print("""
+    print(
+        """
 To use AWS Secrets Manager in production:
 
 1. Install dependencies:
@@ -314,17 +327,19 @@ To use AWS Secrets Manager in production:
      key: "${secret:prod/api-config:api_key}"
 
 5. Store secrets in AWS Secrets Manager using AWS Console, CLI, or boto3
-""")
+"""
+    )
 
 
 # Example 7: HashiCorp Vault (requires hvac)
 def example_hashicorp_vault():
     """Example of using HashiCorp Vault (conceptual)."""
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("Example 7: HashiCorp Vault (Conceptual)")
-    print("="*60)
+    print("=" * 60)
 
-    print("""
+    print(
+        """
 To use HashiCorp Vault in production:
 
 1. Install dependencies:
@@ -366,20 +381,21 @@ To use HashiCorp Vault in production:
    vault kv put secret/myapp/database \\
      host=db.example.com \\
      password=super-secret
-""")
+"""
+    )
 
 
 # Example 8: Custom Secret Store Implementation
 def example_custom_secret_store():
     """Example of implementing a custom secret store."""
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("Example 8: Custom Secret Store Implementation")
-    print("="*60)
+    print("=" * 60)
 
     from config_stash import Config
-    from config_stash.secret_stores.base import SecretStore, SecretNotFoundError
-    from config_stash.secret_stores import SecretResolver
     from config_stash.loaders import YamlLoader
+    from config_stash.secret_stores import SecretResolver
+    from config_stash.secret_stores.base import SecretNotFoundError, SecretStore
 
     # Custom secret store implementation
     class FileBasedSecretStore(SecretStore):
@@ -422,13 +438,15 @@ def example_custom_secret_store():
     # Use the custom store
     with tempfile.TemporaryDirectory() as secrets_dir:
         with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
-            f.write("""
+            f.write(
+                """
 default:
   api:
     key: "${secret:api/key}"
   database:
     password: "${secret:database/password}"
-""")
+"""
+            )
             config_file = f.name
 
         try:
@@ -456,12 +474,13 @@ default:
 # Example 9: Secret Caching and Performance
 def example_secret_caching():
     """Demonstrate secret caching for performance."""
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("Example 9: Secret Caching and Performance")
-    print("="*60)
+    print("=" * 60)
+
+    import time
 
     from config_stash.secret_stores import DictSecretStore, SecretResolver
-    import time
 
     # Create a slow secret store (simulates network calls)
     class SlowSecretStore(DictSecretStore):
@@ -469,11 +488,9 @@ def example_secret_caching():
             time.sleep(0.1)  # Simulate 100ms network latency
             return super().get_secret(key, version, **kwargs)
 
-    secrets = SlowSecretStore({
-        "api/key": "abc123",
-        "db/password": "secret",
-        "redis/url": "redis://localhost"
-    })
+    secrets = SlowSecretStore(
+        {"api/key": "abc123", "db/password": "secret", "redis/url": "redis://localhost"}
+    )
 
     # Without caching
     resolver_no_cache = SecretResolver(secrets, cache_enabled=False)
@@ -501,9 +518,9 @@ def example_secret_caching():
 
 def main():
     """Run all examples."""
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("Config-Stash Secret Store Integration Examples")
-    print("="*60)
+    print("=" * 60)
 
     example_dict_secret_store()
     example_env_secret_store()
@@ -517,9 +534,9 @@ def main():
     example_aws_secrets_manager()
     example_hashicorp_vault()
 
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("All examples completed successfully!")
-    print("="*60)
+    print("=" * 60)
 
 
 if __name__ == "__main__":

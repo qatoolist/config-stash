@@ -6,8 +6,8 @@ This example demonstrates the introspection and query capabilities
 of Config-Stash, including keys(), has(), get(), schema(), and explain().
 """
 
-import tempfile
 import os
+import tempfile
 
 from config_stash import Config
 from config_stash.loaders import YamlLoader
@@ -20,7 +20,8 @@ def example_keys_and_has():
     print("=" * 70)
 
     with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
-        f.write("""
+        f.write(
+            """
 database:
   host: localhost
   port: 5432
@@ -31,7 +32,8 @@ database:
 api:
   endpoint: http://api.example.com
   timeout: 30
-        """)
+        """
+        )
         config_file = f.name
 
     try:
@@ -60,11 +62,13 @@ def example_get_with_defaults():
     print("=" * 70)
 
     with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
-        f.write("""
+        f.write(
+            """
 database:
   host: localhost
   port: 5432
-        """)
+        """
+        )
         config_file = f.name
 
     try:
@@ -79,7 +83,9 @@ database:
         print("\nGetting non-existent values with defaults:")
         print(f"  get('database.ssl', False): {config.get('database.ssl', False)}")
         print(f"  get('api.timeout', 30): {config.get('api.timeout', 30)}")
-        print(f"  get('nonexistent', 'default'): {config.get('nonexistent', 'default')}")
+        print(
+            f"  get('nonexistent', 'default'): {config.get('nonexistent', 'default')}"
+        )
 
     finally:
         os.unlink(config_file)
@@ -92,7 +98,8 @@ def example_schema_introspection():
     print("=" * 70)
 
     with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
-        f.write("""
+        f.write(
+            """
 database:
   host: localhost
   port: 5432
@@ -102,7 +109,8 @@ database:
 api:
   endpoint: http://api.example.com
   timeout: 30
-        """)
+        """
+        )
         config_file = f.name
 
     try:
@@ -139,25 +147,27 @@ def example_explain():
 
     # Create multiple config files to show resolution
     with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
-        f.write("""
+        f.write(
+            """
 database:
   host: localhost
   port: 5432
-        """)
+        """
+        )
         base_file = f.name
 
     with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
-        f.write("""
+        f.write(
+            """
 database:
   port: 3306
   ssl: true
-        """)
+        """
+        )
         override_file = f.name
 
     try:
-        config = Config(
-            loaders=[YamlLoader(base_file), YamlLoader(override_file)]
-        )
+        config = Config(loaders=[YamlLoader(base_file), YamlLoader(override_file)])
 
         # Explain how a value was resolved
         print("Explaining configuration resolution:")
@@ -180,11 +190,13 @@ def example_set():
     print("=" * 70)
 
     with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
-        f.write("""
+        f.write(
+            """
 database:
   host: localhost
   port: 5432
-        """)
+        """
+        )
         config_file = f.name
 
     try:

@@ -282,11 +282,13 @@ development:
         """Test debug command showing override history."""
         # Create multiple config sources for overrides
         with open("override.yaml", "w") as f:
-            f.write("""
+            f.write(
+                """
 default:
   database:
     host: overridden.db.com
-""")
+"""
+            )
 
         result = self.runner.invoke(
             cli,

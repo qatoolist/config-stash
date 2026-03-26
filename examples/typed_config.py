@@ -39,12 +39,8 @@ def example_basic_typed():
         port: int = 5432
         debug: bool = False
 
-    with tempfile.NamedTemporaryFile(
-        mode="w", suffix=".yaml", delete=False
-    ) as f:
-        yaml.dump(
-            {"default": {"host": "localhost", "port": 8080, "debug": True}}, f
-        )
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        yaml.dump({"default": {"host": "localhost", "port": 8080, "debug": True}}, f)
         config_file = f.name
 
     try:
@@ -60,7 +56,9 @@ def example_basic_typed():
         # .typed returns the validated Pydantic model
         print(f"  host: {config.typed.host} (type: {type(config.typed.host).__name__})")
         print(f"  port: {config.typed.port} (type: {type(config.typed.port).__name__})")
-        print(f"  debug: {config.typed.debug} (type: {type(config.typed.debug).__name__})")
+        print(
+            f"  debug: {config.typed.debug} (type: {type(config.typed.debug).__name__})"
+        )
 
         # Untyped access still works
         print(f"  config.host (untyped): {config.host}")
@@ -98,16 +96,17 @@ def example_nested_models():
         cache: CacheConfig
         app_name: str = "myapp"
 
-    with tempfile.NamedTemporaryFile(
-        mode="w", suffix=".yaml", delete=False
-    ) as f:
-        yaml.dump({
-            "default": {
-                "database": {"host": "prod.db.com", "port": 3306, "ssl": True},
-                "cache": {"backend": "memcached", "ttl": 600},
-                "app_name": "production-app",
-            }
-        }, f)
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        yaml.dump(
+            {
+                "default": {
+                    "database": {"host": "prod.db.com", "port": 3306, "ssl": True},
+                    "cache": {"backend": "memcached", "ttl": 600},
+                    "app_name": "production-app",
+                }
+            },
+            f,
+        )
         config_file = f.name
 
     try:
@@ -151,21 +150,13 @@ def example_multi_source_typed():
         retries: int = 3
 
     # Base config in YAML
-    with tempfile.NamedTemporaryFile(
-        mode="w", suffix=".yaml", delete=False
-    ) as f:
-        yaml.dump({
-            "default": {"host": "localhost", "port": 8080, "timeout": 10}
-        }, f)
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        yaml.dump({"default": {"host": "localhost", "port": 8080, "timeout": 10}}, f)
         yaml_file = f.name
 
     # Override in JSON
-    with tempfile.NamedTemporaryFile(
-        mode="w", suffix=".json", delete=False
-    ) as f:
-        json.dump({
-            "default": {"host": "api.prod.com", "retries": 5}
-        }, f)
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+        json.dump({"default": {"host": "api.prod.com", "retries": 5}}, f)
         json_file = f.name
 
     try:
@@ -208,9 +199,7 @@ def example_typed_vs_untyped():
         host: str
         port: int
 
-    with tempfile.NamedTemporaryFile(
-        mode="w", suffix=".yaml", delete=False
-    ) as f:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
         yaml.dump({"default": {"host": "db.example.com", "port": 5432}}, f)
         config_file = f.name
 
@@ -226,12 +215,12 @@ def example_typed_vs_untyped():
         print("  UNTYPED (config.host):")
         print(f"    value: {config.host}")
         print(f"    type at runtime: {type(config.host).__name__}")
-        print(f"    IDE type: Any (no autocomplete)")
+        print("    IDE type: Any (no autocomplete)")
 
         print("\n  TYPED (config.typed.host):")
         print(f"    value: {config.typed.host}")
         print(f"    type at runtime: {type(config.typed.host).__name__}")
-        print(f"    IDE type: str (full autocomplete + mypy checking)")
+        print("    IDE type: str (full autocomplete + mypy checking)")
 
     finally:
         os.unlink(config_file)

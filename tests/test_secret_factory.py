@@ -155,9 +155,7 @@ class TestCreateSecretStore:
 
     def test_env_provider(self, monkeypatch):
         monkeypatch.setenv("TEST_SECRET", "hello")
-        from config_stash.secret_stores.providers.env_secret_store import (
-            EnvSecretStore,
-        )
+        from config_stash.secret_stores.providers.env_secret_store import EnvSecretStore
 
         store = _create_secret_store(
             {"provider": "env", "prefix": "TEST_", "transform_key": False}
@@ -207,9 +205,7 @@ class TestCreateSecretStore:
                 "kv_version": 2,
             }
         )
-        from config_stash.secret_stores.providers.hashicorp_vault import (
-            HashiCorpVault,
-        )
+        from config_stash.secret_stores.providers.hashicorp_vault import HashiCorpVault
 
         assert isinstance(store, HashiCorpVault)
         assert store.url == "https://vault.example.com"
@@ -233,9 +229,7 @@ class TestCreateSecretStore:
                 },
             }
         )
-        from config_stash.secret_stores.providers.hashicorp_vault import (
-            HashiCorpVault,
-        )
+        from config_stash.secret_stores.providers.hashicorp_vault import HashiCorpVault
 
         assert isinstance(store, HashiCorpVault)
 
@@ -257,9 +251,7 @@ class TestCreateSecretStore:
                 "vault_url": "https://my-vault.vault.azure.net",
             }
         )
-        from config_stash.secret_stores.providers.azure_key_vault import (
-            AzureKeyVault,
-        )
+        from config_stash.secret_stores.providers.azure_key_vault import AzureKeyVault
 
         assert isinstance(store, AzureKeyVault)
         assert store.vault_url == "https://my-vault.vault.azure.net"
