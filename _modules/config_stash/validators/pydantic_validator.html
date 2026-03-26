@@ -97,7 +97,7 @@
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
     <span class="n">HAS_PYDANTIC</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="n">BaseModel</span> <span class="o">=</span> <span class="nb">type</span>
-    <span class="n">T</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;T&quot;</span><span class="p">)</span>  <span class="c1"># type: ignore[misc]</span>
+    <span class="n">T</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;T&quot;</span><span class="p">)</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;pydantic not installed. Pydantic validation disabled.&quot;</span><span class="p">)</span>
 
 
