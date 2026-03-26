@@ -399,5 +399,7 @@ class TestConfigInitIntegration:
             "enable_ide_support", "ide_stub_path",
             "debug_mode", "log_level",
             "loaders",
+            "sources", "secrets", "schema_path",
+            "freeze_on_load", "on_error",
         }
         assert set(_DEFAULT_SETTINGS.keys()) == expected_keys

@@ -133,8 +133,11 @@ class Config(
         sysenv_fallback: Any = _UNSET,
         secret_resolver: Optional[Any] = None,
         schema: Optional[Any] = None,
+        schema_path: Optional[str] = _UNSET,
         validate_on_load: Any = _UNSET,
         strict_validation: Any = _UNSET,
+        freeze_on_load: Any = _UNSET,
+        on_error: Any = _UNSET,
     ) -> None:
         """Initialize the Config instance.
 
@@ -224,12 +227,34 @@ class Config(
             for path, strategy in self._merge_strategy_map.items():
                 self._advanced_merger.set_strategy(path, strategy)
 
-        # Set up loaders
-        final_loaders = loaders if loaders is not None else self._load_default_files()
+        # Set up loaders — priority: explicit param > declarative sources > default_files
+        if loaders is not None:
+            final_loaders = loaders
+        else:
+            declarative_sources = defaults.get("sources", [])
+            if declarative_sources:
+                from config_stash.source_factory import create_loaders_from_config
+
+                final_loaders = create_loaders_from_config(declarative_sources)
+            else:
+                final_loaders = self._load_default_files()
+
         if self._env_prefix:
             from config_stash.loaders.environment_loader import EnvironmentLoader
 
             final_loaders = list(final_loaders) + [EnvironmentLoader(self._env_prefix)]
+
+        # Set up secret resolver — priority: explicit param > declarative secrets
+        if secret_resolver is None:
+            declarative_secrets = defaults.get("secrets", {})
+            if declarative_secrets and declarative_secrets.get("provider"):
+                from config_stash.secret_factory import (
+                    create_secret_resolver_from_config,
+                )
+
+                self.secret_resolver = create_secret_resolver_from_config(
+                    declarative_secrets
+                )
 
         self.loader_manager = LoaderManager(list(final_loaders))
         self.config_loader = ConfigLoader(self.loader_manager.loaders)
@@ -265,6 +290,21 @@ class Config(
 
         self.config_extender = ConfigExtender(self)
 
+        # Schema from file (if no explicit schema provided)
+        if self._schema is None:
+            resolved_schema_path = _resolve(schema_path, "schema_path")
+            if resolved_schema_path:
+                import json as _json
+                from pathlib import Path as _Path
+
+                sp = _Path(resolved_schema_path)
+                if sp.exists():
+                    with open(sp) as f:
+                        self._schema = _json.load(f)
+
+        # Error handling policy
+        self._on_error = _resolve(on_error, "on_error")
+
         # Validation
         if self._schema and self.validate_on_load:
             self._validate_config()
@@ -274,6 +314,10 @@ class Config(
         self.ide_stub_path = _resolve(ide_stub_path, "ide_stub_path")
         if self.enable_ide_support:
             self._generate_ide_support()
+
+        # Freeze after load (for production immutability)
+        if _resolve(freeze_on_load, "freeze_on_load"):
+            self.freeze()
 
     # -- Core methods that stay on Config directly --
 

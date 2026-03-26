@@ -216,8 +216,16 @@ _DEFAULT_SETTINGS: Dict[str, Any] = {
     # Debug
     "debug_mode": False,
     "log_level": "WARNING",
-    # Loaders (custom)
+    # Loaders (custom class mappings)
     "loaders": {},
+    # Declarative sources and secrets
+    "sources": [],
+    "secrets": {},
+    # Schema
+    "schema_path": None,
+    # Behavior
+    "freeze_on_load": False,
+    "on_error": "raise",
 }
 
 
