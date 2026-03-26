@@ -55,7 +55,7 @@ default:
     def test_automatic_ide_support_generation(self):
         """Test that IDE support is generated automatically."""
         # Create config with default settings (IDE support enabled)
-        config = Config(loaders=[YamlLoader(self.config_file)])
+        config = Config(loaders=[YamlLoader(self.config_file)], enable_ide_support=True)
 
         # Check that IDE support files were created
         ide_dir = Path(".config_stash")
@@ -90,7 +90,7 @@ default:
         custom_path = "my_custom_stubs.pyi"
 
         config = Config(
-            loaders=[YamlLoader(self.config_file)], ide_stub_path=custom_path
+            loaders=[YamlLoader(self.config_file)], ide_stub_path=custom_path, enable_ide_support=True
         )
 
         # Check that custom stub file was created
@@ -122,7 +122,7 @@ default:
 
     def test_stub_content_structure(self):
         """Test that generated stub has correct structure."""
-        config = Config(loaders=[YamlLoader(self.config_file)])
+        config = Config(loaders=[YamlLoader(self.config_file)], enable_ide_support=True)
 
         stub_file = Path(".config_stash/stubs.pyi")
         with open(stub_file) as f:
@@ -158,7 +158,7 @@ default:
         with open("sanitize_test.yaml", "w") as f:
             f.write(config_content)
 
-        config = Config(loaders=[YamlLoader("sanitize_test.yaml")])
+        config = Config(loaders=[YamlLoader("sanitize_test.yaml")], enable_ide_support=True)
 
         stub_file = Path(".config_stash/stubs.pyi")
         with open(stub_file) as f:
@@ -172,7 +172,7 @@ default:
 
     def test_enable_auto_generation(self):
         """Test auto-generation with dynamic reloading."""
-        config = Config(loaders=[YamlLoader(self.config_file)], dynamic_reloading=True)
+        config = Config(loaders=[YamlLoader(self.config_file)], dynamic_reloading=True, enable_ide_support=True)
 
         # Check initial stub exists
         stub_file = Path(".config_stash/stubs.pyi")
@@ -224,7 +224,7 @@ default:
         with open("empty.yaml", "w") as f:
             f.write(empty_config)
 
-        config = Config(loaders=[YamlLoader("empty.yaml")])
+        config = Config(loaders=[YamlLoader("empty.yaml")], enable_ide_support=True)
 
         stub_file = Path(".config_stash/stubs.pyi")
         assert stub_file.exists()
@@ -251,7 +251,7 @@ default:
         with open("list_config.yaml", "w") as f:
             f.write(list_config)
 
-        config = Config(loaders=[YamlLoader("list_config.yaml")])
+        config = Config(loaders=[YamlLoader("list_config.yaml")], enable_ide_support=True)
 
         stub_file = Path(".config_stash/stubs.pyi")
         with open(stub_file) as f:
@@ -276,7 +276,7 @@ default:
 
     def test_ide_support_regeneration(self):
         """Test that IDE support files can be regenerated."""
-        config = Config(loaders=[YamlLoader(self.config_file)])
+        config = Config(loaders=[YamlLoader(self.config_file)], enable_ide_support=True)
 
         # Initial generation
         stub_file = Path(".config_stash/stubs.pyi")

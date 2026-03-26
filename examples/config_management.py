@@ -48,7 +48,6 @@ def manual_reload() -> None:
     try:
         config = Config(
             loaders=[YamlLoader(cfg_path)],
-            enable_ide_support=False,
         )
         print(f"Before reload  -> host={config.server.host}, port={config.server.port}")
 
@@ -79,7 +78,6 @@ def incremental_reload() -> None:
     try:
         config = Config(
             loaders=[YamlLoader(base_path), JsonLoader(extra_path)],
-            enable_ide_support=False,
         )
         print(f"Initial        -> app.version={config.app.version}, "
               f"logging.level={config.logging.level}")
@@ -117,7 +115,6 @@ def dry_run_reload() -> None:
     try:
         config = Config(
             loaders=[YamlLoader(cfg_path)],
-            enable_ide_support=False,
         )
         print(f"Before         -> enabled={config.feature.enabled}, "
               f"max_retries={config.feature.max_retries}")
@@ -150,7 +147,6 @@ def on_change_callbacks() -> None:
     try:
         config = Config(
             loaders=[YamlLoader(cfg_path)],
-            enable_ide_support=False,
         )
 
         changes: list = []
@@ -186,7 +182,6 @@ def freeze_config() -> None:
     try:
         config = Config(
             loaders=[YamlLoader(cfg_path)],
-            enable_ide_support=False,
         )
 
         # Reads work before freeze
@@ -236,7 +231,6 @@ def env_prefix_loading() -> None:
         config = Config(
             loaders=[YamlLoader(cfg_path)],
             env_prefix="MYAPP",
-            enable_ide_support=False,
         )
 
         print(f"From YAML      -> database.host={config.database.host}")
@@ -281,7 +275,6 @@ def merge_strategy_demo() -> None:
             loaders=[YamlLoader(base_path), JsonLoader(override_path)],
             merge_strategy=MergeStrategy.MERGE,
             merge_strategy_map={"database": MergeStrategy.REPLACE},
-            enable_ide_support=False,
         )
 
         print("database block (REPLACE — base values like 'host' are gone):")
@@ -310,7 +303,6 @@ def versioning_demo() -> None:
     try:
         config = Config(
             loaders=[YamlLoader(cfg_path)],
-            enable_ide_support=False,
         )
 
         config.enable_versioning(storage_path=versions_dir)
@@ -355,8 +347,8 @@ def config_diff_demo() -> None:
     )
 
     try:
-        config_a = Config(loaders=[YamlLoader(path_a)], enable_ide_support=False)
-        config_b = Config(loaders=[YamlLoader(path_b)], enable_ide_support=False)
+        config_a = Config(loaders=[YamlLoader(path_a)])
+        config_b = Config(loaders=[YamlLoader(path_b)])
 
         diffs = config_a.diff(config_b)
 
@@ -406,8 +398,8 @@ def drift_detection_demo() -> None:
     )
 
     try:
-        intended = Config(loaders=[YamlLoader(intended_path)], enable_ide_support=False)
-        actual = Config(loaders=[YamlLoader(actual_path)], enable_ide_support=False)
+        intended = Config(loaders=[YamlLoader(intended_path)])
+        actual = Config(loaders=[YamlLoader(actual_path)])
 
         drift = actual.detect_drift(intended)
 
@@ -459,7 +451,6 @@ def layers_demo() -> None:
     try:
         config = Config(
             loaders=[YamlLoader(base_path), JsonLoader(override_path)],
-            enable_ide_support=False,
         )
 
         print("Layers (lowest priority first):\n")

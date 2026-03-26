@@ -35,7 +35,7 @@ api:
         config_file = f.name
 
     try:
-        config = Config(loaders=[YamlLoader(config_file)], enable_ide_support=False)
+        config = Config(loaders=[YamlLoader(config_file)])
 
         # List all configuration keys
         print("All configuration keys:")
@@ -68,7 +68,7 @@ database:
         config_file = f.name
 
     try:
-        config = Config(loaders=[YamlLoader(config_file)], enable_ide_support=False)
+        config = Config(loaders=[YamlLoader(config_file)])
 
         # Get existing values
         print("Getting existing values:")
@@ -106,7 +106,7 @@ api:
         config_file = f.name
 
     try:
-        config = Config(loaders=[YamlLoader(config_file)], enable_ide_support=False)
+        config = Config(loaders=[YamlLoader(config_file)])
 
         # Get schema for entire configuration
         print("Full configuration schema:")
@@ -156,8 +156,7 @@ database:
 
     try:
         config = Config(
-            loaders=[YamlLoader(base_file), YamlLoader(override_file)],
-            enable_ide_support=False
+            loaders=[YamlLoader(base_file), YamlLoader(override_file)]
         )
 
         # Explain how a value was resolved
@@ -189,7 +188,7 @@ database:
         config_file = f.name
 
     try:
-        config = Config(loaders=[YamlLoader(config_file)], enable_ide_support=False)
+        config = Config(loaders=[YamlLoader(config_file)])
 
         print("Original configuration:")
         print(f"  database.host: {config.get('database.host')}")

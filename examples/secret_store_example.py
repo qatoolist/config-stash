@@ -51,7 +51,6 @@ default:
             env="default",
             loaders=[YamlLoader(config_file)],
             secret_resolver=SecretResolver(secrets),
-            enable_ide_support=False
         )
 
         print(f"Database password: {config.database.password}")
@@ -98,7 +97,6 @@ default:
             env="default",
             loaders=[YamlLoader(config_file)],
             secret_resolver=SecretResolver(store),
-            enable_ide_support=False
         )
 
         print(f"Database password from env: {config.database.password}")
@@ -166,7 +164,6 @@ default:
             env="default",
             loaders=[YamlLoader(config_file)],
             secret_resolver=SecretResolver(multi_store),
-            enable_ide_support=False
         )
 
         print(f"Primary secret (from app_secrets): {config.primary_secret}")
@@ -220,7 +217,6 @@ default:
             env="default",
             loaders=[YamlLoader(config_file)],
             secret_resolver=SecretResolver(secrets),
-            enable_ide_support=False
         )
 
         print(f"DB Host: {config.database.host}")
@@ -270,7 +266,6 @@ default:
             env="default",
             loaders=[YamlLoader(config_file)],
             secret_resolver=prod_resolver,
-            enable_ide_support=False
         )
 
         print(f"API Key (production): {config.api.key}")
@@ -447,7 +442,6 @@ default:
                 env="default",
                 loaders=[YamlLoader(config_file)],
                 secret_resolver=SecretResolver(store),
-                enable_ide_support=False
             )
 
             print(f"API Key: {config.api.key}")

@@ -55,7 +55,6 @@ def example_basic_typed():
             schema=AppConfig,
             validate_on_load=True,
             dynamic_reloading=False,
-            enable_ide_support=False,
         )
 
         # .typed returns the validated Pydantic model
@@ -118,7 +117,6 @@ def example_nested_models():
             schema=AppConfig,
             validate_on_load=True,
             dynamic_reloading=False,
-            enable_ide_support=False,
         )
 
         # Full autocomplete on nested models
@@ -178,7 +176,6 @@ def example_multi_source_typed():
             validate_on_load=True,
             deep_merge=True,
             dynamic_reloading=False,
-            enable_ide_support=False,
         )
 
         s = config.typed
@@ -224,7 +221,6 @@ def example_typed_vs_untyped():
             schema=DbConfig,
             validate_on_load=True,
             dynamic_reloading=False,
-            enable_ide_support=False,
         )
 
         print("  UNTYPED (config.host):")

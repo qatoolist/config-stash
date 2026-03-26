@@ -2,6 +2,7 @@ import unittest
 from unittest.mock import patch
 
 from config_stash.config_reader import (
+    clear_config_cache,
     get_default_loaders,
     get_default_settings,
     read_pyproject_config,
@@ -9,6 +10,11 @@ from config_stash.config_reader import (
 
 
 class TestConfigReader(unittest.TestCase):
+    def setUp(self):
+        clear_config_cache()
+
+    def tearDown(self):
+        clear_config_cache()
     @patch("config_stash.config_reader.toml_load_file")
     @patch("pathlib.Path.exists", return_value=True)
     def test_read_pyproject_config(self, mock_exists, mock_toml_load):

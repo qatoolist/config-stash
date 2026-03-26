@@ -419,8 +419,7 @@ def main():
     config = Config(
         env=os.getenv('ENV', 'production'),
         loaders=[YamlLoader('config.yaml')],
-        secret_resolver=SecretResolver(vault),
-        enable_ide_support=False
+        secret_resolver=SecretResolver(vault)
     )
 
     # Use config with secrets automatically resolved

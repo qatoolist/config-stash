@@ -36,7 +36,7 @@ api:
 
     try:
         # Load configuration
-        config = Config(loaders=[YamlLoader(config_file)], enable_ide_support=False)
+        config = Config(loaders=[YamlLoader(config_file)])
 
         # Access configuration values using attribute-style access
         print(f"Database host: {config.database.host}")
@@ -79,8 +79,7 @@ database:
             loaders=[
                 YamlLoader(base_file),
                 JsonLoader(override_file)
-            ],
-            enable_ide_support=False
+            ]
         )
 
         print(f"Database host: {config.database.host}")  # From base
@@ -106,8 +105,7 @@ def example_3_environment_variables():
     try:
         # Load from environment with prefix 'APP'
         config = Config(
-            loaders=[EnvironmentLoader("APP", separator="__")],
-            enable_ide_support=False
+            loaders=[EnvironmentLoader("APP", separator="__")]
         )
 
         print(f"Database host: {config.database.host}")
@@ -147,8 +145,7 @@ production:
         # Load development config
         dev_config = Config(
             env="development",
-            loaders=[YamlLoader(config_file)],
-            enable_ide_support=False
+            loaders=[YamlLoader(config_file)]
         )
         print("Development config:")
         print(f"  Host: {dev_config.database.host}")
@@ -158,8 +155,7 @@ production:
         # Load production config
         prod_config = Config(
             env="production",
-            loaders=[YamlLoader(config_file)],
-            enable_ide_support=False
+            loaders=[YamlLoader(config_file)]
         )
         print("\nProduction config:")
         print(f"  Host: {prod_config.database.host}")

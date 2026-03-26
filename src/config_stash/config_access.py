@@ -269,17 +269,16 @@ class ConfigAccess:
                 if override:
                     current[key] = {}
                 else:
-                    raise ConfigNotFoundError(
-                        f"Cannot set '{key_path}': parent '{key}' is not a dictionary",
-                        key=key_path,
+                    raise ValueError(
+                        f"Cannot set '{key_path}': parent '{key}' is not a dictionary. "
+                        f"Use override=True to replace it."
                     )
             current = current[key]
 
         final_key = keys[-1]
         if final_key in current and not override:
-            raise ConfigNotFoundError(
-                f"Key '{key_path}' already exists. Use override=True to replace it.",
-                key=key_path,
+            raise ValueError(
+                f"Key '{key_path}' already exists. Use override=True to replace it."
             )
 
         current[final_key] = value

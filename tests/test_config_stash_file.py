@@ -13,10 +13,19 @@ import yaml
 
 from config_stash.config_reader import (
     _DEFAULT_SETTINGS,
+    clear_config_cache,
     read_config_stash_file,
     read_self_config,
     get_default_settings,
 )
+
+
+@pytest.fixture(autouse=True)
+def _clear_config_cache():
+    """Clear the config reader cache before each test."""
+    clear_config_cache()
+    yield
+    clear_config_cache()
 
 
 # ---------------------------------------------------------------------------

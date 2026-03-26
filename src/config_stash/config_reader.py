@@ -34,6 +34,8 @@ from config_stash.utils.toml_compat import load_file as toml_load_file
 
 logger = logging.getLogger(__name__)
 
+_self_config_cache: Optional[Dict[str, Any]] = None
+
 # Filenames to search, in priority order
 _CONFIG_STASH_FILENAMES = [
     "config-stash.yaml",
@@ -161,6 +163,10 @@ def read_self_config(search_dir: Optional[str] = None) -> Dict[str, Any]:
     Searches for a dedicated ``config-stash.*`` file first, then falls back
     to ``[tool.config_stash]`` in ``pyproject.toml``.
 
+    Results are cached at module level when *search_dir* is ``None`` (the
+    default) so that repeated calls during ``Config.__init__`` avoid
+    redundant disk I/O.
+
     Args:
         search_dir: Directory to search in.  Defaults to the current working
             directory.
@@ -168,13 +174,31 @@ def read_self_config(search_dir: Optional[str] = None) -> Dict[str, Any]:
     Returns:
         Configuration dictionary (may be empty if nothing was found).
     """
+    global _self_config_cache
+    if _self_config_cache is not None and search_dir is None:
+        return _self_config_cache
+
     # Try dedicated config-stash file first
     config = read_config_stash_file(search_dir=search_dir)
     if config is not None:
-        return config
+        result = config
+    else:
+        # Fall back to pyproject.toml
+        result = read_pyproject_config()
 
-    # Fall back to pyproject.toml
-    return read_pyproject_config()
+    if search_dir is None:
+        _self_config_cache = result
+    return result
+
+
+def clear_config_cache() -> None:
+    """Clear the module-level self-configuration cache.
+
+    Useful in tests or when the on-disk configuration has changed and
+    a fresh read is required.
+    """
+    global _self_config_cache
+    _self_config_cache = None
 
 
 # All supported settings with their defaults
@@ -211,7 +235,7 @@ _DEFAULT_SETTINGS: Dict[str, Any] = {
     "version_storage_path": ".config_stash/versions",
     "max_versions": 100,
     # IDE Support
-    "enable_ide_support": True,
+    "enable_ide_support": False,
     "ide_stub_path": None,
     # Debug
     "debug_mode": False,

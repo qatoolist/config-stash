@@ -113,6 +113,10 @@ class ConfigLoading:
                     f"{getattr(loader, 'source', loader.__class__.__name__)}: {e}"
                 )
                 continue
+            if not config:
+                source = getattr(loader, "source", loader.__class__.__name__)
+                logger.warning(f"Loader returned no configuration from '{source}'")
+                continue
             if config:
                 if self._enable_composition:
                     source_file = getattr(loader, "source", loader.__class__.__name__)
@@ -272,26 +276,32 @@ class ConfigLoading:
         old_configs = self.configs
         old_merged_config = self.merged_config
 
-        if incremental and changed_loaders:
-            changed_sources = {
-                getattr(loader, "source", None) for loader in changed_loaders
-            }
-            existing_configs = [
-                (config, source)
-                for config, source in self.configs
-                if source not in changed_sources
-            ]
-            new_configs = self._load_configs_with_tracking(
-                changed_loaders=changed_loaders
-            )
-            self.configs = existing_configs + new_configs
-        else:
-            self.configs = self._load_configs_with_tracking()
+        try:
+            if incremental and changed_loaders:
+                changed_sources = {
+                    getattr(loader, "source", None) for loader in changed_loaders
+                }
+                existing_configs = [
+                    (config, source)
+                    for config, source in self.configs
+                    if source not in changed_sources
+                ]
+                new_configs = self._load_configs_with_tracking(
+                    changed_loaders=changed_loaders
+                )
+                self.configs = existing_configs + new_configs
+            else:
+                self.configs = self._load_configs_with_tracking()
 
-        self.merged_config = self._merge_with_tracking(self.configs)
-        new_env_config = EnvironmentHandler(
-            self.env, self.merged_config
-        ).get_env_config()
+            self.merged_config = self._merge_with_tracking(self.configs)
+            new_env_config = EnvironmentHandler(
+                self.env, self.merged_config
+            ).get_env_config()
+        except Exception:
+            # Rollback on failure
+            self.configs = old_configs
+            self.merged_config = old_merged_config
+            raise
 
         reload_duration = time.time() - reload_start
         if self.observer:

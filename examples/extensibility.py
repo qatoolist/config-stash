@@ -34,7 +34,6 @@ def example_global_hook():
     try:
         config = Config(
             loaders=[YamlLoader(config_file)],
-            enable_ide_support=False,
             use_env_expander=False,
             use_type_casting=False,
         )
@@ -76,7 +75,6 @@ def example_key_hook():
     try:
         config = Config(
             loaders=[YamlLoader(config_file)],
-            enable_ide_support=False,
             use_env_expander=False,
             use_type_casting=False,
         )
@@ -112,7 +110,6 @@ def example_condition_hook():
     try:
         config = Config(
             loaders=[YamlLoader(config_file)],
-            enable_ide_support=False,
             use_env_expander=False,
             use_type_casting=False,
         )
@@ -171,7 +168,6 @@ def example_custom_loader():
 
     config = Config(
         loaders=[DictLoader(data, name="runtime-flags")],
-        enable_ide_support=False,
     )
 
     print(f"  feature_flags.dark_mode      -> {config.feature_flags.dark_mode}")
@@ -203,7 +199,6 @@ def example_observability():
     try:
         config = Config(
             loaders=[YamlLoader(config_file)],
-            enable_ide_support=False,
         )
 
         config.enable_observability()
@@ -248,7 +243,6 @@ def example_event_emission():
     try:
         config = Config(
             loaders=[YamlLoader(config_file)],
-            enable_ide_support=False,
         )
 
         emitter = config.enable_events()
@@ -308,7 +302,6 @@ def example_composition_include():
     try:
         config = Config(
             loaders=[YamlLoader(main_path)],
-            enable_ide_support=False,
         )
 
         print(f"  app.name         -> {config.app.name}")
@@ -344,7 +337,6 @@ def example_composition_defaults():
     try:
         config = Config(
             loaders=[YamlLoader(config_file)],
-            enable_ide_support=False,
         )
 
         print(f"  app.name  -> {config.app.name}")
@@ -372,7 +364,6 @@ def example_export():
 
     config = Config(
         loaders=[DictLoader(data)],
-        enable_ide_support=False,
     )
 
     print("  --- JSON ---")
@@ -413,7 +404,6 @@ def example_standalone_validate():
 
     config = Config(
         loaders=[DictLoader(data)],
-        enable_ide_support=False,
     )
 
     is_valid = config.validate(schema=AppConfig)
@@ -423,7 +413,6 @@ def example_standalone_validate():
     bad_data = {"server": {"host": "localhost", "port": "not-a-number"}}
     bad_config = Config(
         loaders=[DictLoader(bad_data)],
-        enable_ide_support=False,
     )
 
     is_valid_bad = bad_config.validate(schema=AppConfig)
@@ -455,7 +444,6 @@ def example_cs_alias():
     data = {"demo": {"alias": "works"}}
     config = CsConfig(
         loaders=[DictLoader(data)],
-        enable_ide_support=False,
     )
     print(f"  demo.alias (via cs.Config) -> {config.demo.alias}")
 

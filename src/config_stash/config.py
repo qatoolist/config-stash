@@ -269,6 +269,11 @@ class Config(
 
         # Load, merge, extract environment config
         self.configs = self._load_configs_with_tracking()
+        if not self.configs:
+            logger.warning(
+                "No configuration was loaded. Pass loaders=[...] to Config() "
+                "or configure 'sources' in config-stash.yaml."
+            )
         self.merged_config = self._merge_with_tracking(self.configs)
         self.env_config = EnvironmentHandler(
             self.env, self.merged_config
@@ -351,6 +356,12 @@ class Config(
                 self.event_emitter.emit("access", item, result)
 
         return result
+
+    def __repr__(self) -> str:
+        key_count = len(self.keys()) if self.env_config else 0
+        sources = [getattr(l, "source", l.__class__.__name__) for l in self.loader_manager.loaders]
+        frozen = ", frozen" if self._frozen else ""
+        return f"Config(env={self.env!r}, keys={key_count}, sources={sources!r}{frozen})"
 
     @property
     def typed(self) -> T:

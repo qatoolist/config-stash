@@ -1,3 +1,4 @@
+import difflib
 from typing import Any, Optional
 
 from config_stash.exceptions import ConfigNotFoundError
@@ -14,16 +15,21 @@ class AttributeAccessor:
     """
 
     def __init__(
-        self, lazy_loader: LazyLoader, hook_processor: Optional[HookProcessor] = None
+        self,
+        lazy_loader: LazyLoader,
+        hook_processor: Optional[HookProcessor] = None,
+        _prefix: str = "",
     ) -> None:
         """Initialize the attribute accessor.
 
         Args:
             lazy_loader: LazyLoader instance for accessing configuration values
             hook_processor: Optional HookProcessor for transforming values
+            _prefix: Dot-separated key path prefix for nested accessors
         """
         self.lazy_loader: LazyLoader = lazy_loader
         self.hook_processor: Optional[HookProcessor] = hook_processor
+        self._prefix: str = _prefix
 
     def __getattr__(self, item: str) -> Any:
         """Get configuration value using attribute-style access.
@@ -43,18 +49,24 @@ class AttributeAccessor:
         """
         try:
             value = self.lazy_loader.get(item)
+            full_key = f"{self._prefix}.{item}" if self._prefix else item
             if isinstance(value, dict):
                 # Create nested AttributeAccessor for nested configurations
                 nested_loader = LazyLoader(value)
-                return AttributeAccessor(nested_loader, self.hook_processor)
+                return AttributeAccessor(nested_loader, self.hook_processor, _prefix=full_key)
             # Apply hooks if hook_processor is available
             if self.hook_processor:
-                value = self.hook_processor.process_hooks(item, value)
+                value = self.hook_processor.process_hooks(full_key, value)
             return value
         except KeyError as e:
-            raise AttributeError(
-                f"'Config' object has no attribute '{item}'"
-            ) from ConfigNotFoundError(
+            available = list(self.lazy_loader.config.keys())
+            suggestions = difflib.get_close_matches(item, available, n=3, cutoff=0.6)
+            msg = f"Configuration key '{item}' not found."
+            if suggestions:
+                msg += f" Did you mean: {', '.join(repr(s) for s in suggestions)}?"
+            if available:
+                msg += f" Available keys: {', '.join(sorted(available))}"
+            raise AttributeError(msg) from ConfigNotFoundError(
                 f"Configuration key '{item}' not found",
                 key=item,
             )

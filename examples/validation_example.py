@@ -53,8 +53,7 @@ debug: false
                 loaders=[YamlLoader(config_file)],
                 schema=AppConfig,
                 validate_on_load=True,
-                strict_validation=False,  # Don't raise on validation errors
-                enable_ide_support=False
+                strict_validation=False  # Don't raise on validation errors
             )
 
             print("✅ Configuration validated successfully!")
@@ -111,8 +110,7 @@ database:
         config = Config(
             loaders=[YamlLoader(config_file)],
             schema=schema,
-            validate_on_load=True,
-            enable_ide_support=False
+            validate_on_load=True
         )
 
         print("✅ Configuration validated with JSON Schema!")
@@ -150,7 +148,7 @@ def example_3_validation_with_defaults():
         from config_stash.validators import SchemaValidator
 
         validator = SchemaValidator(schema)
-        config_data = Config(loaders=[YamlLoader(config_file)], enable_ide_support=False).to_dict()
+        config_data = Config(loaders=[YamlLoader(config_file)]).to_dict()
 
         # Validate and apply defaults
         validated = validator.validate_with_defaults(config_data)

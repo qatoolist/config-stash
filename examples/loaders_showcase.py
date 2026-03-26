@@ -75,7 +75,6 @@ debug   = false
 
         config = Config(
             loaders=[TomlLoader(tmp.name)],
-            enable_ide_support=False,
         )
 
         print(f"Database host : {config.database.host}")
@@ -122,7 +121,6 @@ max_size = 1024
 
         config = Config(
             loaders=[IniLoader(tmp.name)],
-            enable_ide_support=False,
         )
 
         _subheader("Section -> dict mapping")
@@ -175,7 +173,6 @@ database.name=mydb
 
         config = Config(
             loaders=[EnvFileLoader(tmp.name)],
-            enable_ide_support=False,
         )
 
         _subheader("Quoted values")
@@ -223,7 +220,6 @@ def example_environment_variable_loading() -> None:
     try:
         config = Config(
             loaders=[EnvironmentLoader("MYAPP", separator="__")],
-            enable_ide_support=False,
         )
 
         _subheader("Nested keys created via double-underscore separator")
@@ -262,7 +258,6 @@ def example_http_remote_loading() -> None:
     print("    )")
     print("    config = Config(")
     print("        loaders=[loader],")
-    print("        enable_ide_support=False,")
     print("    )")
     print("    print(config.database.host)\n")
     print(
@@ -294,7 +289,6 @@ def example_ssm_loader() -> None:
     print("    )")
     print("    config = Config(")
     print("        loaders=[loader],")
-    print("        enable_ide_support=False,")
     print("    )")
     print("    print(config.database.host)\n")
     print(
@@ -365,7 +359,6 @@ app:
                 EnvironmentLoader("MERGE", separator="__"),
             ],
             deep_merge=True,
-            enable_ide_support=False,
         )
 
         _subheader("Result after deep merge (YAML <- JSON <- env vars)")
@@ -430,7 +423,6 @@ database:
         deep = Config(
             loaders=[YamlLoader(yaml_tmp.name), JsonLoader(json_tmp.name)],
             deep_merge=True,
-            enable_ide_support=False,
         )
         _print_dict(deep.to_dict()["database"], indent=1)
 
@@ -438,7 +430,6 @@ database:
         shallow = Config(
             loaders=[YamlLoader(yaml_tmp.name), JsonLoader(json_tmp.name)],
             deep_merge=False,
-            enable_ide_support=False,
         )
         _print_dict(shallow.to_dict()["database"], indent=1)
 
