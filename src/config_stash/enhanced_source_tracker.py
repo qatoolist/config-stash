@@ -284,10 +284,14 @@ class EnhancedSourceTracker:
                 for key, history in self.override_history.items():
                     current = self.sources[key]
                     logger.info("  %s:", key)
-                    logger.info("    Current: %s (from %s)", current.value, current.source_file)
+                    logger.info(
+                        "    Current: %s (from %s)", current.value, current.source_file
+                    )
                     logger.info("    Overridden %d time(s)", len(history))
                     for info in history[-3:]:  # Show last 3 overrides
-                        logger.info("      - Was: %s (from %s)", info.value, info.source_file)
+                        logger.info(
+                            "      - Was: %s (from %s)", info.value, info.source_file
+                        )
 
     def export_debug_report(
         self, output_path: str = "config_debug_report.json"

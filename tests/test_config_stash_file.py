@@ -14,9 +14,9 @@ import yaml
 from config_stash.config_reader import (
     _DEFAULT_SETTINGS,
     clear_config_cache,
+    get_default_settings,
     read_config_stash_file,
     read_self_config,
-    get_default_settings,
 )
 
 
@@ -31,6 +31,7 @@ def _clear_config_cache():
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _write_yaml(path, data):
     """Write a dictionary as YAML to the given path."""
@@ -47,6 +48,7 @@ def _write_json(path, data):
 def _write_toml(path, data):
     """Write a dictionary as TOML to the given path."""
     from config_stash.utils.toml_compat import dumps as toml_dumps
+
     with open(path, "w") as f:
         f.write(toml_dumps(data))
 
@@ -54,6 +56,7 @@ def _write_toml(path, data):
 # ---------------------------------------------------------------------------
 # Tests: read_config_stash_file
 # ---------------------------------------------------------------------------
+
 
 class TestReadConfigStashFile:
     """Test loading from various config-stash.* file formats."""
@@ -131,14 +134,20 @@ class TestReadConfigStashFile:
         assert result is None
 
     def test_yaml_takes_priority_over_json(self, tmp_path):
-        _write_yaml(tmp_path / "config-stash.yaml", {"default_environment": "from-yaml"})
-        _write_json(tmp_path / "config-stash.json", {"default_environment": "from-json"})
+        _write_yaml(
+            tmp_path / "config-stash.yaml", {"default_environment": "from-yaml"}
+        )
+        _write_json(
+            tmp_path / "config-stash.json", {"default_environment": "from-json"}
+        )
 
         result = read_config_stash_file(search_dir=str(tmp_path))
         assert result["default_environment"] == "from-yaml"
 
     def test_non_hidden_takes_priority_over_hidden(self, tmp_path):
-        _write_json(tmp_path / "config-stash.json", {"default_environment": "non-hidden"})
+        _write_json(
+            tmp_path / "config-stash.json", {"default_environment": "non-hidden"}
+        )
         _write_yaml(tmp_path / ".config-stash.yaml", {"default_environment": "hidden"})
 
         result = read_config_stash_file(search_dir=str(tmp_path))
@@ -161,12 +170,15 @@ class TestReadConfigStashFile:
 # Tests: read_self_config (fallback to pyproject.toml)
 # ---------------------------------------------------------------------------
 
+
 class TestReadSelfConfig:
     """Test that read_self_config falls back to pyproject.toml."""
 
     def test_config_stash_file_wins_over_pyproject(self, tmp_path, monkeypatch):
         # Write both a config-stash.yaml and a pyproject.toml
-        _write_yaml(tmp_path / "config-stash.yaml", {"default_environment": "from-file"})
+        _write_yaml(
+            tmp_path / "config-stash.yaml", {"default_environment": "from-file"}
+        )
 
         pyproject = tmp_path / "pyproject.toml"
         pyproject.write_text(textwrap.dedent("""\
@@ -201,6 +213,7 @@ class TestReadSelfConfig:
 # Tests: get_default_settings
 # ---------------------------------------------------------------------------
 
+
 class TestGetDefaultSettings:
     """Test that get_default_settings merges file settings with defaults."""
 
@@ -212,13 +225,16 @@ class TestGetDefaultSettings:
             assert key in settings, f"Missing default key: {key}"
 
     def test_file_values_override_defaults(self, tmp_path, monkeypatch):
-        _write_yaml(tmp_path / "config-stash.yaml", {
-            "default_environment": "production",
-            "deep_merge": False,
-            "debug_mode": True,
-            "log_level": "DEBUG",
-            "secret_cache_ttl": 60,
-        })
+        _write_yaml(
+            tmp_path / "config-stash.yaml",
+            {
+                "default_environment": "production",
+                "deep_merge": False,
+                "debug_mode": True,
+                "log_level": "DEBUG",
+                "secret_cache_ttl": 60,
+            },
+        )
 
         monkeypatch.chdir(tmp_path)
         settings = get_default_settings()
@@ -229,9 +245,12 @@ class TestGetDefaultSettings:
         assert settings["secret_cache_ttl"] == 60
 
     def test_unset_values_get_defaults(self, tmp_path, monkeypatch):
-        _write_yaml(tmp_path / "config-stash.yaml", {
-            "default_environment": "staging",
-        })
+        _write_yaml(
+            tmp_path / "config-stash.yaml",
+            {
+                "default_environment": "staging",
+            },
+        )
 
         monkeypatch.chdir(tmp_path)
         settings = get_default_settings()
@@ -246,26 +265,32 @@ class TestGetDefaultSettings:
 # Tests: Config.__init__ integration with self-config file
 # ---------------------------------------------------------------------------
 
+
 class TestConfigInitIntegration:
     """Test that Config() picks up settings from config-stash.* files."""
 
     def test_config_reads_from_config_stash_yaml(self, tmp_path, monkeypatch):
         """Config should apply settings from config-stash.yaml."""
-        _write_yaml(tmp_path / "config-stash.yaml", {
-            "default_environment": "staging",
-            "deep_merge": False,
-            "use_env_expander": False,
-            "debug_mode": True,
-        })
+        _write_yaml(
+            tmp_path / "config-stash.yaml",
+            {
+                "default_environment": "staging",
+                "deep_merge": False,
+                "use_env_expander": False,
+                "debug_mode": True,
+            },
+        )
 
         monkeypatch.chdir(tmp_path)
 
         from config_stash.loaders.json_loader import JsonLoader
+
         # Create a minimal config file so Config can load something
         config_file = tmp_path / "app.json"
         _write_json(config_file, {"staging": {"key": "value"}})
 
         from config_stash import Config
+
         config = Config(loaders=[JsonLoader(str(config_file))])
 
         assert config.env == "staging"
@@ -275,19 +300,24 @@ class TestConfigInitIntegration:
 
     def test_explicit_params_override_file(self, tmp_path, monkeypatch):
         """Explicit Config() params should override config-stash.yaml values."""
-        _write_yaml(tmp_path / "config-stash.yaml", {
-            "default_environment": "staging",
-            "deep_merge": False,
-            "debug_mode": True,
-        })
+        _write_yaml(
+            tmp_path / "config-stash.yaml",
+            {
+                "default_environment": "staging",
+                "deep_merge": False,
+                "debug_mode": True,
+            },
+        )
 
         monkeypatch.chdir(tmp_path)
 
         from config_stash.loaders.json_loader import JsonLoader
+
         config_file = tmp_path / "app.json"
         _write_json(config_file, {"production": {"key": "value"}})
 
         from config_stash import Config
+
         config = Config(
             env="production",
             loaders=[JsonLoader(str(config_file))],
@@ -302,18 +332,23 @@ class TestConfigInitIntegration:
 
     def test_config_reads_from_json_file(self, tmp_path, monkeypatch):
         """Config should apply settings from config-stash.json."""
-        _write_json(tmp_path / "config-stash.json", {
-            "default_environment": "test",
-            "use_type_casting": False,
-        })
+        _write_json(
+            tmp_path / "config-stash.json",
+            {
+                "default_environment": "test",
+                "use_type_casting": False,
+            },
+        )
 
         monkeypatch.chdir(tmp_path)
 
         from config_stash.loaders.json_loader import JsonLoader
+
         config_file = tmp_path / "app.json"
         _write_json(config_file, {"test": {"key": "value"}})
 
         from config_stash import Config
+
         config = Config(loaders=[JsonLoader(str(config_file))])
 
         assert config.env == "test"
@@ -321,18 +356,23 @@ class TestConfigInitIntegration:
 
     def test_config_reads_from_toml_file(self, tmp_path, monkeypatch):
         """Config should apply settings from config-stash.toml."""
-        _write_toml(tmp_path / "config-stash.toml", {
-            "default_environment": "ci",
-            "strict_validation": True,
-        })
+        _write_toml(
+            tmp_path / "config-stash.toml",
+            {
+                "default_environment": "ci",
+                "strict_validation": True,
+            },
+        )
 
         monkeypatch.chdir(tmp_path)
 
         from config_stash.loaders.json_loader import JsonLoader
+
         config_file = tmp_path / "app.json"
         _write_json(config_file, {"ci": {"key": "value"}})
 
         from config_stash import Config
+
         config = Config(loaders=[JsonLoader(str(config_file))])
 
         assert config.env == "ci"
@@ -340,17 +380,22 @@ class TestConfigInitIntegration:
 
     def test_config_reads_hidden_file(self, tmp_path, monkeypatch):
         """Config should apply settings from .config-stash.yaml."""
-        _write_yaml(tmp_path / ".config-stash.yaml", {
-            "default_environment": "hidden-env",
-        })
+        _write_yaml(
+            tmp_path / ".config-stash.yaml",
+            {
+                "default_environment": "hidden-env",
+            },
+        )
 
         monkeypatch.chdir(tmp_path)
 
         from config_stash.loaders.json_loader import JsonLoader
+
         config_file = tmp_path / "app.json"
         _write_json(config_file, {"hidden-env": {"key": "val"}})
 
         from config_stash import Config
+
         config = Config(loaders=[JsonLoader(str(config_file))])
 
         assert config.env == "hidden-env"
@@ -366,29 +411,36 @@ class TestConfigInitIntegration:
         monkeypatch.chdir(tmp_path)
 
         from config_stash.loaders.json_loader import JsonLoader
+
         config_file = tmp_path / "app.json"
         _write_json(config_file, {"from-pyproject": {"key": "val"}})
 
         from config_stash import Config
+
         config = Config(loaders=[JsonLoader(str(config_file))])
 
         assert config.env == "from-pyproject"
 
     def test_env_switcher_from_config_file(self, tmp_path, monkeypatch):
         """env_switcher from config-stash.yaml should be applied."""
-        _write_yaml(tmp_path / "config-stash.yaml", {
-            "env_switcher": "MY_APP_ENV",
-            "default_environment": "development",
-        })
+        _write_yaml(
+            tmp_path / "config-stash.yaml",
+            {
+                "env_switcher": "MY_APP_ENV",
+                "default_environment": "development",
+            },
+        )
 
         monkeypatch.chdir(tmp_path)
         monkeypatch.setenv("MY_APP_ENV", "production")
 
         from config_stash.loaders.json_loader import JsonLoader
+
         config_file = tmp_path / "app.json"
         _write_json(config_file, {"production": {"key": "val"}})
 
         from config_stash import Config
+
         config = Config(loaders=[JsonLoader(str(config_file))])
 
         assert config.env == "production"
@@ -396,19 +448,37 @@ class TestConfigInitIntegration:
     def test_all_settings_documented(self):
         """Every key in _DEFAULT_SETTINGS should have a documented default."""
         expected_keys = {
-            "default_environment", "env_switcher", "default_files",
-            "default_prefix", "env_prefix", "sysenv_fallback",
-            "deep_merge", "merge_strategy", "merge_strategy_map",
-            "validate_on_load", "strict_validation",
-            "use_env_expander", "use_type_casting",
-            "dynamic_reloading", "incremental_reload",
+            "default_environment",
+            "env_switcher",
+            "default_files",
+            "default_prefix",
+            "env_prefix",
+            "sysenv_fallback",
+            "deep_merge",
+            "merge_strategy",
+            "merge_strategy_map",
+            "validate_on_load",
+            "strict_validation",
+            "use_env_expander",
+            "use_type_casting",
+            "dynamic_reloading",
+            "incremental_reload",
             "secret_cache_ttl",
-            "enable_observability", "enable_events", "max_reload_durations",
-            "enable_versioning", "version_storage_path", "max_versions",
-            "enable_ide_support", "ide_stub_path",
-            "debug_mode", "log_level",
+            "enable_observability",
+            "enable_events",
+            "max_reload_durations",
+            "enable_versioning",
+            "version_storage_path",
+            "max_versions",
+            "enable_ide_support",
+            "ide_stub_path",
+            "debug_mode",
+            "log_level",
             "loaders",
-            "sources", "secrets", "schema_path",
-            "freeze_on_load", "on_error",
+            "sources",
+            "secrets",
+            "schema_path",
+            "freeze_on_load",
+            "on_error",
         }
         assert set(_DEFAULT_SETTINGS.keys()) == expected_keys

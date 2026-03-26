@@ -88,9 +88,7 @@ class SSMLoader(Loader):
         self.path_prefix = path_prefix
         self.decrypt = decrypt
         self.aws_region = (
-            aws_region
-            or os.environ.get("AWS_DEFAULT_REGION")
-            or "us-east-1"
+            aws_region or os.environ.get("AWS_DEFAULT_REGION") or "us-east-1"
         )
         self.aws_access_key_id = aws_access_key_id or os.environ.get(
             "AWS_ACCESS_KEY_ID"
@@ -156,9 +154,7 @@ class SSMLoader(Loader):
                 parameters.extend(page.get("Parameters", []))
 
             if not parameters:
-                logger.info(
-                    f"No parameters found under {self.path_prefix}"
-                )
+                logger.info(f"No parameters found under {self.path_prefix}")
                 return None
 
             # Convert flat SSM parameters to nested dict
@@ -189,9 +185,7 @@ class SSMLoader(Loader):
         except ConfigLoadError:
             raise
         except Exception as e:
-            logger.error(
-                f"Failed to load configuration from SSM Parameter Store: {e}"
-            )
+            logger.error(f"Failed to load configuration from SSM Parameter Store: {e}")
             raise ConfigLoadError(
                 f"Failed to load SSM configuration from {self.path_prefix}",
                 source=self.path_prefix,

@@ -170,7 +170,7 @@ line-length = 88
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "C", "N", "Q"]
-ignore = ["E501", "E731", "E741", "F401", "F841", "N806", "N801", "N814", "N817", "C901"]
+ignore = ["E402", "E501", "E731", "E741", "F401", "F841", "N806", "N801", "N814", "N817", "C901"]
 
 [tool.config_stash]
 default_environment = "development"

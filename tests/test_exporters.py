@@ -16,7 +16,6 @@ from config_stash.exporters import ConfigExporter, add_export_methods
 class TestConfigExporter(unittest.TestCase):
     """Test ConfigExporter class."""
 
-
     def setUp(self):
         """Set up test fixtures."""
         # Create mock config object

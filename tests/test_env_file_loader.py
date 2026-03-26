@@ -11,7 +11,6 @@ from config_stash.loaders import EnvFileLoader
 class TestEnvFileLoader(unittest.TestCase):
     """Test .env file loading functionality."""
 
-
     def setUp(self):
         """Set up test environment."""
         self.temp_dir = tempfile.mkdtemp()

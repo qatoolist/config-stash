@@ -30,7 +30,6 @@ from config_stash.source_factory import (
     create_loaders_from_config,
 )
 
-
 # ---------------------------------------------------------------------------
 # _expand_env_vars
 # ---------------------------------------------------------------------------
@@ -44,7 +43,9 @@ class TestExpandEnvVars:
     def test_unset_var_left_unchanged(self):
         env = {k: v for k, v in os.environ.items() if k != "NONEXISTENT_VAR_XYZ"}
         with patch.dict(os.environ, env, clear=True):
-            assert _expand_env_vars("${NONEXISTENT_VAR_XYZ}") == "${NONEXISTENT_VAR_XYZ}"
+            assert (
+                _expand_env_vars("${NONEXISTENT_VAR_XYZ}") == "${NONEXISTENT_VAR_XYZ}"
+            )
 
     def test_expand_dict_values(self):
         with patch.dict(os.environ, {"DIR": "/tmp"}):
@@ -125,9 +126,7 @@ class TestEnvLoaders:
         assert loader.separator == "_"
 
     def test_environment_loader_defaults(self):
-        loader = create_loader_from_config(
-            {"type": "environment", "prefix": "APP"}
-        )
+        loader = create_loader_from_config({"type": "environment", "prefix": "APP"})
         assert isinstance(loader, EnvironmentLoader)
         assert loader.separator == "__"
 

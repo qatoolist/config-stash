@@ -544,7 +544,8 @@ def lint(env, loader_specs, fix, strict):
 
 @cli.command()
 @click.argument(
-    "source_format", type=click.Choice(["dynaconf", "hydra", "omegaconf", "dotenv", "env"])
+    "source_format",
+    type=click.Choice(["dynaconf", "hydra", "omegaconf", "dotenv", "env"]),
 )
 @click.argument("config_file", type=click.Path(exists=True))
 @click.option("--output", "-o", help="Output file path (default: stdout)")

@@ -15,7 +15,6 @@ from config_stash.loaders import EnvironmentLoader, JsonLoader, YamlLoader
 class TestEnhancedSourceTracker:
     """Test enhanced source tracking features."""
 
-
     def test_basic_source_tracking(self):
         """Test basic source tracking without debug mode."""
         tracker = EnhancedSourceTracker(debug_mode=False)

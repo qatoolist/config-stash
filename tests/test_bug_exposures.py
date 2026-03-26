@@ -6,7 +6,6 @@ demonstrating a specific real bug. Tests are named after the bug they expose.
 Once a bug is fixed, the corresponding test should PASS.
 """
 
-
 import copy
 import json
 import os

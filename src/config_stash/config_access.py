@@ -421,7 +421,8 @@ class ConfigAccess:
 
         # Only keep leaf keys (keys whose values are not dicts)
         leaf_keys = [
-            k for k in all_keys
+            k
+            for k in all_keys
             if not isinstance(get_nested_value(config_dict, k), dict)
         ]
 
@@ -478,12 +479,8 @@ class ConfigAccess:
                 "|-------------|---------|----------|"
             )
         else:
-            lines.append(
-                "| Key | Type | Current Value | Source |"
-            )
-            lines.append(
-                "|-----|------|---------------|--------|"
-            )
+            lines.append("| Key | Type | Current Value | Source |")
+            lines.append("|-----|------|---------------|--------|")
 
         for row in rows:
             val_str = str(row["current_value"])

@@ -95,7 +95,9 @@ def _load_config_file(path: Path) -> Dict[str, Any]:
         raise ValueError(f"Unsupported config-stash file format: {suffix}")
 
 
-def read_config_stash_file(search_dir: Optional[str] = None) -> Optional[Dict[str, Any]]:
+def read_config_stash_file(
+    search_dir: Optional[str] = None,
+) -> Optional[Dict[str, Any]]:
     """Search for and read a ``config-stash.*`` self-configuration file.
 
     Looks for config-stash.yaml/.yml/.json/.toml (and hidden-file variants)

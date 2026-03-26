@@ -13,7 +13,6 @@ from config_stash.loaders import JsonLoader, YamlLoader
 class TestDeepMergeComprehensive(unittest.TestCase):
     """Comprehensive tests for deep merge functionality."""
 
-
     def test_shallow_merge_behavior(self):
         """Test shallow merge replaces entire nested structures."""
         configs = [

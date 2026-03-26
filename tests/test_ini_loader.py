@@ -12,7 +12,6 @@ from config_stash.loaders import IniLoader
 class TestIniLoader(unittest.TestCase):
     """Test INI file loading functionality."""
 
-
     def setUp(self):
         """Set up test environment."""
         self.temp_dir = tempfile.mkdtemp()

@@ -7,16 +7,14 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from config_stash.exceptions import ConfigStashError
-from config_stash.secret_stores.providers.dict_secret_store import DictSecretStore
-from config_stash.secret_stores.providers.multi_secret_store import MultiSecretStore
-from config_stash.secret_stores.resolver import SecretResolver
-
 from config_stash.secret_factory import (
     _create_secret_store,
     _create_vault_auth,
     create_secret_resolver_from_config,
 )
-
+from config_stash.secret_stores.providers.dict_secret_store import DictSecretStore
+from config_stash.secret_stores.providers.multi_secret_store import MultiSecretStore
+from config_stash.secret_stores.resolver import SecretResolver
 
 # ---------------------------------------------------------------------------
 # Vault auth method dispatch
@@ -88,9 +86,7 @@ class TestCreateVaultAuth:
     def test_jwt(self):
         from config_stash.secret_stores.vault_auth.jwt import JWTAuth
 
-        result = _create_vault_auth(
-            {"method": "jwt", "role": "r1", "jwt": "eyJ..."}
-        )
+        result = _create_vault_auth({"method": "jwt", "role": "r1", "jwt": "eyJ..."})
         assert isinstance(result, JWTAuth)
         assert result.role == "r1"
         assert result.jwt == "eyJ..."
@@ -98,9 +94,7 @@ class TestCreateVaultAuth:
     def test_kubernetes(self):
         from config_stash.secret_stores.vault_auth.kubernetes import KubernetesAuth
 
-        result = _create_vault_auth(
-            {"method": "kubernetes", "role": "k8s-role"}
-        )
+        result = _create_vault_auth({"method": "kubernetes", "role": "k8s-role"})
         assert isinstance(result, KubernetesAuth)
         assert result.role == "k8s-role"
         assert result.mount_point_value == "kubernetes"
@@ -137,9 +131,7 @@ class TestCreateVaultAuth:
 
     def test_env_var_expansion(self, monkeypatch):
         monkeypatch.setenv("VAULT_TOKEN", "s.from-env")
-        result = _create_vault_auth(
-            {"method": "token", "token": "${VAULT_TOKEN}"}
-        )
+        result = _create_vault_auth({"method": "token", "token": "${VAULT_TOKEN}"})
         assert result == "s.from-env"
 
 
@@ -152,9 +144,7 @@ class TestCreateSecretStore:
     """Tests for _create_secret_store."""
 
     def test_dict_provider(self):
-        store = _create_secret_store(
-            {"provider": "dict", "values": {"key1": "val1"}}
-        )
+        store = _create_secret_store({"provider": "dict", "values": {"key1": "val1"}})
         assert isinstance(store, DictSecretStore)
         assert store.get_secret("key1") == "val1"
 
@@ -201,12 +191,8 @@ class TestCreateSecretStore:
         assert isinstance(store, AWSSecretsManager)
         assert store.region_name == "eu-west-1"
 
-    @patch(
-        "config_stash.secret_stores.providers.hashicorp_vault.HVAC_AVAILABLE", True
-    )
-    @patch(
-        "config_stash.secret_stores.providers.hashicorp_vault.hvac", create=True
-    )
+    @patch("config_stash.secret_stores.providers.hashicorp_vault.HVAC_AVAILABLE", True)
+    @patch("config_stash.secret_stores.providers.hashicorp_vault.hvac", create=True)
     def test_vault_provider_with_token(self, mock_hvac):
         mock_client = MagicMock()
         mock_client.is_authenticated.return_value = True
@@ -229,12 +215,8 @@ class TestCreateSecretStore:
         assert store.url == "https://vault.example.com"
         assert store.mount_point == "kv"
 
-    @patch(
-        "config_stash.secret_stores.providers.hashicorp_vault.HVAC_AVAILABLE", True
-    )
-    @patch(
-        "config_stash.secret_stores.providers.hashicorp_vault.hvac", create=True
-    )
+    @patch("config_stash.secret_stores.providers.hashicorp_vault.HVAC_AVAILABLE", True)
+    @patch("config_stash.secret_stores.providers.hashicorp_vault.hvac", create=True)
     def test_vault_provider_with_approle(self, mock_hvac):
         mock_client = MagicMock()
         mock_client.is_authenticated.return_value = True
@@ -257,9 +239,7 @@ class TestCreateSecretStore:
 
         assert isinstance(store, HashiCorpVault)
 
-    @patch(
-        "config_stash.secret_stores.providers.azure_key_vault.AZURE_AVAILABLE", True
-    )
+    @patch("config_stash.secret_stores.providers.azure_key_vault.AZURE_AVAILABLE", True)
     @patch(
         "config_stash.secret_stores.providers.azure_key_vault.SecretClient",
         create=True,

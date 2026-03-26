@@ -8,10 +8,10 @@ import pytest
 
 from config_stash.loaders.ssm_loader import SSMLoader
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _make_parameter(name: str, value: str, param_type: str = "String"):
     """Build a single SSM parameter dict as returned by the API."""
@@ -24,9 +24,7 @@ def _make_paginator(pages):
     Each element in *pages* is a list of parameter dicts.
     """
     paginator = MagicMock()
-    paginator.paginate.return_value = [
-        {"Parameters": page} for page in pages
-    ]
+    paginator.paginate.return_value = [{"Parameters": page} for page in pages]
     return paginator
 
 
@@ -53,6 +51,7 @@ def boto3_mock():
 # ---------------------------------------------------------------------------
 # Basic loading & path-to-nested-dict conversion
 # ---------------------------------------------------------------------------
+
 
 class TestSSMLoaderBasic:
     """Basic parameter loading and path conversion."""
@@ -104,6 +103,7 @@ class TestSSMLoaderBasic:
 # Pagination
 # ---------------------------------------------------------------------------
 
+
 class TestSSMLoaderPagination:
     """Pagination handling across multiple API pages."""
 
@@ -134,6 +134,7 @@ class TestSSMLoaderPagination:
 # ---------------------------------------------------------------------------
 # SecureString / decrypt
 # ---------------------------------------------------------------------------
+
 
 class TestSSMLoaderDecrypt:
     """SecureString decryption support."""
@@ -186,6 +187,7 @@ class TestSSMLoaderDecrypt:
 # ---------------------------------------------------------------------------
 # Type coercion
 # ---------------------------------------------------------------------------
+
 
 class TestSSMLoaderTypeCoercion:
     """Values are coerced from strings to native Python types."""
@@ -242,6 +244,7 @@ class TestSSMLoaderTypeCoercion:
 # Empty result
 # ---------------------------------------------------------------------------
 
+
 class TestSSMLoaderEmpty:
     """Empty parameter sets return None."""
 
@@ -259,6 +262,7 @@ class TestSSMLoaderEmpty:
 # ImportError when boto3 is missing
 # ---------------------------------------------------------------------------
 
+
 class TestSSMLoaderImportError:
     """Graceful handling when boto3 is not installed."""
 
@@ -273,6 +277,7 @@ class TestSSMLoaderImportError:
 # ---------------------------------------------------------------------------
 # AWS credentials
 # ---------------------------------------------------------------------------
+
 
 class TestSSMLoaderCredentials:
     """AWS credentials from constructor and environment variable fallbacks."""
@@ -341,6 +346,7 @@ class TestSSMLoaderCredentials:
 # ---------------------------------------------------------------------------
 # Error handling
 # ---------------------------------------------------------------------------
+
 
 class TestSSMLoaderErrors:
     """ConfigLoadError is raised on API failures."""

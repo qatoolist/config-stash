@@ -18,7 +18,6 @@ from config_stash.async_config import (
 class TestAsyncYamlLoader(unittest.TestCase):
     """Test async YAML loader."""
 
-
     def test_async_yaml_loader_initialization(self):
         """Test initializing async YAML loader."""
         loader = AsyncYamlLoader("test.yaml")

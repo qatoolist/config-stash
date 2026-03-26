@@ -8,12 +8,11 @@ secret management.
 from typing import Any, Dict, Optional
 
 from config_stash.exceptions import ConfigStashError
-from config_stash.source_factory import _expand_env_vars
-
 from config_stash.secret_stores.base import SecretStore
-from config_stash.secret_stores.resolver import SecretResolver
 from config_stash.secret_stores.providers.dict_secret_store import DictSecretStore
 from config_stash.secret_stores.providers.multi_secret_store import MultiSecretStore
+from config_stash.secret_stores.resolver import SecretResolver
+from config_stash.source_factory import _expand_env_vars
 
 
 def _create_vault_auth(auth_dict: Dict[str, Any]) -> Any:

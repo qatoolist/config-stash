@@ -29,10 +29,13 @@ class TestEnvSwitcher(unittest.TestCase):
 
     def test_env_switcher_reads_from_env_var(self):
         """env_switcher reads the environment name from an env var."""
-        path = self.write_yaml("config.yaml", {
-            "default": {"host": "localhost"},
-            "production": {"host": "prod.db.com"},
-        })
+        path = self.write_yaml(
+            "config.yaml",
+            {
+                "default": {"host": "localhost"},
+                "production": {"host": "prod.db.com"},
+            },
+        )
 
         with patch.dict(os.environ, {"APP_ENV": "production"}):
             config = Config(
@@ -45,10 +48,13 @@ class TestEnvSwitcher(unittest.TestCase):
 
     def test_env_switcher_falls_back_to_env_param(self):
         """When env var is not set, falls back to env parameter."""
-        path = self.write_yaml("config.yaml", {
-            "default": {"host": "localhost"},
-            "staging": {"host": "staging.db.com"},
-        })
+        path = self.write_yaml(
+            "config.yaml",
+            {
+                "default": {"host": "localhost"},
+                "staging": {"host": "staging.db.com"},
+            },
+        )
 
         # Remove APP_ENV if it exists
         with patch.dict(os.environ, {}, clear=False):
@@ -64,10 +70,13 @@ class TestEnvSwitcher(unittest.TestCase):
 
     def test_env_switcher_falls_back_to_default(self):
         """When env var not set and no env param, uses default."""
-        path = self.write_yaml("config.yaml", {
-            "default": {"host": "localhost"},
-            "development": {"host": "dev.db.com"},
-        })
+        path = self.write_yaml(
+            "config.yaml",
+            {
+                "default": {"host": "localhost"},
+                "development": {"host": "dev.db.com"},
+            },
+        )
 
         with patch.dict(os.environ, {}, clear=False):
             os.environ.pop("MY_ENV", None)
@@ -81,11 +90,14 @@ class TestEnvSwitcher(unittest.TestCase):
 
     def test_env_switcher_overrides_env_param(self):
         """env_switcher takes priority over env parameter."""
-        path = self.write_yaml("config.yaml", {
-            "default": {"host": "localhost"},
-            "staging": {"host": "staging.db.com"},
-            "production": {"host": "prod.db.com"},
-        })
+        path = self.write_yaml(
+            "config.yaml",
+            {
+                "default": {"host": "localhost"},
+                "staging": {"host": "staging.db.com"},
+                "production": {"host": "prod.db.com"},
+            },
+        )
 
         with patch.dict(os.environ, {"APP_ENV": "production"}):
             config = Config(
@@ -99,10 +111,13 @@ class TestEnvSwitcher(unittest.TestCase):
 
     def test_no_env_switcher_uses_env_param(self):
         """Without env_switcher, env param works normally."""
-        path = self.write_yaml("config.yaml", {
-            "default": {"host": "localhost"},
-            "production": {"host": "prod.db.com"},
-        })
+        path = self.write_yaml(
+            "config.yaml",
+            {
+                "default": {"host": "localhost"},
+                "production": {"host": "prod.db.com"},
+            },
+        )
 
         config = Config(
             env="production",
@@ -129,9 +144,12 @@ class TestSysenvFallback(unittest.TestCase):
 
     def test_fallback_reads_env_var_for_missing_key(self):
         """Keys not in file config fall back to env vars."""
-        path = self.write_yaml("config.yaml", {
-            "default": {"host": "localhost"},
-        })
+        path = self.write_yaml(
+            "config.yaml",
+            {
+                "default": {"host": "localhost"},
+            },
+        )
 
         with patch.dict(os.environ, {"DATABASE_PORT": "5432"}):
             config = Config(
@@ -148,9 +166,12 @@ class TestSysenvFallback(unittest.TestCase):
 
     def test_fallback_with_env_prefix(self):
         """With env_prefix, fallback prepends the prefix."""
-        path = self.write_yaml("config.yaml", {
-            "default": {"host": "from-file"},
-        })
+        path = self.write_yaml(
+            "config.yaml",
+            {
+                "default": {"host": "from-file"},
+            },
+        )
 
         with patch.dict(os.environ, {"MYAPP_DATABASE_PORT": "3306"}):
             config = Config(
@@ -166,15 +187,21 @@ class TestSysenvFallback(unittest.TestCase):
 
     def test_fallback_type_coercion(self):
         """Env var values are type-coerced (int, bool, float)."""
-        path = self.write_yaml("config.yaml", {
-            "default": {"name": "myapp"},
-        })
+        path = self.write_yaml(
+            "config.yaml",
+            {
+                "default": {"name": "myapp"},
+            },
+        )
 
-        with patch.dict(os.environ, {
-            "DEBUG": "true",
-            "RETRIES": "-3",
-            "RATE": "0.75",
-        }):
+        with patch.dict(
+            os.environ,
+            {
+                "DEBUG": "true",
+                "RETRIES": "-3",
+                "RATE": "0.75",
+            },
+        ):
             config = Config(
                 env="default",
                 loaders=[YamlLoader(path)],
@@ -188,9 +215,12 @@ class TestSysenvFallback(unittest.TestCase):
 
     def test_file_config_takes_priority_over_env(self):
         """File config values are NOT overridden by env fallback."""
-        path = self.write_yaml("config.yaml", {
-            "default": {"host": "from-file"},
-        })
+        path = self.write_yaml(
+            "config.yaml",
+            {
+                "default": {"host": "from-file"},
+            },
+        )
 
         with patch.dict(os.environ, {"HOST": "from-env"}):
             config = Config(
@@ -205,9 +235,12 @@ class TestSysenvFallback(unittest.TestCase):
 
     def test_fallback_returns_default_when_not_in_env_either(self):
         """If key is missing from both file and env, returns default."""
-        path = self.write_yaml("config.yaml", {
-            "default": {"host": "localhost"},
-        })
+        path = self.write_yaml(
+            "config.yaml",
+            {
+                "default": {"host": "localhost"},
+            },
+        )
 
         config = Config(
             env="default",
@@ -220,9 +253,12 @@ class TestSysenvFallback(unittest.TestCase):
 
     def test_fallback_disabled_by_default(self):
         """sysenv_fallback=False (default) does not check env vars."""
-        path = self.write_yaml("config.yaml", {
-            "default": {"host": "localhost"},
-        })
+        path = self.write_yaml(
+            "config.yaml",
+            {
+                "default": {"host": "localhost"},
+            },
+        )
 
         with patch.dict(os.environ, {"DATABASE_PORT": "5432"}):
             config = Config(

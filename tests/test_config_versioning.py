@@ -18,7 +18,6 @@ from config_stash.loaders import YamlLoader
 class TestConfigVersion(unittest.TestCase):
     """Test configuration version class."""
 
-
     def test_version_initialization(self):
         """Test initializing version."""
         config_dict = {"key": "value"}

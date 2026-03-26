@@ -3,7 +3,6 @@
 Run with: pytest tests/benchmarks/test_performance.py --benchmark-only
 """
 
-
 import tempfile
 from pathlib import Path
 

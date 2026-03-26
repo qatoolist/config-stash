@@ -15,6 +15,7 @@ class TestConfigReader(unittest.TestCase):
 
     def tearDown(self):
         clear_config_cache()
+
     @patch("config_stash.config_reader.toml_load_file")
     @patch("pathlib.Path.exists", return_value=True)
     def test_read_pyproject_config(self, mock_exists, mock_toml_load):

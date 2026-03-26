@@ -90,7 +90,9 @@ default:
         custom_path = "my_custom_stubs.pyi"
 
         config = Config(
-            loaders=[YamlLoader(self.config_file)], ide_stub_path=custom_path, enable_ide_support=True
+            loaders=[YamlLoader(self.config_file)],
+            ide_stub_path=custom_path,
+            enable_ide_support=True,
         )
 
         # Check that custom stub file was created
@@ -158,7 +160,9 @@ default:
         with open("sanitize_test.yaml", "w") as f:
             f.write(config_content)
 
-        config = Config(loaders=[YamlLoader("sanitize_test.yaml")], enable_ide_support=True)
+        config = Config(
+            loaders=[YamlLoader("sanitize_test.yaml")], enable_ide_support=True
+        )
 
         stub_file = Path(".config_stash/stubs.pyi")
         with open(stub_file) as f:
@@ -172,7 +176,11 @@ default:
 
     def test_enable_auto_generation(self):
         """Test auto-generation with dynamic reloading."""
-        config = Config(loaders=[YamlLoader(self.config_file)], dynamic_reloading=True, enable_ide_support=True)
+        config = Config(
+            loaders=[YamlLoader(self.config_file)],
+            dynamic_reloading=True,
+            enable_ide_support=True,
+        )
 
         # Check initial stub exists
         stub_file = Path(".config_stash/stubs.pyi")
@@ -251,7 +259,9 @@ default:
         with open("list_config.yaml", "w") as f:
             f.write(list_config)
 
-        config = Config(loaders=[YamlLoader("list_config.yaml")], enable_ide_support=True)
+        config = Config(
+            loaders=[YamlLoader("list_config.yaml")], enable_ide_support=True
+        )
 
         stub_file = Path(".config_stash/stubs.pyi")
         with open(stub_file) as f:

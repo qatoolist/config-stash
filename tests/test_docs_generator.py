@@ -50,8 +50,13 @@ class TestGenerateDocsMarkdown(unittest.TestCase):
     def test_contains_all_leaf_keys(self):
         """Every leaf key appears in the markdown table."""
         docs = self.config.generate_docs()
-        for key in ("database.host", "database.port", "database.ssl",
-                     "app.name", "app.debug"):
+        for key in (
+            "database.host",
+            "database.port",
+            "database.ssl",
+            "app.name",
+            "app.debug",
+        ):
             self.assertIn(f"`{key}`", docs)
 
     def test_types_in_output(self):
@@ -204,7 +209,7 @@ class TestGenerateDocsPydantic(unittest.TestCase):
 
         docs = config.generate_docs()
         self.assertIn("Yes", docs)  # database_host is required
-        self.assertIn("No", docs)   # database_port and debug have defaults
+        self.assertIn("No", docs)  # database_port and debug have defaults
 
     def test_pydantic_json_format(self):
         """JSON output includes pydantic metadata."""
@@ -299,9 +304,12 @@ class TestDocsCLI(unittest.TestCase):
         result = self.runner.invoke(
             cli,
             [
-                "docs", "default",
-                "--loader", f"yaml:{self.config_file}",
-                "--format", "json",
+                "docs",
+                "default",
+                "--loader",
+                f"yaml:{self.config_file}",
+                "--format",
+                "json",
             ],
         )
         self.assertEqual(result.exit_code, 0, msg=result.output)
@@ -314,9 +322,12 @@ class TestDocsCLI(unittest.TestCase):
         result = self.runner.invoke(
             cli,
             [
-                "docs", "default",
-                "--loader", f"yaml:{self.config_file}",
-                "--output", output_file,
+                "docs",
+                "default",
+                "--loader",
+                f"yaml:{self.config_file}",
+                "--output",
+                output_file,
             ],
         )
         self.assertEqual(result.exit_code, 0, msg=result.output)

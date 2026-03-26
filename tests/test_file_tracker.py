@@ -12,7 +12,6 @@ from config_stash.file_tracker import FileTracker
 class TestFileTracker(unittest.TestCase):
     """Test file change tracker."""
 
-
     def setUp(self):
         """Set up test environment."""
         self.temp_dir = tempfile.mkdtemp()

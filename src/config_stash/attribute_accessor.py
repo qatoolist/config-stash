@@ -53,7 +53,9 @@ class AttributeAccessor:
             if isinstance(value, dict):
                 # Create nested AttributeAccessor for nested configurations
                 nested_loader = LazyLoader(value)
-                return AttributeAccessor(nested_loader, self.hook_processor, _prefix=full_key)
+                return AttributeAccessor(
+                    nested_loader, self.hook_processor, _prefix=full_key
+                )
             # Apply hooks if hook_processor is available
             if self.hook_processor:
                 value = self.hook_processor.process_hooks(full_key, value)

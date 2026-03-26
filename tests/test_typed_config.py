@@ -38,9 +38,12 @@ class TestTypedConfig(unittest.TestCase):
             port: int
             debug: bool = False
 
-        path = self.write_yaml("config.yaml", {
-            "default": {"host": "localhost", "port": 5432, "debug": True},
-        })
+        path = self.write_yaml(
+            "config.yaml",
+            {
+                "default": {"host": "localhost", "port": 5432, "debug": True},
+            },
+        )
 
         config = Config[AppConfig](
             env="default",
@@ -75,12 +78,15 @@ class TestTypedConfig(unittest.TestCase):
             database: DatabaseConfig
             debug: bool = False
 
-        path = self.write_yaml("config.yaml", {
-            "default": {
-                "database": {"host": "prod.db", "port": 3306},
-                "debug": False,
+        path = self.write_yaml(
+            "config.yaml",
+            {
+                "default": {
+                    "database": {"host": "prod.db", "port": 3306},
+                    "debug": False,
+                },
             },
-        })
+        )
 
         config = Config[AppConfig](
             env="default",
@@ -108,9 +114,12 @@ class TestTypedConfig(unittest.TestCase):
         class SimpleConfig(BaseModel):
             name: str
 
-        path = self.write_yaml("config.yaml", {
-            "default": {"name": "myapp"},
-        })
+        path = self.write_yaml(
+            "config.yaml",
+            {
+                "default": {"name": "myapp"},
+            },
+        )
 
         config = Config[SimpleConfig](
             env="default",
@@ -133,9 +142,12 @@ class TestTypedConfig(unittest.TestCase):
         from config_stash import Config
         from config_stash.loaders import YamlLoader
 
-        path = self.write_yaml("config.yaml", {
-            "default": {"host": "localhost"},
-        })
+        path = self.write_yaml(
+            "config.yaml",
+            {
+                "default": {"host": "localhost"},
+            },
+        )
 
         config = Config(
             env="default",
@@ -162,9 +174,12 @@ class TestTypedConfig(unittest.TestCase):
             host: str
             port: int
 
-        path = self.write_yaml("config.yaml", {
-            "default": {"host": "localhost", "port": 5432},
-        })
+        path = self.write_yaml(
+            "config.yaml",
+            {
+                "default": {"host": "localhost", "port": 5432},
+            },
+        )
 
         config = Config[AppConfig](
             env="default",
@@ -192,9 +207,12 @@ class TestTypedConfig(unittest.TestCase):
         class MyConfig(BaseModel):
             name: str = "default"
 
-        path = self.write_yaml("config.yaml", {
-            "default": {"name": "test-app"},
-        })
+        path = self.write_yaml(
+            "config.yaml",
+            {
+                "default": {"name": "test-app"},
+            },
+        )
 
         config = Config[MyConfig](
             env="default",
@@ -219,9 +237,12 @@ class TestTypedConfig(unittest.TestCase):
         class AppConfig(BaseModel):
             host: str
 
-        path = self.write_yaml("config.yaml", {
-            "default": {"host": "original"},
-        })
+        path = self.write_yaml(
+            "config.yaml",
+            {
+                "default": {"host": "original"},
+            },
+        )
 
         config = Config[AppConfig](
             env="default",
@@ -234,9 +255,12 @@ class TestTypedConfig(unittest.TestCase):
         self.assertEqual(config.typed.host, "original")
 
         # Modify file and reload
-        self.write_yaml("config.yaml", {
-            "default": {"host": "reloaded"},
-        })
+        self.write_yaml(
+            "config.yaml",
+            {
+                "default": {"host": "reloaded"},
+            },
+        )
         config.reload(validate=True)
 
         self.assertEqual(config.typed.host, "reloaded")

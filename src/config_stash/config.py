@@ -359,9 +359,14 @@ class Config(
 
     def __repr__(self) -> str:
         key_count = len(self.keys()) if self.env_config else 0
-        sources = [getattr(l, "source", l.__class__.__name__) for l in self.loader_manager.loaders]
+        sources = [
+            getattr(l, "source", l.__class__.__name__)
+            for l in self.loader_manager.loaders
+        ]
         frozen = ", frozen" if self._frozen else ""
-        return f"Config(env={self.env!r}, keys={key_count}, sources={sources!r}{frozen})"
+        return (
+            f"Config(env={self.env!r}, keys={key_count}, sources={sources!r}{frozen})"
+        )
 
     @property
     def typed(self) -> T:
