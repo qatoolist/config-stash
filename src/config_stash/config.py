@@ -31,6 +31,9 @@ from typing import (
 
 T = TypeVar("T")
 
+# Sentinel object to distinguish "not provided" from explicit False/None
+_UNSET = object()
+
 if TYPE_CHECKING:
     from config_stash.config_builder import ConfigBuilder
     from config_stash.loaders.loader import Loader
@@ -115,23 +118,23 @@ class Config(
     def __init__(
         self,
         env: Optional[str] = None,
-        env_switcher: Optional[str] = None,
+        env_switcher: Optional[str] = _UNSET,
         loaders: Optional[Sequence["Loader"]] = None,
         dynamic_reloading: Optional[bool] = None,
-        use_env_expander: bool = True,
-        use_type_casting: bool = True,
-        enable_ide_support: bool = True,
-        ide_stub_path: Optional[str] = None,
-        debug_mode: bool = False,
-        deep_merge: bool = True,
-        merge_strategy: Optional[Any] = None,
-        merge_strategy_map: Optional[Dict[str, Any]] = None,
-        env_prefix: Optional[str] = None,
-        sysenv_fallback: bool = False,
+        use_env_expander: Any = _UNSET,
+        use_type_casting: Any = _UNSET,
+        enable_ide_support: Any = _UNSET,
+        ide_stub_path: Optional[str] = _UNSET,
+        debug_mode: Any = _UNSET,
+        deep_merge: Any = _UNSET,
+        merge_strategy: Optional[Any] = _UNSET,
+        merge_strategy_map: Optional[Dict[str, Any]] = _UNSET,
+        env_prefix: Optional[str] = _UNSET,
+        sysenv_fallback: Any = _UNSET,
         secret_resolver: Optional[Any] = None,
         schema: Optional[Any] = None,
-        validate_on_load: bool = False,
-        strict_validation: bool = False,
+        validate_on_load: Any = _UNSET,
+        strict_validation: Any = _UNSET,
     ) -> None:
         """Initialize the Config instance.
 
@@ -173,9 +176,18 @@ class Config(
         """
         defaults = get_default_settings()
 
+        # Helper to resolve _UNSET values: explicit param wins, else config file
+        def _resolve(param: Any, key: str) -> Any:
+            return defaults[key] if param is _UNSET else param
+
+        # Resolve env_switcher from config file when not explicitly provided
+        resolved_env_switcher = _resolve(env_switcher, "env_switcher")
+
         # env_switcher: read environment name from an env var
-        if env_switcher:
-            self.env = os.environ.get(env_switcher, env or defaults["default_environment"])
+        if resolved_env_switcher:
+            self.env = os.environ.get(
+                resolved_env_switcher, env or defaults["default_environment"]
+            )
         else:
             self.env = env or defaults["default_environment"]
         self.dynamic_reloading = (
@@ -183,39 +195,41 @@ class Config(
             if dynamic_reloading is not None
             else defaults["dynamic_reloading"]
         )
-        self.use_env_expander = use_env_expander
-        self.use_type_casting = use_type_casting
-        self.debug_mode = debug_mode
-        self.deep_merge = deep_merge
+        self.use_env_expander = _resolve(use_env_expander, "use_env_expander")
+        self.use_type_casting = _resolve(use_type_casting, "use_type_casting")
+        self.debug_mode = _resolve(debug_mode, "debug_mode")
+        self.deep_merge = _resolve(deep_merge, "deep_merge")
         self.secret_resolver = secret_resolver
         self._schema = schema
-        self.validate_on_load = validate_on_load
-        self.strict_validation = strict_validation
+        self.validate_on_load = _resolve(validate_on_load, "validate_on_load")
+        self.strict_validation = _resolve(strict_validation, "strict_validation")
         self._change_callbacks: List[Callable[..., Any]] = []
         self._validated_model: Optional[Any] = None
         self._enable_composition: bool = True
         self._lock = threading.RLock()
         self._frozen: bool = False
-        self._sysenv_fallback = sysenv_fallback
-        self._env_prefix = env_prefix
+        self._sysenv_fallback = _resolve(sysenv_fallback, "sysenv_fallback")
+        self._env_prefix = _resolve(env_prefix, "env_prefix")
 
         # Advanced merge strategy support
-        self._merge_strategy = merge_strategy
-        self._merge_strategy_map = merge_strategy_map or {}
+        resolved_merge_strategy = _resolve(merge_strategy, "merge_strategy")
+        resolved_merge_strategy_map = _resolve(merge_strategy_map, "merge_strategy_map")
+        self._merge_strategy = resolved_merge_strategy
+        self._merge_strategy_map = resolved_merge_strategy_map or {}
         self._advanced_merger = None
-        if merge_strategy is not None:
+        if resolved_merge_strategy is not None:
             from config_stash.merge_strategies import AdvancedConfigMerger
 
-            self._advanced_merger = AdvancedConfigMerger(merge_strategy)
+            self._advanced_merger = AdvancedConfigMerger(resolved_merge_strategy)
             for path, strategy in self._merge_strategy_map.items():
                 self._advanced_merger.set_strategy(path, strategy)
 
         # Set up loaders
         final_loaders = loaders if loaders is not None else self._load_default_files()
-        if env_prefix:
+        if self._env_prefix:
             from config_stash.loaders.environment_loader import EnvironmentLoader
 
-            final_loaders = list(final_loaders) + [EnvironmentLoader(env_prefix)]
+            final_loaders = list(final_loaders) + [EnvironmentLoader(self._env_prefix)]
 
         self.loader_manager = LoaderManager(list(final_loaders))
         self.config_loader = ConfigLoader(self.loader_manager.loaders)
@@ -256,8 +270,8 @@ class Config(
             self._validate_config()
 
         # IDE support
-        self.enable_ide_support = enable_ide_support
-        self.ide_stub_path = ide_stub_path
+        self.enable_ide_support = _resolve(enable_ide_support, "enable_ide_support")
+        self.ide_stub_path = _resolve(ide_stub_path, "ide_stub_path")
         if self.enable_ide_support:
             self._generate_ide_support()
 

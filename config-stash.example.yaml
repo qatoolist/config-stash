@@ -1,0 +1,61 @@
+# config-stash.yaml — Config-Stash self-configuration
+# Place in your project root. All settings are optional.
+# Supported filenames: config-stash.yaml, config-stash.yml,
+#   config-stash.json, config-stash.toml
+# Hidden variants are also supported: .config-stash.yaml, etc.
+
+# === Environment ===
+default_environment: development     # Default env when none specified
+env_switcher: APP_ENV                # Env var that controls active environment
+
+# === Sources ===
+default_files:                       # Config files to load by default (when no loaders specified)
+  - config/base.yaml
+  - config/local.yaml
+
+env_prefix: MYAPP                    # Auto-load env vars with this prefix
+sysenv_fallback: true                # Fall back to env vars for missing keys
+
+# === Merging ===
+deep_merge: true                     # Deep merge nested dicts (vs shallow replace)
+merge_strategy: merge                # Default: merge | replace | append | prepend
+merge_strategy_map:                  # Per-path merge strategies
+  feature_flags: replace
+  database: merge
+
+# === Validation ===
+validate_on_load: false              # Validate config on every load
+strict_validation: false             # Raise exception on validation failure (vs warn)
+
+# === Hooks ===
+use_env_expander: true               # Expand ${VAR} in values
+use_type_casting: true               # Auto-cast "42" -> 42, "true" -> True
+
+# === Reloading ===
+dynamic_reloading: false             # Watch files for changes
+incremental_reload: true             # Only reload changed files
+
+# === Secret Resolution ===
+secret_cache_ttl: 300                # Secret cache TTL in seconds (0 = no expiry)
+
+# === Observability ===
+enable_observability: false          # Enable metrics collection
+enable_events: false                 # Enable event emission
+max_reload_durations: 1000           # Max stored reload durations
+
+# === Versioning ===
+enable_versioning: false             # Enable config versioning
+version_storage_path: .config_stash/versions
+max_versions: 100                    # Max versions before eviction
+
+# === IDE Support ===
+enable_ide_support: false            # Generate .pyi type stubs
+ide_stub_path: .config_stash/stubs.pyi
+
+# === Debug ===
+debug_mode: false                    # Enable detailed source tracking
+log_level: WARNING                   # Logging level: DEBUG, INFO, WARNING, ERROR
+
+# === Loaders (custom) ===
+loaders:                             # Custom loader class mappings
+  # consul: my_plugins.consul_loader:ConsulLoader
