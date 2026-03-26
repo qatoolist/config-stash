@@ -115,6 +115,7 @@ class Config(
     def __init__(
         self,
         env: Optional[str] = None,
+        env_switcher: Optional[str] = None,
         loaders: Optional[Sequence["Loader"]] = None,
         dynamic_reloading: Optional[bool] = None,
         use_env_expander: bool = True,
@@ -126,6 +127,7 @@ class Config(
         merge_strategy: Optional[Any] = None,
         merge_strategy_map: Optional[Dict[str, Any]] = None,
         env_prefix: Optional[str] = None,
+        sysenv_fallback: bool = False,
         secret_resolver: Optional[Any] = None,
         schema: Optional[Any] = None,
         validate_on_load: bool = False,
@@ -135,6 +137,11 @@ class Config(
 
         Args:
             env: Environment name (e.g., 'development', 'production').
+            env_switcher: Name of an environment variable that controls the
+                active environment. If set, the value of that env var overrides
+                the ``env`` parameter. For example,
+                ``Config(env_switcher="APP_ENV")`` reads ``os.environ["APP_ENV"]``
+                to determine which environment section to use.
             loaders: List of configuration loaders.
             dynamic_reloading: Enable file watching for config changes.
             use_env_expander: Enable ``${VAR}`` expansion in values.
@@ -146,6 +153,11 @@ class Config(
             merge_strategy: Default ``MergeStrategy`` for combining layers.
             merge_strategy_map: Per-path merge strategy overrides.
             env_prefix: Auto-add ``EnvironmentLoader`` with this prefix.
+            sysenv_fallback: If True, keys not found in file-based config
+                will automatically fall back to environment variables. Uses
+                ``env_prefix`` if set, otherwise matches the raw key name
+                uppercased with dots replaced by underscores
+                (e.g., ``database.host`` → ``DATABASE_HOST``).
             secret_resolver: ``SecretResolver`` for ``${secret:key}`` placeholders.
             schema: Pydantic model or JSON Schema dict for validation.
             validate_on_load: Validate immediately after loading.
@@ -161,7 +173,11 @@ class Config(
         """
         defaults = get_default_settings()
 
-        self.env = env or defaults["default_environment"]
+        # env_switcher: read environment name from an env var
+        if env_switcher:
+            self.env = os.environ.get(env_switcher, env or defaults["default_environment"])
+        else:
+            self.env = env or defaults["default_environment"]
         self.dynamic_reloading = (
             dynamic_reloading
             if dynamic_reloading is not None
@@ -180,6 +196,8 @@ class Config(
         self._enable_composition: bool = True
         self._lock = threading.RLock()
         self._frozen: bool = False
+        self._sysenv_fallback = sysenv_fallback
+        self._env_prefix = env_prefix
 
         # Advanced merge strategy support
         self._merge_strategy = merge_strategy
@@ -244,6 +262,21 @@ class Config(
             self._generate_ide_support()
 
     # -- Core methods that stay on Config directly --
+
+    def _sysenv_lookup(self, key_path: str) -> Optional[str]:
+        """Look up a config key in environment variables (fallback).
+
+        Converts dot-separated key paths to environment variable names:
+        - With env_prefix: ``database.host`` → ``MYAPP_DATABASE_HOST``
+        - Without prefix: ``database.host`` → ``DATABASE_HOST``
+
+        Returns:
+            The env var value as a string, or None if not found.
+        """
+        env_key = key_path.upper().replace(".", "_")
+        if self._env_prefix:
+            env_key = f"{self._env_prefix}_{env_key}"
+        return os.environ.get(env_key)
 
     def __getattr__(self, item: str) -> Any:
         """Get configuration value using attribute-style access."""

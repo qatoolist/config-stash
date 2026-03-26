@@ -44,9 +44,12 @@ class ConfigAccess:
     configs: List[Any]
     loader_manager: LoaderManager
     _change_callbacks: List[Callable[..., Any]]
+    _sysenv_fallback: bool
+    _env_prefix: Optional[str]
 
     # Methods from other mixins — declared for type-checker visibility
     _check_frozen: Callable[[], None]
+    _sysenv_lookup: Callable[..., Any]
     _rebuild_state: Callable[[], None]
     get_source_info: Callable[..., Any]
     get_override_history: Callable[..., Any]
@@ -97,6 +100,10 @@ class ConfigAccess:
     def get(self, key_path: str, default: Any = None) -> Any:
         """Get a configuration value by key path with optional default.
 
+        If ``sysenv_fallback=True`` was set at init and the key is not found
+        in file-based config, the corresponding environment variable is checked
+        automatically (e.g., ``database.host`` → ``DATABASE_HOST``).
+
         Args:
             key_path: Dot-separated key path
             default: Default value if key not found
@@ -104,8 +111,21 @@ class ConfigAccess:
         Returns:
             Configuration value or default
         """
+        _sentinel = object()
         config_dict = self.to_dict()
-        value = get_nested_value(config_dict, key_path, default)
+        value = get_nested_value(config_dict, key_path, _sentinel)
+
+        # sysenv_fallback: check env vars when key not in file config
+        if value is _sentinel and self._sysenv_fallback:
+            env_value = self._sysenv_lookup(key_path)
+            if env_value is not None:
+                from config_stash.utils.type_coercion import parse_scalar_value
+
+                value = parse_scalar_value(env_value)
+
+        if value is _sentinel:
+            value = default
+
         if self.hook_processor and value is not None:
             value = self.hook_processor.process_hooks(key_path, value)
         return value
