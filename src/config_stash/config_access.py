@@ -7,9 +7,11 @@ callbacks (on_change).
 
 from __future__ import annotations
 
+import copy
 import logging
 import threading
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional
+from contextlib import contextmanager
+from typing import TYPE_CHECKING, Any, Callable, Dict, Iterator, List, Optional
 
 from config_stash.config_diff import ConfigDiff, ConfigDiffer, ConfigDriftDetector
 from config_stash.config_introspection import (
@@ -303,6 +305,207 @@ class ConfigAccess:
             self.observer.record_change()
         if self.event_emitter:
             self.event_emitter.emit("set", key_path, value)
+
+    @contextmanager
+    def override(self, overrides: Dict[str, Any]) -> Iterator[None]:
+        """Context manager that temporarily overrides configuration values.
+
+        On entry, the current ``env_config`` and ``merged_config`` are saved
+        (deep-copied) and the *overrides* are applied.  On exit the original
+        state is restored, even if the body raised an exception.
+
+        Works with frozen configs (temporarily unfreezes, re-freezes on exit).
+        Supports nesting — each level saves/restores independently.
+
+        Args:
+            overrides: Mapping of dot-separated key paths to override values.
+
+        Example:
+            >>> with config.override({"database.host": "test-db"}):
+            ...     assert config.get("database.host") == "test-db"
+        """
+        from config_stash.utils.dict_utils import set_nested
+
+        with self._lock:
+            # Snapshot current state
+            saved_env_config = copy.deepcopy(self.env_config)
+            saved_merged_config = copy.deepcopy(self.merged_config)
+            was_frozen = self._frozen
+
+            # Temporarily unfreeze so we can apply overrides
+            if was_frozen:
+                self._frozen = False
+
+            # Apply overrides
+            for key_path, value in overrides.items():
+                set_nested(self.env_config, key_path, value)
+                set_nested(self.merged_config, key_path, value)
+            self._rebuild_state()
+
+            # Re-freeze if it was frozen (reads still work while frozen)
+            if was_frozen:
+                self._frozen = True
+
+        try:
+            yield
+        finally:
+            with self._lock:
+                # Restore original state
+                was_frozen_now = self._frozen
+                if was_frozen_now:
+                    self._frozen = False
+                self.env_config = saved_env_config
+                self.merged_config = saved_merged_config
+                self._rebuild_state()
+                if was_frozen:
+                    self._frozen = True
+
+    def generate_docs(self, format: str = "markdown") -> str:
+        """Generate documentation for all configuration keys.
+
+        Iterates all keys and produces a reference document with key names,
+        types, current values, and sources.  When a Pydantic schema has been
+        validated (``_validated_model`` is set and its *class* exposes
+        ``model_fields``), the output also includes field descriptions,
+        default values, and required/optional status.
+
+        Args:
+            format: Output format — ``"markdown"`` or ``"json"``.
+
+        Returns:
+            Formatted documentation string.
+
+        Raises:
+            ValueError: If *format* is not ``"markdown"`` or ``"json"``.
+
+        Example:
+            >>> docs = config.generate_docs()
+            >>> print(docs)
+        """
+        import json as _json
+
+        if format not in ("markdown", "json"):
+            raise ValueError(
+                f"Unsupported docs format '{format}'. Use 'markdown' or 'json'."
+            )
+
+        config_dict = self.to_dict()
+        all_keys = get_all_keys(config_dict, "")
+
+        # Build Pydantic field metadata lookup (field_name -> info dict)
+        pydantic_fields: Dict[str, Dict[str, Any]] = {}
+        schema_class = getattr(self, "_schema", None)
+        if schema_class is not None:
+            try:
+                from pydantic import BaseModel
+
+                if isinstance(schema_class, type) and issubclass(
+                    schema_class, BaseModel
+                ):
+                    for field_name, field_info in schema_class.model_fields.items():
+                        pydantic_fields[field_name] = {
+                            "description": field_info.description or "",
+                            "default": (
+                                repr(field_info.default)
+                                if field_info.default is not None
+                                else ""
+                            ),
+                            "required": field_info.is_required(),
+                            "annotation": (
+                                getattr(field_info.annotation, "__name__", "")
+                                if field_info.annotation is not None
+                                else ""
+                            ),
+                        }
+            except ImportError:
+                pass
+
+        # Only keep leaf keys (keys whose values are not dicts)
+        leaf_keys = [
+            k for k in all_keys
+            if not isinstance(get_nested_value(config_dict, k), dict)
+        ]
+
+        rows: List[Dict[str, Any]] = []
+        for key in sorted(leaf_keys):
+            value = get_nested_value(config_dict, key)
+            value_type = type(value).__name__
+
+            # Source info
+            source_info = self.get_source_info(key)
+            source = source_info.source_file if source_info else ""
+
+            row: Dict[str, Any] = {
+                "key": key,
+                "type": value_type,
+                "current_value": value,
+                "source": source,
+            }
+
+            # Enrich with Pydantic metadata if available
+            pydantic_key = key.replace(".", "_")
+            if pydantic_key in pydantic_fields:
+                pf = pydantic_fields[pydantic_key]
+                row["description"] = pf["description"]
+                row["default"] = pf["default"]
+                row["required"] = pf["required"]
+                if pf["annotation"]:
+                    row["type"] = pf["annotation"]
+
+            rows.append(row)
+
+        if format == "json":
+            return _json.dumps(rows, indent=2, default=str)
+
+        # --- Markdown format ---
+        has_pydantic = bool(pydantic_fields)
+
+        lines: List[str] = [
+            "# Configuration Reference",
+            "",
+            "Generated from loaded configuration.",
+            "",
+            "## Keys",
+            "",
+        ]
+
+        if has_pydantic:
+            lines.append(
+                "| Key | Type | Current Value | Source "
+                "| Description | Default | Required |"
+            )
+            lines.append(
+                "|-----|------|---------------|--------"
+                "|-------------|---------|----------|"
+            )
+        else:
+            lines.append(
+                "| Key | Type | Current Value | Source |"
+            )
+            lines.append(
+                "|-----|------|---------------|--------|"
+            )
+
+        for row in rows:
+            val_str = str(row["current_value"])
+            if has_pydantic:
+                desc = row.get("description", "")
+                default = row.get("default", "")
+                required = row.get("required", "")
+                if isinstance(required, bool):
+                    required = "Yes" if required else "No"
+                lines.append(
+                    f"| `{row['key']}` | {row['type']} | {val_str} "
+                    f"| {row['source']} | {desc} | {default} | {required} |"
+                )
+            else:
+                lines.append(
+                    f"| `{row['key']}` | {row['type']} | {val_str} "
+                    f"| {row['source']} |"
+                )
+
+        lines.append("")
+        return "\n".join(lines)
 
     def on_change(self, func: Callable[[str, Any, Any], None]) -> Callable:
         """Decorator to register a callback for configuration changes.

@@ -711,6 +711,54 @@ def explain(env, loader_specs, key):
 
 
 @cli.command()
+@click.argument("env")
+@click.option(
+    "--loader",
+    "loader_specs",
+    multiple=True,
+    help='Loader spec in format "type:source"',
+)
+@click.option(
+    "--format",
+    "fmt",
+    type=click.Choice(["markdown", "json"]),
+    default="markdown",
+    help="Documentation output format",
+)
+@click.option("--output", "-o", help="Output file path")
+def docs(env, loader_specs, fmt, output):
+    """Generate configuration documentation.
+
+    This command loads configuration from specified sources and generates
+    a reference document listing all keys, types, current values, and sources.
+
+    Args:
+        env: Environment name (e.g., "production", "development")
+        loader_specs: Tuple of loader specifications in format "type:source"
+        fmt: Output format (markdown or json)
+        output: Output file path (optional, defaults to stdout)
+
+    Example:
+        >>> config-stash docs production --loader yaml:config.yaml --format markdown
+        >>> config-stash docs production --loader yaml:config.yaml --format json --output config-reference.md
+    """
+    try:
+        config = create_config(env, loader_specs, False, True, True)
+        docs_output = config.generate_docs(format=fmt)
+
+        if output:
+            with open(output, "w") as f:
+                f.write(docs_output)
+            click.echo(f"Documentation written to {output}")
+        else:
+            click.echo(docs_output)
+
+    except Exception as e:
+        click.echo(f"Error: {e}", err=True)
+        raise SystemExit(1)
+
+
+@cli.command()
 @click.argument("env1")
 @click.argument("env2")
 @click.option(
