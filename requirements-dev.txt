@@ -40,7 +40,7 @@ types-requests>=2.28.0
 sphinx>=6.0.0
 sphinx-rtd-theme>=1.2.0
 sphinx-autodoc-typehints>=1.22.0
-myst-parser>=1.0.0  # For Markdown support in Sphinx
+myst-parser>=3.0.1  # For Markdown support in Sphinx
 
 # Validation libraries (for testing)
 pydantic>=2.0.0
