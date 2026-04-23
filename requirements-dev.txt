@@ -34,7 +34,7 @@ radon>=6.0.0  # Code complexity metrics
 types-toml>=0.10.0
 types-PyYAML>=6.0.0
 types-click>=7.1.0,<8.0.0  # Version 8.x doesn't exist yet
-types-requests>=2.28.0
+types-requests>=2.32.4.20260107
 
 # Documentation
 sphinx>=6.0.0
