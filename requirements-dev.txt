@@ -67,7 +67,7 @@ pip-tools>=6.12.0  # Requirements management
 # Build and release
 build>=0.10.0
 twine>=4.0.0
-wheel>=0.40.0
+wheel>=0.47.0
 setuptools>=65.0.0
 
 # Testing utilities (optional but useful)
