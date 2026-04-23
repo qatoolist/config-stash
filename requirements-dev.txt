@@ -85,4 +85,4 @@ py-spy>=0.3.0  # Sampling profiler
 # Additional utilities
 python-dotenv>=1.0.0  # For .env file support in development
 tox>=4.0.0  # For testing across Python versions
-coverage[toml]>=7.0.0  # Coverage with TOML config support
+coverage[toml]>=7.10.7  # Coverage with TOML config support
